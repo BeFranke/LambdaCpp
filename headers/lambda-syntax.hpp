@@ -1,6 +1,11 @@
 #include <vector>
 #include <cassert>
 
+/*
+ * TODO: should we move non-lambda expressions like "x y z" into the base class, with a private vector of expressions?
+ * TODO: (That therefore does not get inherited)
+ */
+
 typedef unsigned long ID;
 
 constexpr char LAMBDA = '\\';
@@ -12,8 +17,10 @@ const std::runtime_error ER_REDECL = std::runtime_error("Error: variable re-decl
 const std::runtime_error ER_SYNTAX = std::runtime_error("Error: unexpected syntax!");
 const std::runtime_error ER_EMPTY = std::runtime_error("Error: empty tail is not allowed!");
 
+static ID _next_id = 0;
+
 template<typename T>
-static inline int index(T e, T set[], size_t n) {
+static inline int index(T e, const T set[], size_t n) {
     for(int i = 0; i < n; ++i) if(set[i] == e) return i;
     return -1;
 }
@@ -45,7 +52,11 @@ class Expression {
      */
   public:
     Expression(std::string name) : name(name) {}
+
+  protected:
     std::string name;
+  private:
+    virtual std::string to_string() = 0;
 };
 
 class Variable : public Expression {
@@ -70,8 +81,10 @@ class Variable : public Expression {
     ID get_id() const {
         return id;
     }
+    std::string to_string() const {
+        return name;
+    }
   private:
-    static ID _next_id = 0;
     bool bound;
     ID id;
 };
@@ -131,6 +144,13 @@ class Lambda : public Expression {
          */
         return tail[index];
     }
+    std::string to_string() const {
+        std::stringstream ss;
+        if(head.size() > 0) ss << "\\ ";
+        for(Variable* v: head) ss << v->get_name() << " ";
+        // TODO, after considering moving non-lambda expressions into base class
+        //if(head.size() > 0) ss << "\\ ";
+    }
   private:
     std::vector<Variable*> head;
     std::vector<Expression*> tail;
@@ -181,6 +201,7 @@ Expression* from_string(std::string str) {
             }
         }
         if(res->n_tail() == 0) throw ER_EMPTY;
+        return res;
     }
     else if(isalpha(str[0])) {
         // binding, check for existence of = sign

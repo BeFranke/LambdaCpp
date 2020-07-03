@@ -6,3 +6,7 @@ TEST(TRIM_TEST, Main) {
     ASSERT_EQ("te  st", _trim_string("   te  st"));
     ASSERT_EQ("tes  t", _trim_string("   tes  t  "));
 }
+
+TEST(LAMBDA_TEST, Variable) {
+
+}
