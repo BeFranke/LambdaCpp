@@ -1,6 +1,8 @@
 #include <vector>
 #include <cassert>
 
+typedef unsigned long ID;
+
 constexpr char LAMBDA = '\\';
 constexpr char BODY_START = '.';
 constexpr char SEP = ';';
@@ -41,6 +43,9 @@ class Expression {
     /**
      * base class for Variable and Lambda, and not much more
      */
+  public:
+    Expression(std::string name) : name(name) {}
+    std::string name;
 };
 
 class Variable : public Expression {
@@ -49,16 +54,26 @@ class Variable : public Expression {
      */
   public:
     Variable() = delete;
-    Variable(char name, bool bound) : name(name), bound(bound) {}
+    Variable(std::string name, bool bound) : Expression(name), bound(bound), id(_next_id++) {
+        assert(name.size() == 1);
+        assert(islower(name[0]));
+    }
+    Variable(char cname, bool bound) : Expression(std::string(1, cname)), bound(bound), id(_next_id++) {
+        assert(name.size() == 1);
+    }
     bool is_bound() const {
         return bound;
     }
-    char get_name() const {
+    std::string get_name() const {
         return name;
     }
+    ID get_id() const {
+        return id;
+    }
   private:
-    char name;
+    static ID _next_id = 0;
     bool bound;
+    ID id;
 };
 
 class Lambda : public Expression {
@@ -68,8 +83,8 @@ class Lambda : public Expression {
      * \ head . tail
      */
   public:
-    Lambda() : head(), tail(), name("anonymous") {}
-    Lambda(std::string name) : head(), tail(), name(name) {}
+    Lambda() : head(), tail(), Expression("anonymous") {}
+    Lambda(std::string name) : head(), tail(), Expression(name) {}
     // TODO: copy and move constructor, or we will have memory problems!
     ~Lambda() {
         for(auto x: head) delete x;
@@ -119,7 +134,6 @@ class Lambda : public Expression {
   private:
     std::vector<Variable*> head;
     std::vector<Expression*> tail;
-    std::string name;
 };
 
 Expression* from_string(std::string str) {
