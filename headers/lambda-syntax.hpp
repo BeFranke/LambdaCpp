@@ -1,29 +1,26 @@
 #include <vector>
 #include <cassert>
 
-/*
- * TODO: should we move non-lambda expressions like "x y z" into the base class, with a private vector of expressions?
- * TODO: (That therefore does not get inherited)
- */
 
 typedef unsigned long ID;
 
 constexpr char LAMBDA = '\\';
 constexpr char BODY_START = '.';
 constexpr char SEP = ';';
-constexpr char BRCK_OPN[2] = {'(', '['};
-constexpr char BRCK_CLS[2] = {')', ']'};
+constexpr char BRCK_OPN = '(';
+constexpr char BRCK_CLS =')';
 const std::runtime_error ER_REDECL = std::runtime_error("Error: variable re-declared!");
 const std::runtime_error ER_SYNTAX = std::runtime_error("Error: unexpected syntax!");
 const std::runtime_error ER_EMPTY = std::runtime_error("Error: empty tail is not allowed!");
+const std::runtime_error ER_START = std::runtime_error("Error: illegal start of expression!");
+const std::runtime_error ER_END = std::runtime_error("Error: unexpected end of expression!");
 
 static ID _next_id = 0;
 
-template<typename T>
-static inline int index(T e, const T set[], size_t n) {
-    for(int i = 0; i < n; ++i) if(set[i] == e) return i;
-    return -1;
-}
+// enum to indicate type of Expression, so we do not have to check-cast things using dynamic_cast
+enum TYPE {LBD, VAR, EXP};
+
+
 
 static inline char index(char c) {
     /**
@@ -48,15 +45,37 @@ static std::string _trim_string(const std::string &str) {
 
 class Expression {
     /**
-     * base class for Variable and Lambda, and not much more
+     * base class an Expression consisting of other Expressions, Variables and Lambdas
      */
   public:
-    Expression(std::string name) : name(name) {}
-
+    Expression(std::string name) : name(name), t(EXP), parts() {}
+    ~Expression() {
+        for (auto x: parts) delete x;
+    }
+    virtual std::string to_string() const {
+        std::stringstream ss;
+        for(Expression* e: parts) {
+            if(e->t == VAR) ss << e->name << ' ';
+            else ss << '(' << e->to_string() << ") ";
+        }
+        return ss.str();
+    }
+    void append(Expression* e) {
+        parts.push_back(e);
+    }
+    unsigned long n() const {
+        return parts.size();
+    }
+    TYPE get_type() const {
+        return t;
+    }
   protected:
+    Expression(std::string name, TYPE t): name(name), t(t) {}
     std::string name;
+    const TYPE t;
+
   private:
-    virtual std::string to_string() = 0;
+    std::vector<Expression*> parts;
 };
 
 class Variable : public Expression {
@@ -65,11 +84,11 @@ class Variable : public Expression {
      */
   public:
     Variable() = delete;
-    Variable(std::string name, bool bound) : Expression(name), bound(bound), id(_next_id++) {
+    Variable(std::string name, bool bound) : Expression(name, VAR), bound(bound), id(_next_id++) {
         assert(name.size() == 1);
         assert(islower(name[0]));
     }
-    Variable(char cname, bool bound) : Expression(std::string(1, cname)), bound(bound), id(_next_id++) {
+    Variable(char cname, bool bound) : Expression(std::string(1, cname), VAR), bound(bound), id(_next_id++) {
         assert(name.size() == 1);
     }
     bool is_bound() const {
@@ -96,8 +115,8 @@ class Lambda : public Expression {
      * \ head . tail
      */
   public:
-    Lambda() : head(), tail(), Expression("anonymous") {}
-    Lambda(std::string name) : head(), tail(), Expression(name) {}
+    Lambda() : head(), tail(), Expression("anonymous", LBD) {}
+    Lambda(std::string name) : head(), tail(), Expression(name, LBD) {}
     // TODO: copy and move constructor, or we will have memory problems!
     ~Lambda() {
         for(auto x: head) delete x;
@@ -147,9 +166,15 @@ class Lambda : public Expression {
     std::string to_string() const {
         std::stringstream ss;
         if(head.size() > 0) ss << "\\ ";
-        for(Variable* v: head) ss << v->get_name() << " ";
-        // TODO, after considering moving non-lambda expressions into base class
-        //if(head.size() > 0) ss << "\\ ";
+        for(Variable* v: head) ss << v->get_name() << ' ';
+        ss << ". ";
+        for(Expression* e: tail) {
+            if(e->get_type() != VAR) ss << '(';
+            ss << e->to_string() << " ";
+            if(e->get_type() != VAR) ss << ") ";
+        }
+        std::string res = ss.str();
+        return res;
     }
   private:
     std::vector<Variable*> head;
@@ -159,6 +184,7 @@ class Lambda : public Expression {
 Expression* from_string(std::string str) {
     /**
      * builds a single expression from a string, so the input should previously be split on SEP
+     * THIS MAY NOT INCLUDE BINDINGS, THESE HAVE TO BE SPLITTED FROM THE 'X =' part beforehand!
      */
     str = _trim_string(str);
     if(str.size() == 1) {
@@ -169,7 +195,8 @@ Expression* from_string(std::string str) {
         // lambda expression detected
         Lambda* res = new Lambda();
         // index for O(1) checks if vars are bound
-        long var_index[26] = {-1};
+        long var_index[26];
+        std::fill_n(var_index, 26, -1);
         // iterate head
         int i = 1;
         for(char c = str[i]; c != BODY_START; c = str[++i]) {
@@ -191,10 +218,10 @@ Expression* from_string(std::string str) {
                     res->append_tail(res->get_head(static_cast<unsigned long>(var_index[index(c)])));
                 else res->append_tail(new Variable(c, false));
             }
-            else if(int j = index(c, BRCK_OPN, 2); j != -1) {
+            else if(c == BRCK_OPN) {
                 // brackets in lambda expression must contain a valid expression themselfs
-                unsigned int begin = static_cast<unsigned int>(i);
-                for(; index(c, BRCK_CLS, 2) == -1; ++i);
+                unsigned int begin = static_cast<unsigned int>(++i);
+                for(c = str[i]; c != BRCK_CLS; ++i);
                 // for the expression in bracket we can just use a recursive call
                 // WARNING: this leads to bound not being correct, e.g. \x y . z (x y)
                 res->append_tail(from_string(str.substr(begin, i - begin)));
@@ -204,12 +231,31 @@ Expression* from_string(std::string str) {
         return res;
     }
     else if(isalpha(str[0])) {
-        // binding, check for existence of = sign
-        // TODO
+        // expression of multiple variables, no lambda
+        Expression* res = new Expression("anonymous");
+        for(int i = 0; i < str.size(); ++i) {
+            char c = str[i];
+            if(isspace(c)) continue;
+            if(islower(c)) res->append(new Variable(c, false));
+            else if(c == LAMBDA) {
+                res->append(from_string(str.substr(static_cast<unsigned long>(i))));
+                break;
+            }
+            else if(c == BRCK_OPN) {
+                unsigned int begin = static_cast<unsigned int>(++i);
+                for(c = str[i]; c != BRCK_CLS; c = str[++i])
+                    if(i == str.size()) throw ER_END;
+                res->append(from_string(str.substr(begin, i - begin)));
+            }
+            else {
+                throw ER_SYNTAX;
+            }
+        }
+        return res;
     }
     else {
         // ERROR
-        // TODO
+        throw ER_START;
     }
     // last step: top-down iteration to update bound?
     // Problem: name clashes
