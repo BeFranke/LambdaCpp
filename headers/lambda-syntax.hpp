@@ -251,7 +251,6 @@ Application::Application(const Application& other) : parts(other.parts.size()), 
     }
 }
 
-
 static inline Variable* has_been_bound(char name, std::vector<Variable*> bound) {
     // make sure the last occurance is found, as the last occurance corresponds to the innermost binding
     auto res = std::find_if(bound.rbegin(), bound.rend(), [name](Variable* t) {return t->get_name()[0] == name;});
@@ -296,6 +295,7 @@ static Expression* from_string_rec(std::string str, std::vector<Variable*> &boun
                 // if there is an entry != -1 for c in var_index, c is a variable thats been declared in teh head -> bound
                 if(var_index[index(c)] > -1)
                     res->append_tail(res->get_head(static_cast<unsigned long>(var_index[index(c)])));
+                else if(Variable* x = has_been_bound(c, bound)) res->append_tail(x);
                 else res->append_tail(new Variable(c, false));
             }
             else if(c == BRCK_OPN) {
