@@ -5,6 +5,7 @@
 typedef unsigned long ID;
 
 // syntactic constants
+// using '\' as replacement for "lambda" is stolen from Haskell
 constexpr char LAMBDA = '\\';
 constexpr char BODY_START = '.';
 constexpr char BRCK_OPN = '(';
@@ -52,7 +53,7 @@ class Expression {
   public:
     Expression() = delete;
     Expression(std::string name, TYPE t) : name(name), t(t) {}
-    virtual ~Expression() = 0;
+    virtual ~Expression() {};
     virtual std::string to_string() const = 0;
     TYPE get_type() const {
         return t;
