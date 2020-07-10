@@ -307,8 +307,7 @@ static Expression* from_string_rec(std::string str, std::vector<Variable*> &boun
                 unsigned int begin = static_cast<unsigned int>(++i);
                 for(c = str[i]; c != BRCK_CLS && i < str.size(); c = str[++i]);
                 if(i == str.size() - 1 && str[i] != BRCK_CLS) throw ER_END;
-                // for the expression in bracket we can just use a recursive call
-                // WARNING: this leads to bound not being correct, e.g. \x y . z (x y)
+                // for the expression in brackets we can just use a recursive call
                 res->append_tail(from_string_rec(str.substr(begin, i - begin), bound));
                 ++i;
             }
