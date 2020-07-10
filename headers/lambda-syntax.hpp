@@ -4,23 +4,24 @@
 
 typedef unsigned long ID;
 
+// syntactic constants
 constexpr char LAMBDA = '\\';
 constexpr char BODY_START = '.';
-constexpr char SEP = ';';
 constexpr char BRCK_OPN = '(';
 constexpr char BRCK_CLS =')';
-constexpr unsigned int MAX_VARS = 264;
+
+// errors that could occur on parsing
 const std::runtime_error ER_REDECL = std::runtime_error("Error: variable re-declared!");
 const std::runtime_error ER_SYNTAX = std::runtime_error("Error: unexpected syntax!");
 const std::runtime_error ER_EMPTY = std::runtime_error("Error: empty tail is not allowed!");
 const std::runtime_error ER_START = std::runtime_error("Error: illegal start of expression!");
 const std::runtime_error ER_END = std::runtime_error("Error: unexpected end of expression!");
 
+// counter for unique ids for variables (currently IDs are not used)
 static ID _next_id = 0;
 
-// enum to indicate type of Application, so we do not have to check-cast things using dynamic_cast
+// enum to indicate type of Expression for save casting
 enum TYPE {LBD, VAR, APP};
-
 
 
 static inline char index(char c) {
@@ -46,11 +47,12 @@ static std::string _trim_string(const std::string &str) {
 
 class Expression {
     /**
-     * abstract base class for all valid lambda expressions
+     * abstract base class for all valid expressions
      */
   public:
     Expression() = delete;
     Expression(std::string name, TYPE t) : name(name), t(t) {}
+    virtual ~Expression() = 0;
     virtual std::string to_string() const = 0;
     TYPE get_type() const {
         return t;
@@ -58,23 +60,24 @@ class Expression {
     std::string get_name() const {
         return name;
     }
+  protected:
+    std::string name;
+    TYPE t;
+  private:
     friend void swap(Expression& e1, Expression& e2) {
         using std::swap;
         swap(e1.name, e2.name);
         swap(e1.t, e2.t);
     }
-  protected:
-    std::string name;
-    TYPE t;
 };
 
 class Application : public Expression {
     /**
      * multiple Expressions after each other
+     * e.g. x y z
      */
   public:
     Application(std::string name) : Expression(name, APP), parts() {}
-    Application(std::string name, TYPE t): Expression(name, t), parts() {}
     // this constructor needs information about the classes Lambda and Variable and will
     // therefore be declared further down
     Application(const Application& other);
@@ -102,19 +105,20 @@ class Application : public Expression {
     unsigned long n() const {
         return parts.size();
     }
-    friend void swap(Application& a1, Application& a2) {
-        a1.parts.swap(a2.parts);
-        swap(static_cast<Expression&>(a1), static_cast<Expression&>(a2));
-    }
 
   private:
     Application() : Expression("invalid", APP), parts() {}
     std::vector<Expression*> parts;
+    friend void swap(Application& a1, Application& a2) {
+        a1.parts.swap(a2.parts);
+        swap(static_cast<Expression&>(a1), static_cast<Expression&>(a2));
+    }
 };
 
 class Variable : public Expression {
     /**
      * Variables are named as a single lower case char and can be bound or not
+     * e.g. x
      */
   public:
     Variable() = delete;
@@ -230,14 +234,14 @@ class Lambda : public Expression {
     const std::vector<Variable*> &get_head_all() const {
         return head;
     }
+  private:
+    std::vector<Variable*> head;
+    std::vector<Expression*> tail;
     friend void swap(Lambda& l1, Lambda& l2) {
         l1.head.swap(l2.head);
         l1.tail.swap(l2.tail);
         swap(static_cast<Expression&>(l1), static_cast<Expression&>(l2));
     }
-  private:
-    std::vector<Variable*> head;
-    std::vector<Expression*> tail;
 };
 
 // late definition of the copy constructor, because we need information about the other classes for it
@@ -345,6 +349,9 @@ static Expression* from_string_rec(std::string str, std::vector<Variable*> &boun
 }
 
 inline Expression* from_string(std::string str) {
+    /**
+     * initial call for from_string_rec, so not every call needs to init the bound-vector
+     */
     std::vector<Variable*> bound;
     return from_string_rec(str, bound);
 }
