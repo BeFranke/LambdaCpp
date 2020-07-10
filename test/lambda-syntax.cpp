@@ -18,5 +18,10 @@ TEST(FROM_TO_STRING_TEST, LAMBDAS) {
 TEST(FROM_TO_STRING_TEST, EXPRESSIONS) {
     FROM_TO_STRING("x z ");
     FROM_TO_STRING("x (z r t ) ");
-    FROM_TO_STRING("x (\\x y . x y z ) ")
+    FROM_TO_STRING("x (\\ x y . x y z ) ")
+    FROM_TO_STRING("\\ x . (\\ x . x  ) x ")
+}
+
+TEST(BOUND_TEST, MAIN) {
+
 }
