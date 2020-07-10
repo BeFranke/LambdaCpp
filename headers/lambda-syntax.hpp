@@ -267,6 +267,8 @@ static Expression* from_string_rec(std::string str, std::vector<Variable*> &boun
     /**
      * builds a single expression from a string, so the input should previously be split on SEP
      * THIS MAY NOT INCLUDE BINDINGS, THESE HAVE TO BE SPLITTED FROM THE 'X =' part beforehand!
+     * str: string that defines the lambda expression
+     * bound: vector to be filled with the variables that are bound, should be empty on top-level call
      */
     str = _trim_string(str);
     if(str.size() == 1) {
