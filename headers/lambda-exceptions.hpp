@@ -9,10 +9,10 @@ static const std::string EMPTY_HEAD = "Error: empty tail is not allowed!";
 static const std::string START_HEAD = "Error: illegal start of expression!";
 static const std::string END_HEAD = "Error: unexpected end of expression!";
 
-class AbstractLambdaException : public std::exception {
+class SyntaxParseException : public std::exception {
   public:
-    AbstractLambdaException() = delete;
-    AbstractLambdaException(std::string text) : std::exception(), text(text) {}
+    SyntaxParseException() = delete;
+    SyntaxParseException(std::string text) : std::exception(), text(text) {}
     const char* what() const noexcept override {
         return text.c_str();
     }
@@ -20,27 +20,27 @@ class AbstractLambdaException : public std::exception {
     std::string text;
 };
 
-class ReDeclarationException : public AbstractLambdaException {
+class ReDeclarationException : public SyntaxParseException {
   public:
-    ReDeclarationException(std::string& line) : AbstractLambdaException(REDECL_HEAD + line) {}
+    ReDeclarationException(std::string& line) : SyntaxParseException(REDECL_HEAD + line) {}
 };
 
-class SyntaxException : public AbstractLambdaException {
+class SyntaxException : public SyntaxParseException {
   public:
-    SyntaxException(std::string& line) : AbstractLambdaException(SYNTAX_HEAD + line) {}
+    SyntaxException(std::string& line) : SyntaxParseException(SYNTAX_HEAD + line) {}
 };
 
-class EmptyException : public AbstractLambdaException {
+class EmptyException : public SyntaxParseException {
   public:
-    EmptyException(std::string& line) : AbstractLambdaException(EMPTY_HEAD + line) {}
+    EmptyException(std::string& line) : SyntaxParseException(EMPTY_HEAD + line) {}
 };
 
-class StartException : public AbstractLambdaException {
+class StartException : public SyntaxParseException {
   public:
-    StartException(std::string& line) : AbstractLambdaException(START_HEAD + line) {}
+    StartException(std::string& line) : SyntaxParseException(START_HEAD + line) {}
 };
 
-class EndException : public AbstractLambdaException {
+class EndException : public SyntaxParseException {
   public:
-    EndException(std::string& line) : AbstractLambdaException(END_HEAD + line) {}
+    EndException(std::string& line) : SyntaxParseException(END_HEAD + line) {}
 };

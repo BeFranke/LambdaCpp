@@ -43,8 +43,17 @@ TEST(MEM_LEAK_TEST, p1) {
     for(int i = 0; i < 100; ++i) {
         try {
             Expression* l = from_string("\\ x . x (y u (z )");
-        } catch(std::runtime_error) {
+        } catch(EndException) {
 
         }
     }
+}
+
+TEST(EXCEPTIONS, SYNTAX) {
+    ASSERT_THROW(from_string("\\ . x x"), EmptyException);
+    ASSERT_THROW(from_string("a = !b"), SyntaxException);
+    ASSERT_THROW(from_string("a (b (c d)))"), SyntaxException);
+    ASSERT_THROW(from_string("\\ x x . x (x x)"), ReDeclarationException);
+    ASSERT_THROW(from_string("! x y z"), StartException);
+    ASSERT_THROW(from_string("\\a . a (b c"), EndException);
 }

@@ -232,6 +232,29 @@ class Lambda : public Expression {
     const std::vector<Variable*> &get_head_all() const {
         return head;
     }
+    void bind(Expression* to_insert) {
+        /**
+         * mutates the Lambda by replacing every occurence of the first bound variable by to_insert
+         */
+         Variable* to_bind = head[0];
+         // replace in tail
+         for(int i = 0; i < n_tail(); ++i) {
+             if(tail[i] == to_bind) {
+                 switch(tail[i]->get_type()) {
+                     case LBD:
+                         tail[i] = new Lambda(*static_cast<Lambda*>(to_insert));
+                         break;
+                     case APP:
+                         tail[i] = new Application(*static_cast<Application*>(to_insert));
+                         break;
+                     case VAR:
+                         tail[i] = to_insert;
+                         break;
+                 }
+             }
+         }
+        head.erase(head.begin());
+    }
   private:
     std::vector<Variable*> head;
     std::vector<Expression*> tail;
@@ -290,6 +313,7 @@ static Expression* from_string_rec(std::string str, std::vector<Variable*> &boun
                 var_index[index(c)] = res->n_head() - 1;
             }
         }
+        if(res->n_head() == 0) throw EmptyException(str);
         size_t old_n_bound = bound.size();
         bound.insert(bound.end(), res->get_head_all().begin(), res->get_head_all().end());
         //iterate tail and build lambda recursively
@@ -305,8 +329,11 @@ static Expression* from_string_rec(std::string str, std::vector<Variable*> &boun
             else if(c == BRCK_OPN) {
                 // brackets in lambda expression must contain a valid expression themselfs
                 unsigned int begin = static_cast<unsigned int>(++i);
-                for(c = str[i]; c != BRCK_CLS && i < str.size(); c = str[++i]);
-                if(i == str.size() - 1 && str[i] != BRCK_CLS) throw EndException(str);
+                for(char brckt_debt = 0; (c != BRCK_CLS || brckt_debt > 0); c = str[++i]){
+                    if(i == str.size()) throw EndException(str);
+                    else if(c == BRCK_OPN) ++brckt_debt;
+                    else if(c == BRCK_CLS) --brckt_debt;
+                }
                 // for the expression in brackets we can just use a recursive call
                 res->append_tail(from_string_rec(str.substr(begin, i - begin), bound));
                 ++i;
@@ -331,8 +358,12 @@ static Expression* from_string_rec(std::string str, std::vector<Variable*> &boun
             }
             else if(c == BRCK_OPN) {
                 unsigned int begin = static_cast<unsigned int>(++i);
-                for(c = str[i]; c != BRCK_CLS; c = str[++i])
+                c = str[i];
+                for(char brckt_debt = 0; (c != BRCK_CLS || brckt_debt > 0); c = str[++i]){
                     if(i == str.size()) throw EndException(str);
+                    else if(c == BRCK_OPN) ++brckt_debt;
+                    else if(c == BRCK_CLS) --brckt_debt;
+                }
                 res->append(from_string_rec(str.substr(begin, i - begin), bound));
             }
             else {
