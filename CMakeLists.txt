@@ -38,7 +38,7 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
 endif()
 
 # Now simply link against gtest or gtest_main as needed. Eg
-add_executable(lambda-syntax test/lambda-syntax.cpp)
+add_executable(lambda-syntax test/lambda-syntax.cpp headers/reduction.hpp headers/lambda-exceptions.hpp)
 target_link_libraries(lambda-syntax gtest_main)
 add_test(NAME syntax_test COMMAND lambda-syntax)
 ### END UNIT TEST INSERTION

@@ -26,19 +26,25 @@ TEST(BOUND_TEST, t1) {
     std::string tst = "\\ x . (\\ x . x) x";
     Lambda* lb = static_cast<Lambda*>(from_string(tst));
     // test that the last x is bound to the lambda in the head (test by checking if the pointers are equal)
-    ASSERT_EQ(lb->get_head(0), lb->get_tail(1));
-    ASSERT_TRUE(static_cast<Variable*>(lb->get_tail(1))->is_bound());
+    ASSERT_EQ(lb->get_head(0), lb->get_body(1));
+    ASSERT_TRUE(static_cast<Variable*>(lb->get_body(1))->is_bound());
     // test that the inner x is not the same as the outer x
-    ASSERT_NE(lb->get_head(0), static_cast<Lambda*>(lb->get_tail(0))->get_head(0));
+    ASSERT_NE(lb->get_head(0), static_cast<Lambda*>(lb->get_body(0))->get_head(0));
 }
 
 TEST(BOUND_TEST, t2) {
     std::string tst = "\\ x . (\\ y . x) x";
     Lambda* lb = static_cast<Lambda*>(from_string(tst));
     // test that the inner x is the same as the outer x
-    ASSERT_EQ(lb->get_head(0), static_cast<Lambda*>(lb->get_tail(0))->get_tail(0));
+    ASSERT_EQ(lb->get_head(0), static_cast<Lambda *>(lb->get_body(0))->get_body(0));
 }
 
-TEST(RULE_OF_THREE_TEST, t1) {
+TEST(MEM_LEAK_TEST, p1) {
+    for(int i = 0; i < 100; ++i) {
+        try {
+            Expression* l = from_string("\\ x . x (y u (z )");
+        } catch(std::runtime_error) {
 
+        }
+    }
 }

@@ -1,6 +1,7 @@
 #include <vector>
 #include <cassert>
 #include <algorithm>
+#include "lambda-exceptions.hpp"
 
 typedef unsigned long ID;
 
@@ -10,13 +11,6 @@ constexpr char LAMBDA = '\\';
 constexpr char BODY_START = '.';
 constexpr char BRCK_OPN = '(';
 constexpr char BRCK_CLS =')';
-
-// errors that could occur on parsing
-const std::runtime_error ER_REDECL = std::runtime_error("Error: variable re-declared!");
-const std::runtime_error ER_SYNTAX = std::runtime_error("Error: unexpected syntax!");
-const std::runtime_error ER_EMPTY = std::runtime_error("Error: empty tail is not allowed!");
-const std::runtime_error ER_START = std::runtime_error("Error: illegal start of expression!");
-const std::runtime_error ER_END = std::runtime_error("Error: unexpected end of expression!");
 
 // counter for unique ids for variables (currently IDs are not used)
 static ID _next_id = 0;
@@ -105,6 +99,9 @@ class Application : public Expression {
     }
     unsigned long n() const {
         return parts.size();
+    }
+    Expression* get_body(unsigned int i) {
+        return parts[i];
     }
 
   private:
@@ -213,7 +210,7 @@ class Lambda : public Expression {
          */
         return head[index];
     }
-    Expression* get_tail(unsigned long index) {
+    Expression* get_body(unsigned long index) {
         /**
          * returns pointer to index-th expression in the lambda-tail
          */
@@ -286,8 +283,8 @@ static Expression* from_string_rec(std::string str, std::vector<Variable*> &boun
         int i = 1;
         for(char c = str[i]; c != BODY_START; c = str[++i]) {
             if(isspace(c)) continue;
-            else if(!islower(c)) throw ER_SYNTAX;
-            else if(var_index[index(c)] > -1) throw ER_REDECL;
+            else if(!islower(c)) throw SyntaxException(str);
+            else if(var_index[index(c)] > -1) throw ReDeclarationException(str);
             else {
                 res->append_head(new Variable(c, true));
                 var_index[index(c)] = res->n_head() - 1;
@@ -309,16 +306,16 @@ static Expression* from_string_rec(std::string str, std::vector<Variable*> &boun
                 // brackets in lambda expression must contain a valid expression themselfs
                 unsigned int begin = static_cast<unsigned int>(++i);
                 for(c = str[i]; c != BRCK_CLS && i < str.size(); c = str[++i]);
-                if(i == str.size() - 1 && str[i] != BRCK_CLS) throw ER_END;
+                if(i == str.size() - 1 && str[i] != BRCK_CLS) throw EndException(str);
                 // for the expression in brackets we can just use a recursive call
                 res->append_tail(from_string_rec(str.substr(begin, i - begin), bound));
                 ++i;
             }
-            else throw ER_SYNTAX;
+            else throw SyntaxException(str);
         }
         // take away the bound variables that were added for this branch
         bound.resize(old_n_bound);
-        if(res->n_tail() == 0) throw ER_EMPTY;
+        if(res->n_tail() == 0) throw EmptyException(str);
         return res;
     }
     else if(isalpha(str[0])) {
@@ -335,18 +332,18 @@ static Expression* from_string_rec(std::string str, std::vector<Variable*> &boun
             else if(c == BRCK_OPN) {
                 unsigned int begin = static_cast<unsigned int>(++i);
                 for(c = str[i]; c != BRCK_CLS; c = str[++i])
-                    if(i == str.size()) throw ER_END;
+                    if(i == str.size()) throw EndException(str);
                 res->append(from_string_rec(str.substr(begin, i - begin), bound));
             }
             else {
-                throw ER_SYNTAX;
+                throw SyntaxException(str);
             }
         }
         return res;
     }
     else {
         // ERROR
-        throw ER_START;
+        throw StartException(str);
     }
 }
 
