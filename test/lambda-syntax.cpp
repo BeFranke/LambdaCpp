@@ -24,25 +24,25 @@ TEST(FROM_TO_STRING_TEST, EXPRESSIONS) {
 
 TEST(BOUND_TEST, t1) {
     std::string tst = "\\ x . (\\ x . x) x";
-    Lambda* lb = static_cast<Lambda*>(from_string(tst));
+    Lambda_ptr lb = std::static_pointer_cast<Lambda>(from_string(tst));
     // test that the last x is bound to the lambda in the head (test by checking if the pointers are equal)
     ASSERT_EQ(lb->get_head(0), lb->get_body(1));
-    ASSERT_TRUE(static_cast<Variable*>(lb->get_body(1))->is_bound());
+    ASSERT_TRUE(std::static_pointer_cast<Variable>(lb->get_body(1))->is_bound());
     // test that the inner x is not the same as the outer x
-    ASSERT_NE(lb->get_head(0), static_cast<Lambda*>(lb->get_body(0))->get_head(0));
+    ASSERT_NE(lb->get_head(0), std::static_pointer_cast<Lambda>(lb->get_body(0))->get_head(0));
 }
 
 TEST(BOUND_TEST, t2) {
     std::string tst = "\\ x . (\\ y . x) x";
-    Lambda* lb = static_cast<Lambda*>(from_string(tst));
+    Lambda_ptr lb = std::static_pointer_cast<Lambda>(from_string(tst));
     // test that the inner x is the same as the outer x
-    ASSERT_EQ(lb->get_head(0), static_cast<Lambda *>(lb->get_body(0))->get_body(0));
+    ASSERT_EQ(lb->get_head(0), std::static_pointer_cast<Lambda>(lb->get_body(0))->get_body(0));
 }
 
 TEST(MEM_LEAK_TEST, p1) {
     for(int i = 0; i < 100; ++i) {
         try {
-            Expression* l = from_string("\\ x . x (y u (z )");
+            Expression_ptr l = from_string("\\ x . x (y u (z )");
         } catch(EndException) {
 
         }

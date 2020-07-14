@@ -37,8 +37,13 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
     include_directories("${gtest_SOURCE_DIR}/include")
 endif()
 
-# Now simply link against gtest or gtest_main as needed. Eg
-add_executable(lambda-syntax test/lambda-syntax.cpp headers/reduction.hpp headers/lambda-exceptions.hpp)
+# Now simply link against gtest or gtest_main as needed.
+# lambda-syntax.hpp test
+add_executable(lambda-syntax test/lambda-syntax.cpp headers/lambda-exceptions.hpp)
 target_link_libraries(lambda-syntax gtest_main)
 add_test(NAME syntax_test COMMAND lambda-syntax)
+# lambda-reduction.hpp test
+add_executable(lambda-reduction test/lambda-reduction.cpp headers/lambda-exceptions.hpp headers/utils.hpp)
+target_link_libraries(lambda-reduction gtest_main)
+add_test(NAME reduction_test COMMAND lambda-reduction)
 ### END UNIT TEST INSERTION
