@@ -5,7 +5,7 @@
 
 static const std::string REDECL_HEAD = "Error: variable re-declared:";
 static const std::string SYNTAX_HEAD = "Error: unexpected syntax!";
-static const std::string EMPTY_HEAD = "Error: empty tail is not allowed!";
+static const std::string EMPTY_HEAD = "Error: empty body is not allowed!";
 static const std::string START_HEAD = "Error: illegal start of expression!";
 static const std::string END_HEAD = "Error: unexpected end of expression!";
 

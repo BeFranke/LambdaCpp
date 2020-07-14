@@ -20,37 +20,39 @@ class Expression {
     std::string get_name() const {
         return name;
     }
-    virtual bool beta_reduce_first() = 0;
     virtual bool beta_reduce() = 0;
-    virtual bool alpha_convert() = 0;
-    virtual std::shared_ptr<Expression>& operator[](std::size_t index) = 0;
+    virtual bool alpha_convert(const std::string& old_name, const std::string& new_name) = 0;
 
   protected:
     std::string name;
-  private:
-    friend void swap(Expression& e1, Expression& e2) {
-        using std::swap;
-        swap(e1.name, e2.name);
-    }
 };
 
 typedef std::shared_ptr<Expression> Expression_ptr;
 
 class Application final : public Expression {
     /**
-     * multiple Expressions after each other
-     * e.g. x y z
+     * two Expressions after each other
+     * e.g. x y or (\\ x . x) y
      */
   public:
     Application(std::string name) : Expression(name), fst(), snd() {}
     Application(std::string name, Expression_ptr fst, Expression_ptr snd) : Expression(name), fst(fst), snd(snd) {}
-
-    Expression_ptr& operator[](std::size_t index) override {
-        if(index == 0) return fst;
-        else if(index == 1) return snd;
-        else {
-            throw std::runtime_error("Application only has two fields!");
-        }
+    Expression_ptr& get_first() noexcept {
+        return fst;
+    }
+    Expression_ptr& get_second() noexcept {
+        return snd;
+    }
+    bool beta_reduce() override {
+        // TODO
+    }
+    bool alpha_convert(const std::string& old_name, const std::string& new_name) override {
+        return fst->alpha_convert(old_name, new_name) || snd->alpha_convert(old_name, new_name);
+    }
+    std::string to_string() const override {
+        std::stringstream ss;
+        ss << "( " << fst->to_string() << " " << snd->to_string() << " ) ";
+        return ss.str();
     }
   private:
     Expression_ptr fst;
@@ -77,7 +79,14 @@ class Variable final : public Expression {
     std::string to_string() const override {
         return name;
     }
-    bool beta_reduce_first() override {
+    bool beta_reduce() override {
+        return false;
+    }
+    bool alpha_convert(const std::string& old_name, const std::string& new_name) override {
+        if(bound && this->name.compare(old_name) == 0) {
+            this->name = new_name;
+            return true;
+        }
         return false;
     }
   private:
@@ -89,56 +98,41 @@ typedef std::shared_ptr<Variable> Variable_ptr;
 
 class Lambda : public Expression {
     /**
-     * lambda expressions have a head and a tail, e.g.
+     * lambda expressions have a head and a body, e.g.
      * \ x y . y x
-     * \ head . tail
+     * \ head . body
      */
   public:
-    Lambda() : head(), tail(), Expression("anonymous") {}
-    Lambda(std::string name) : head(), tail(), Expression(name) {}
-    Lambda& operator=(Lambda other) {
-        swap(*this, other);
-        return *this;
-    }
+    Lambda() = delete;
+    Lambda(std::string name, Variable_ptr head, Expression_ptr body) : head(head), body(body), Expression(name) {}
     std::string to_string() const override {
         std::stringstream ss;
-        if(head.size() > 0) ss << "\\ ";
-        for(Variable_ptr v: head) ss << v->get_name() << ' ';
-        ss << ". ";
-        for(Expression_ptr e: tail) {
-            if(e->get_type() != VAR) ss << '(';
-            ss << e->to_string() << " ";
-            if(e->get_type() != VAR) ss << ") ";
-        }
-        std::string res = ss.str();
-        return res;
+        ss << "( \\ " << head->to_string() << " . " << body->to_string() << " )";
+        return ss.str();
     }
-    const std::vector<Variable_ptr> &get_head_all() const {
+    bool beta_reduce() override {
+        // TODO
+    }
+    bool alpha_convert(const std::string& old_name, const std::string& new_name) override {
+        bool res;
+        if(head->get_name().compare(old_name) == 0) {
+            head->alpha_convert(old_name, new_name);
+            res = true;
+        }
+        else res = false;
+        return res || body->alpha_convert(old_name, new_name);
+
+    }
+    Variable_ptr get_head() {
         return head;
     }
-    void bind(Expression_ptr to_insert) {
-        /**
-         * mutates the Lambda by replacing every occurence of the first bound variable by to_insert
-         */
-    }
-    bool beta_reduce_first() override;
-    Application_ptr empty_head_to_application() {
-
-    }
-    Variable_ptr singleton_to_variable() {
-
+    Expression_ptr get_body() {
+        return body;
     }
   private:
     Variable_ptr head;
-    Expression_ptr tail;
+    Expression_ptr body;
 };
 
 typedef std::shared_ptr<Lambda> Lambda_ptr;
 
-
-static inline std::shared_ptr<Variable> has_been_bound(char name, std::vector<std::shared_ptr<Variable>> bound) {
-    // make sure the last occurance is found, as the last occurance corresponds to the innermost binding
-    auto res = std::find_if(bound.rbegin(), bound.rend(), [name](Variable_ptr t) {return t->get_name()[0] == name;});
-    if(res == bound.rend()) return nullptr;
-    else return *res;
-}
