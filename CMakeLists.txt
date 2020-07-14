@@ -39,7 +39,7 @@ endif()
 
 # Now simply link against gtest or gtest_main as needed.
 # lambda-syntax.hpp test
-add_executable(lambda-syntax test/lambda-syntax.cpp headers/lambda-exceptions.hpp headers/tokenizer.hpp test/tokenizer.cpp)
+add_executable(lambda-syntax test/lambda-struct.cpp headers/lambda-exceptions.hpp headers/tokenizer.hpp test/tokenizer.cpp headers/lambda-syntax.hpp)
 target_link_libraries(lambda-syntax gtest_main)
 add_test(NAME syntax_test COMMAND lambda-syntax)
 #token test

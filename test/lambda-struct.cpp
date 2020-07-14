@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../headers/lambda-syntax.hpp"
+#include "../headers/lambda-struct.hpp"
 
 #define FROM_TO_STRING(s) ASSERT_EQ(s, from_string(s)->to_string());
 
