@@ -39,11 +39,11 @@ endif()
 
 # Now simply link against gtest or gtest_main as needed.
 # lambda-syntax.hpp test
-add_executable(lambda-syntax test/lambda-syntax.cpp headers/lambda-exceptions.hpp)
+add_executable(lambda-syntax test/lambda-syntax.cpp headers/lambda-exceptions.hpp headers/tokenizer.hpp test/tokenizer.cpp)
 target_link_libraries(lambda-syntax gtest_main)
 add_test(NAME syntax_test COMMAND lambda-syntax)
-# lambda-reduction.hpp test
-add_executable(lambda-reduction test/lambda-reduction.cpp headers/lambda-exceptions.hpp headers/utils.hpp)
-target_link_libraries(lambda-reduction gtest_main)
-add_test(NAME reduction_test COMMAND lambda-reduction)
+#token test
+add_executable(tokenizer-test test/tokenizer.cpp headers/lambda-exceptions.hpp headers/tokenizer.hpp test/tokenizer.cpp)
+target_link_libraries(tokenizer-test gtest_main)
+add_test(NAME tokenizer-test COMMAND tokenizer-test)
 ### END UNIT TEST INSERTION

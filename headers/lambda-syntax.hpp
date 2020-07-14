@@ -7,13 +7,6 @@
 
 typedef unsigned long ID;
 
-// syntactic constants
-// using '\' as replacement for "lambda" is stolen from Haskell
-constexpr char LAMBDA = '\\';
-constexpr char BODY_START = '.';
-constexpr char BRCK_OPN = '(';
-constexpr char BRCK_CLS =')';
-
 // counter for unique ids for variables (currently IDs are not used)
 static ID _next_id = 0;
 
