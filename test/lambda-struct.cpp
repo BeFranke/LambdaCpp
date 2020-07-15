@@ -18,7 +18,7 @@ TEST(BETA, simple_1) {
     Lambda_ptr l = make_shared<Lambda>("my lambda", v2, v2);
     Application_ptr a = make_shared<Application>("outer scope", l, v1);
     auto res = dynamic_pointer_cast<Variable>(a->beta_reduce());
-    ASSERT_EQ(res->to_string(), "hallo");
+    ASSERT_EQ(res->to_string(), "hallo ");
 }
 TEST(BETA, simple_2) {
     // tests reduction of (\ x . (\ y . y a) b) c, which requires 2 steps
@@ -31,8 +31,61 @@ TEST(BETA, simple_2) {
     Application_ptr out = make_shared<Application>("outer", l2, unbounds[2]);
     // first reduction
     auto res1 = out->beta_reduce();
-    ASSERT_EQ(res1->to_string(), "( (\\ y . ( y a) ) b) ");
+    ASSERT_EQ(res1->to_string(), "(\\ y . y a ) b ");
     // second reduction
     auto res2 = res1->beta_reduce();
-    ASSERT_EQ(res2->to_string(), "( b a) ");
+    ASSERT_EQ(res2->to_string(), "b a ");
+}
+TEST(ALPHA, simple_1) {
+    // lets rename the outer x in \ x . (\ x . x) x
+    auto bounds = make_vars({"x", "x"}, true);
+    auto l1 = make_shared<Lambda>("", bounds[0], bounds[0]);
+    auto a1 = make_shared<Application>("", l1, bounds[1]);
+    auto l2 = make_shared<Lambda>("", bounds[1], a1);
+    auto res = l2->alpha_convert(*bounds[1], "y");
+    ASSERT_EQ(res->to_string(), "\\ y . (\\ x . x ) y ");
+}
+TEST(BETA, conflicting_names) {
+    // (\ x . (\ x . \ y . s u x x y ) c e x x ) s
+    auto bound = make_vars({"x", "x", "y"}, true);
+    auto unbound = make_vars({"s", "u", "c", "e", "s"}, false);
+    auto a1 = make_shared<Application>("", unbound[0], unbound[1]);
+    auto a2 = make_shared<Application>("", a1, bound[1]);
+    auto a3 = make_shared<Application>("", a2, bound[1]);
+    auto a4 = make_shared<Application>("", a3, bound[2]);
+    auto l1 = make_shared<Lambda>("", bound[2], a4);
+    auto l2 =  make_shared<Lambda>("", bound[1], l1);
+    auto a5 = make_shared<Application>("", l2, unbound[2]);
+    auto a6 = make_shared<Application>("", a5, unbound[3]);
+    auto a7 = make_shared<Application>("", a6, bound[0]);
+    auto a8 = make_shared<Application>("", a7, bound[0]);
+    auto l3 = make_shared<Lambda>("", bound[0], a8);
+    auto out = make_shared<Application>("", l3, unbound[4]);
+
+
+    auto res1 = out->beta_reduce();
+    auto res2 = res1->beta_reduce();
+    auto res3 = res2->beta_reduce();
+    ASSERT_EQ(res3->to_string(), "s u c c e s s ");
+}
+TEST(ALPHA, conflicting_names) {
+    // (\ x . (\ x . \ y . s u x x y ) c e x x ) s
+    // this time with alpha
+    auto bound = make_vars({"x", "x", "y"}, true);
+    auto unbound = make_vars({"s", "u", "c", "e", "s"}, false);
+    auto a1 = make_shared<Application>("", unbound[0], unbound[1]);
+    auto a2 = make_shared<Application>("", a1, bound[1]);
+    auto a3 = make_shared<Application>("", a2, bound[1]);
+    auto a4 = make_shared<Application>("", a3, bound[2]);
+    auto l1 = make_shared<Lambda>("", bound[2], a4);
+    auto l2 =  make_shared<Lambda>("", bound[1], l1);
+    auto a5 = make_shared<Application>("", l2, unbound[2]);
+    auto a6 = make_shared<Application>("", a5, unbound[3]);
+    auto a7 = make_shared<Application>("", a6, bound[0]);
+    auto a8 = make_shared<Application>("", a7, bound[0]);
+    auto l3 = make_shared<Lambda>("", bound[0], a8);
+    auto out = make_shared<Application>("", l3, unbound[4]);
+
+    auto res = out->alpha_convert(*bound[1], "y")->alpha_convert(*bound[2], "z");
+    ASSERT_EQ(res->to_string(), "(\\ x . (\\ y . \\ z . s u y y z ) c e x x ) s ");
 }

@@ -38,12 +38,13 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
 endif()
 
 # Now simply link against gtest or gtest_main as needed.
-# lambda-syntax.hpp test
-add_executable(lambda-syntax test/lambda-struct.cpp headers/lambda-exceptions.hpp headers/tokenizer.hpp test/tokenizer.cpp headers/lambda-syntax.hpp)
-target_link_libraries(lambda-syntax gtest_main)
-add_test(NAME syntax_test COMMAND lambda-syntax)
+# lambda-struct.hpp test
+set(CMAKE_CXX_FLAGS "--coverage")
+add_executable(lambda-struct-test test/lambda-struct.cpp)
+target_link_libraries(lambda-struct-test gtest_main)
+add_test(NAME lambda-struct-test COMMAND lambda-struct-test)
 #token test
-add_executable(tokenizer-test test/tokenizer.cpp headers/lambda-exceptions.hpp headers/tokenizer.hpp test/tokenizer.cpp)
+add_executable(tokenizer-test test/tokenizer.cpp headers/lambda-exceptions.hpp headers/tokenizer.hpp)
 target_link_libraries(tokenizer-test gtest_main)
 add_test(NAME tokenizer-test COMMAND tokenizer-test)
 ### END UNIT TEST INSERTION

@@ -2,9 +2,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <sstream>
 #include <memory>
-#include <cassert>
 #include "lambda-exceptions.hpp"
 
 // syntactic constants
