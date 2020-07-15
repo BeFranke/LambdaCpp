@@ -4,9 +4,14 @@
 #include <utility>
 #include "lambda-exceptions.hpp"
 
+/**
+ * TODO: replace shared_ptr by unique_ptr and let the methods that usually take the pointer
+ * TODO: instead take a reference to the base object
+ */
+
 typedef unsigned long ID;
 
-// counter for unique ids for variables (currently IDs are not used)
+// counter for unique ids for variables
 static ID _next_id = 0;
 
 // forward definitions
@@ -17,6 +22,7 @@ class Lambda;
 typedef std::shared_ptr<Expression> Expression_ptr;
 typedef std::shared_ptr<Application> Application_ptr;
 typedef std::shared_ptr<Variable> Variable_ptr;
+typedef std::shared_ptr<Lambda> Lambda_ptr;
 
 class Expression {
     /**
@@ -28,9 +34,6 @@ class Expression {
     virtual std::string to_string() const = 0;
     std::string get_name() const {
         return name;
-    }
-    void set_name(std::string name) noexcept {
-        this->name = name;
     }
     virtual Expression_ptr beta_reduce() = 0;
     virtual Expression_ptr bind(Variable_ptr, Expression_ptr) = 0;
@@ -49,12 +52,6 @@ class Application final : public Expression {
   public:
     Application(std::string name) : Expression(name), fst(), snd() {}
     Application(std::string name, Expression_ptr fst, Expression_ptr snd) : Expression(name), fst(fst), snd(snd) {}
-    Expression_ptr& get_first() noexcept {
-        return fst;
-    }
-    Expression_ptr& get_second() noexcept {
-        return snd;
-    }
     Expression_ptr bind(Variable_ptr e_old, Expression_ptr e_new) override {
         return std::make_shared<Application>(name, fst->bind(e_old, e_new), snd->bind(e_old, e_new));
     }
@@ -124,7 +121,7 @@ class Variable final : public Expression {
     ID id;
 };
 
-class Lambda : public Expression {
+class Lambda final : public Expression {
     /**
      * lambda expressions have a head and a body, e.g.
      * \ x . (y x)
@@ -161,5 +158,4 @@ class Lambda : public Expression {
     Expression_ptr body;
 };
 
-typedef std::shared_ptr<Lambda> Lambda_ptr;
 
