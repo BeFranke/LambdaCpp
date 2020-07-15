@@ -1,59 +1,36 @@
 #include "gtest/gtest.h"
 #include "../headers/lambda-struct.hpp"
 
-#define FROM_TO_STRING(s) ASSERT_EQ(s, from_string(s)->to_string());
+using namespace std;
 
-TEST(TRIM_TEST, Main) {
-    ASSERT_EQ("test", _trim_string("     test"));
-    ASSERT_EQ("te  st", _trim_string("   te  st"));
-    ASSERT_EQ("tes  t", _trim_string("   tes  t  "));
-}
-
-TEST(FROM_TO_STRING_TEST, LAMBDAS) {
-    FROM_TO_STRING("\\ x . x ");
-    FROM_TO_STRING("\\ x y . x ");
-    FROM_TO_STRING("\\ x y . y z x ");
-}
-
-TEST(FROM_TO_STRING_TEST, EXPRESSIONS) {
-    FROM_TO_STRING("x z ");
-    FROM_TO_STRING("x (z r t ) ");
-    FROM_TO_STRING("x (\\ x y . x y z ) ")
-    FROM_TO_STRING("\\ x . (\\ x . x  ) x ")
-}
-
-TEST(BOUND_TEST, t1) {
-    std::string tst = "\\ x . (\\ x . x) x";
-    Lambda_ptr lb = std::static_pointer_cast<Lambda>(from_string(tst));
-    // test that the last x is bound to the lambda in the head (test by checking if the pointers are equal)
-    ASSERT_EQ(lb->get_head(0), lb->get_body(1));
-    ASSERT_TRUE(std::static_pointer_cast<Variable>(lb->get_body(1))->is_bound());
-    // test that the inner x is not the same as the outer x
-    ASSERT_NE(lb->get_head(0), std::static_pointer_cast<Lambda>(lb->get_body(0))->get_head(0));
-}
-
-TEST(BOUND_TEST, t2) {
-    std::string tst = "\\ x . (\\ y . x) x";
-    Lambda_ptr lb = std::static_pointer_cast<Lambda>(from_string(tst));
-    // test that the inner x is the same as the outer x
-    ASSERT_EQ(lb->get_head(0), std::static_pointer_cast<Lambda>(lb->get_body(0))->get_body(0));
-}
-
-TEST(MEM_LEAK_TEST, p1) {
-    for(int i = 0; i < 100; ++i) {
-        try {
-            Expression_ptr l = from_string("\\ x . x (y u (z )");
-        } catch(EndException) {
-
-        }
+inline vector<Variable_ptr> make_vars(vector<string> names, bool bound) {
+    vector<Variable_ptr> res(names.size());
+    for(int i = 0; i < names.size(); ++i) {
+        res[i] = make_shared<Variable>(names[i], bound);
     }
+    return res;
 }
 
-TEST(EXCEPTIONS, SYNTAX) {
-    ASSERT_THROW(from_string("\\ . x x"), EmptyException);
-    ASSERT_THROW(from_string("a = !b"), SyntaxException);
-    ASSERT_THROW(from_string("a (b (c d)))"), SyntaxException);
-    ASSERT_THROW(from_string("\\ x x . x (x x)"), ReDeclarationException);
-    ASSERT_THROW(from_string("! x y z"), StartException);
-    ASSERT_THROW(from_string("\\a . a (b c"), EndException);
+TEST(BETA, simple_1) {
+    // tests reduction of ( \x . x) hallo
+    Variable_ptr v1 = make_shared<Variable>("hallo", false);
+    Variable_ptr v2 = make_shared<Variable>("x", true);
+    Lambda_ptr l = make_shared<Lambda>("my lambda", v2, v2);
+    Application_ptr a = make_shared<Application>("outer scope", l, v1);
+    auto res = dynamic_pointer_cast<Variable>(a->beta_reduce());
+    ASSERT_EQ(res->get_name(), v1->get_name());
+    ASSERT_EQ(res->to_string(), "hallo");
+}
+TEST(BETA, simple_2) {
+    // tests reduction of (\ x . (\ y. y a) b) c, which requires 2 steps
+    auto bounds = make_vars({"x", "y"}, true);
+    auto unbounds = make_vars({"a", "b", "c"}, false);
+    Application_ptr a1 = make_shared<Application>("y a", bounds[1], unbounds[0]);
+    Lambda_ptr l1 = make_shared<Lambda>("\\y.ya", bounds[1], a1);
+    Application_ptr a2 = make_shared<Application>("(\\y.ya)b", l1, unbounds[1]);
+    Lambda_ptr l2 = make_shared<Lambda>("\\x.(\\y.ya)b)", bounds[0], a2);
+    Application_ptr out = make_shared<Application>("outer", l2, unbounds[2]);
+    auto res1 = out->beta_reduce();
+    ASSERT_EQ(res1->to_string(), "( (\\ y . ( y a) ) b) ");
+    // REST
 }
