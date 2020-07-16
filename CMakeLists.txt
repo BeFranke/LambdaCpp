@@ -40,7 +40,7 @@ endif()
 # Now simply link against gtest or gtest_main as needed.
 # lambda-struct.hpp test
 set(CMAKE_CXX_FLAGS "--coverage")
-add_executable(lambda-struct-test test/lambda-struct.cpp)
+add_executable(lambda-struct-test test/lambda-struct.cpp headers/lambda-syntax.hpp)
 target_link_libraries(lambda-struct-test gtest_main)
 add_test(NAME lambda-struct-test COMMAND lambda-struct-test)
 #token test

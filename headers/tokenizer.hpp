@@ -5,6 +5,8 @@
 #include <memory>
 #include "lambda-exceptions.hpp"
 
+// TODO: add operations such as ==, =a (alpha equality)
+
 // syntactic constants
 // using '\' as replacement for "lambda" is stolen from Haskell
 constexpr char LAMBDA = '\\';
@@ -15,7 +17,13 @@ constexpr char SEP = '\n';
 constexpr char COMMENT = '#';
 constexpr char ASSIGNMENT = '=';
 
-enum TOKEN_TYPE {IDENTIFIER, OPERATOR, SEPARATOR, LITERAL, UNDEF};
+enum TOKEN_TYPE {
+    IDENTIFIER,
+    OPERATOR,
+    SEPARATOR,
+    LITERAL,
+    UNDEF
+};
 
 typedef std::tuple<TOKEN_TYPE, std::string> token;
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-// TODO: methods for literal equivalence and alpha equivalence
+// TODO: methods for alpha equivalence
 
 typedef unsigned long ID;
 
@@ -32,6 +32,9 @@ class Expression {
     virtual Expression_ptr bind(Variable_ptr, Expression_ptr) = 0;
     virtual Expression_ptr alpha_convert(const Variable&, const std::string&) = 0;
     virtual Variable_ptr get_head() = 0;
+    // literal equivalence
+    virtual bool operator==(const Expression& other) const noexcept = 0;
+    // virtual bool alpha_equals(const Expression& other) const noexcept = 0;
 
   protected:
     Expression(std::string name) : name(name) {}
@@ -59,7 +62,7 @@ class Application final : public Expression {
          * invokes a beta reduction:
          * if fst is a lambda, binds second to the bound variable in fst
          * otherwise, passes beta-reduction on to fst and snd
-         * TODO: is invoking fst AND snd correct? Does this still keep normal order?
+         * TODO: invoking fst AND snd breaks normal order
          */
         // if it has a head, it is a lambda
         if(auto h = fst->get_head(); h != nullptr) return fst->bind(h, snd);
@@ -90,6 +93,16 @@ class Application final : public Expression {
          * returns nullptr, as only lambdas have a head
          */
         return std::shared_ptr<Variable>(nullptr);
+    }
+    bool operator==(const Expression& other) const noexcept override {
+        /**
+         * tests if both expressions are literally equal, i.e. same structure and all variable names must match
+         * As the syntax tree is binary and needs to be fully checked, this is O(2^n)
+         */
+        // taken from https://stackoverflow.com/questions/1765122/equality-test-for-derived-classes-in-c
+        if(typeid(*this) != typeid(other)) return false;
+        auto o = static_cast<const Application&>(other);
+        return fst == o.fst && snd == o.snd;
     }
   private:
     Expression_ptr fst;
@@ -150,7 +163,14 @@ class Variable final : public Expression {
          */
         return std::shared_ptr<Variable>(nullptr);
     }
-
+    bool operator==(const Expression& other) const noexcept override {
+        /**
+         * tests if both variables are literally equal, i.e. same id and bound-status
+         */
+        if(typeid(*this) != typeid(other)) return false;
+        auto o = static_cast<const Variable&>(other);
+        return bound == o.bound && id == o.id;
+    }
   private:
     bool bound;
     ID id;
@@ -209,9 +229,15 @@ class Lambda final : public Expression {
          */
         return body;
     }
+    bool operator==(const Expression& other) const noexcept override {
+        /**
+         * tests if both lambdas are literally equal, i.e. head and body have to match
+         */
+        if(typeid(*this) != typeid(other)) return false;
+        auto o = static_cast<const Lambda&>(other);
+        return head == o.head && body == o.body;
+    }
   private:
     Variable_ptr head;
     Expression_ptr body;
 };
-
-
