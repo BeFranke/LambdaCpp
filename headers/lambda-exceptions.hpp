@@ -45,3 +45,10 @@ class EndException : public SyntaxParseException {
   public:
     EndException(std::string& line) : SyntaxParseException(END_HEAD + line) {}
 };
+
+class MaxIterationsExceeded : public std::exception {
+  public:
+    const char* what() const noexcept override {
+        return "Maximum iterations exceeded!";
+    }
+};

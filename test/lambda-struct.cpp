@@ -90,3 +90,7 @@ TEST(ALPHA, conflicting_names) {
     auto res = out->alpha_convert(*bound[1], "y")->alpha_convert(*bound[2], "z");
     ASSERT_EQ(res->to_string(), "(\\ x . (\\ y . \\ z . s u y y z ) c e x x ) s ");
 }
+
+TEST(BETA, no_normal_form) {
+    // (\ x . x x) (\ x . x x)
+}

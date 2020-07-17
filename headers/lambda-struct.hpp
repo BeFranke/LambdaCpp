@@ -55,18 +55,23 @@ class Application final : public Expression {
          * binds e_old to e_new in both expressions of this application
          * returns new Expression
          */
-        return std::make_shared<Application>(name, fst->bind(e_old, e_new), snd->bind(e_old, e_new));
+        return std::make_shared<Application>(name, fst->bind(e_old, e_new),
+                snd->bind(e_old, e_new));
     }
     Expression_ptr beta_reduce() override {
         /**
          * invokes a beta reduction:
          * if fst is a lambda, binds second to the bound variable in fst
          * otherwise, passes beta-reduction on to fst and snd
-         * TODO: invoking fst AND snd breaks normal order
          */
         // if it has a head, it is a lambda
         if(auto h = fst->get_head(); h != nullptr) return fst->bind(h, snd);
-        else return std::make_shared<Application>(name, fst->beta_reduce(), snd->beta_reduce());
+        auto res1 = std::make_shared<Application>(name, fst->beta_reduce(), snd);
+        if(*res1 == *this) {
+            // no changes, i.e. fst is in normal form
+            return std::make_shared<Application>(name, fst, snd->beta_reduce());
+        }
+        else return res1;
     }
     Expression_ptr alpha_convert(const Variable& old, const std::string& new_name) override {
         /**

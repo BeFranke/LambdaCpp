@@ -19,6 +19,8 @@ constexpr char ASSIGNMENT = '=';
 
 /**
  * possible types of tokens for easier sytactical parsing later on
+ * "LITERAL" is included so integers can be used in the lambda expression
+ * that could then get expanded by Church encoding
  */
 enum TOKEN_TYPE {
     IDENTIFIER,
