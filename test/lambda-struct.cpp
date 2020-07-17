@@ -103,3 +103,19 @@ TEST(BETA, first_part_no_reduction) {
     auto res = a4->beta_reduce();
     ASSERT_EQ(res->to_string(), "g o o d ");
 }
+TEST(BETA, NORMAL_ORDER) {
+    // from http://www.mathematik.uni-ulm.de/numerik/cpp/ss18/cpp-2018-06-19.pdf
+    // (\x . a) (\x . (x) x) \y.(y) y
+    auto unbound = make_vars({"a"}, false);
+    auto bound = make_vars({"x", "x", "y"}, true);
+    auto a1 = make_shared<Application>("y y", bound[2], bound[2]);
+    auto l1 = make_shared<Lambda>("\\y", bound[2], a1);
+    auto a2 = make_shared<Application>("x x", bound[1], bound[1]);
+    auto l2 = make_shared<Lambda>("\\x...", bound[1], a2);
+    auto a3 = make_shared<Application>("(\\ x) (\\ y)", l2, l1);
+    auto l3 = make_shared<Lambda>("\\x", bound[0], unbound[0]);
+    auto a4 = make_shared<Application>("outer", l3, a3);
+
+    auto res = a4->beta_reduce();
+    ASSERT_EQ("a ", res->to_string());
+}
