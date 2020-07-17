@@ -97,7 +97,6 @@ class Application final : public Expression {
     bool operator==(const Expression& other) const noexcept override {
         /**
          * tests if both expressions are literally equal, i.e. same structure and all variable names must match
-         * As the syntax tree is binary and needs to be fully checked, this is O(2^n)
          */
         // taken from https://stackoverflow.com/questions/1765122/equality-test-for-derived-classes-in-c
         if(typeid(*this) != typeid(other)) return false;
