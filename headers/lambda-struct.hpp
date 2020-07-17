@@ -142,7 +142,7 @@ class Variable final : public Expression {
         /**
          * beta reduction of variable is identity
          */
-        return std::make_shared<Variable>(name, bound);
+        return std::make_shared<Variable>(name, bound, id);
     }
     Expression_ptr alpha_convert(const Variable& old, const std::string& new_name) override {
         /**

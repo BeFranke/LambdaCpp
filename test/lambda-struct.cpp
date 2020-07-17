@@ -90,7 +90,16 @@ TEST(ALPHA, conflicting_names) {
     auto res = out->alpha_convert(*bound[1], "y")->alpha_convert(*bound[2], "z");
     ASSERT_EQ(res->to_string(), "(\\ x . (\\ y . \\ z . s u y y z ) c e x x ) s ");
 }
+TEST(BETA, first_part_no_reduction) {
+    // g ((\ x . x x) o d )
+    auto bound = make_vars({"x"}, true);
+    auto unbound = make_vars({"g", "o", "d"}, false);
+    auto a1 = make_shared<Application>("x x", bound[0], bound[0]);
+    auto l1 = make_shared<Lambda>("\\ x . x x", bound[0], a1);
+    auto a2 = make_shared<Application>("app. o", l1, unbound[1]);
+    auto a3 = make_shared<Application>("app. d", a2, unbound[2]);
+    auto a4 = make_shared<Application>("outer", unbound[0], a3);
 
-TEST(BETA, no_normal_form) {
-    // (\ x . x x) (\ x . x x)
+    auto res = a4->beta_reduce();
+    ASSERT_EQ(res->to_string(), "g o o d");
 }
