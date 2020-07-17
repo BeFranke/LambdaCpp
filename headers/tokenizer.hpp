@@ -17,6 +17,9 @@ constexpr char SEP = '\n';
 constexpr char COMMENT = '#';
 constexpr char ASSIGNMENT = '=';
 
+/**
+ * possible types of tokens for easier sytactical parsing later on
+ */
 enum TOKEN_TYPE {
     IDENTIFIER,
     OPERATOR,
@@ -28,12 +31,19 @@ enum TOKEN_TYPE {
 typedef std::tuple<TOKEN_TYPE, std::string> token;
 
 static inline token make_token(std::string value, TOKEN_TYPE ttype) {
+    /**
+     * asserts that token type could be inferred and constructs a token from it
+     */
     if(ttype == UNDEF) throw SyntaxException(value);
     return std::make_tuple(ttype, value);
 }
 
 static inline void process_and_clear(unsigned int& count, std::stringstream& ss,
                               std::vector<token>& result, TOKEN_TYPE& curtok) {
+    /**
+     * clears the accumulating variables (count for char count, stringstream for building the string, token_type)
+     * and puts a new token into result, if there is something to process
+     */
     if(count > 0) {
         result.push_back(make_token(ss.str(), curtok));
         // reset the accumulating variables
@@ -43,14 +53,18 @@ static inline void process_and_clear(unsigned int& count, std::stringstream& ss,
     }
 }
 
-std::unique_ptr<std::vector<token>> parse(std::istream& in) {
-    auto result = std::make_unique<std::vector<token>>();
+std::vector<token> parse(std::istream& in) {
+    /**
+     * reads chars from the std::instream in, parses them into a vector of tokens to be passed to the syntactical
+     * analysis
+     */
+    auto result = std::vector<token>();
     TOKEN_TYPE current_token = UNDEF;
     unsigned int count = 0;
     std::stringstream ss;
     char c;
     // lambda to avoid typing out the process_and_clear call with the same arguments over and over again
-    auto clear = [&count, &ss, &result, &current_token]() {process_and_clear(count, ss, *result, current_token);};
+    auto clear = [&count, &ss, &result, &current_token]() {process_and_clear(count, ss, result, current_token);};
     auto except = [&ss] (char c) {std::string s = ss.str() + std::string(c, 1); throw SyntaxException(s);};
     while(in.get(c)) {
         if(c == LAMBDA || c == BODY_START || c == ASSIGNMENT) {
