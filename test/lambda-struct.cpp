@@ -101,5 +101,5 @@ TEST(BETA, first_part_no_reduction) {
     auto a4 = make_shared<Application>("outer", unbound[0], a3);
 
     auto res = a4->beta_reduce();
-    ASSERT_EQ(res->to_string(), "g o o d");
+    ASSERT_EQ(res->to_string(), "g o o d ");
 }

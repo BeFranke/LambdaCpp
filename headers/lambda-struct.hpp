@@ -65,9 +65,9 @@ class Application final : public Expression {
          * otherwise, passes beta-reduction on to fst and snd
          */
         // if it has a head, it is a lambda
-        if(auto h = fst->get_head(); h != nullptr) return fst->bind(h, snd);
+        if(auto h = fst->get_head(); h) return fst->bind(h, snd);
         auto res1 = std::make_shared<Application>(name, fst->beta_reduce(), snd);
-        if(*res1 == *this) {
+        if(*(res1->fst) == *fst) {
             // no changes, i.e. fst is in normal form
             return std::make_shared<Application>(name, fst, snd->beta_reduce());
         }
