@@ -28,6 +28,7 @@ class ReDeclarationException : public SyntaxParseException {
 class SyntaxException : public SyntaxParseException {
   public:
     SyntaxException(std::string& line) : SyntaxParseException(SYNTAX_HEAD + line) {}
+    SyntaxException() : SyntaxParseException(SYNTAX_HEAD) {}
 };
 
 class EmptyException : public SyntaxParseException {
