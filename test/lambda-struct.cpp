@@ -91,7 +91,7 @@ TEST(ALPHA, conflicting_names) {
     ASSERT_EQ(res->to_string(), "(\\ x . (\\ y . \\ z . s u y y z ) c e x x ) s ");
 }
 TEST(BETA, first_part_no_reduction) {
-    // g ((\ x . x x) o d )
+    // (g) ((\ x . (x) x) o) d
     auto bound = make_vars({"x"}, true);
     auto unbound = make_vars({"g", "o", "d"}, false);
     auto a1 = make_shared<Application>("x x", bound[0], bound[0]);
