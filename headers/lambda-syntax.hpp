@@ -76,11 +76,12 @@ Expression_ptr build_syntax_tree(std::vector<token>::iterator start, std::vector
     }
     else if(is_bracket_open(*start)) {
         auto close = match_bracket(start, end);
-        return std::make_shared<Application>(
-                name,
-                build_syntax_tree(start, close + 1, bound),
-                build_syntax_tree(close + 1, end, bound)
-            );
+        std::size_t old_bound = bound.size();
+        auto fst = build_syntax_tree(start, close + 1, bound);
+        bound.resize(old_bound);
+        auto snd = build_syntax_tree(close + 1, end, bound);
+        bound.resize(old_bound);
+        return std::make_shared<Application>(name, fst, snd);
     }
     else {
         // wrong syntax
