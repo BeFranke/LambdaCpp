@@ -39,7 +39,7 @@ Expression_ptr build_syntax_tree(std::vector<token>::iterator start, std::vector
     std::vector<token>::iterator current = start;
     if(is_bracket_open(*current)) {
         auto close = match_bracket(current, end);
-        if(current == start && close == end) {
+        if(current == start && close == end - 1) {
             if(start + 1 >= close) throw SyntaxException();
             // whole expression is in brackets
             return build_syntax_tree(start + 1, end - 1, bound, name);
@@ -78,7 +78,7 @@ Expression_ptr build_syntax_tree(std::vector<token>::iterator start, std::vector
         auto close = match_bracket(start, end);
         return std::make_shared<Application>(
                 name,
-                build_syntax_tree(start, close, bound),
+                build_syntax_tree(start, close + 1, bound),
                 build_syntax_tree(close + 1, end, bound)
             );
     }
