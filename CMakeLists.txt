@@ -47,4 +47,8 @@ add_test(NAME lambda-struct-test COMMAND lambda-struct-test)
 add_executable(tokenizer-test test/tokenizer.cpp headers/lambda-exceptions.hpp headers/tokenizer.hpp)
 target_link_libraries(tokenizer-test gtest_main)
 add_test(NAME tokenizer-test COMMAND tokenizer-test)
+#lambda-syntax.hpp test
+add_executable(syntax-test test/lambda-syntax.cpp headers/lambda-exceptions.hpp headers/lambda-syntax.hpp)
+target_link_libraries(syntax-test gtest_main)
+add_test(NAME syntax-test COMMAND syntax-test)
 ### END UNIT TEST INSERTION

@@ -86,11 +86,15 @@ class Application final : public Expression {
          * string representation
          */
         std::stringstream ss;
+        auto fst_str = fst->to_string();
+        auto snd_str = snd->to_string();
+        if(isspace(fst_str.back())) fst_str.pop_back();
         //ss << "( " << fst->to_string() << " " << snd->to_string() << ") ";
-        if(fst->get_head() != nullptr) ss << "(" << fst->to_string() << ")" << " ";
-        else ss << fst->to_string();
-        if(snd->get_head() != nullptr) ss << "(" << snd->to_string() << ")" << " ";
-        else ss << snd->to_string();
+        if(fst->get_head() != nullptr) ss << "(" << fst_str << ")" << " ";
+        else ss << "(" << fst_str << ") ";
+        //if(snd->get_head() != nullptr) ss << "(" << snd_str << ")" << " ";
+        //else
+        ss << snd_str;
         return ss.str();
     }
     Variable_ptr get_head() override {
@@ -194,7 +198,7 @@ class Lambda final : public Expression {
          * string representation with brackets and "\\ x ." as lambda abstraction
          */
         std::stringstream ss;
-        ss << "\\ " << head->to_string() << ". " << body->to_string();
+        ss << "\\" << head->to_string() << ". " << body->to_string();
         return ss.str();
     }
     Expression_ptr beta_reduce() override {

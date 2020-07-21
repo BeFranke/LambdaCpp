@@ -32,10 +32,10 @@ TEST(BETA, simple_2) {
     Application_ptr out = make_shared<Application>("outer", l2, unbounds[2]);
     // first reduction
     auto res1 = out->beta_reduce();
-    ASSERT_EQ(res1->to_string(), "(\\ y . y a ) b ");
+    ASSERT_EQ(res1->to_string(), "(\\y . (y) a) b ");
     // second reduction
     auto res2 = res1->beta_reduce();
-    ASSERT_EQ(res2->to_string(), "b a ");
+    ASSERT_EQ(res2->to_string(), "(b) a ");
 }
 TEST(ALPHA, simple_1) {
     // lets rename the outer x in \ x . (\ x . x) x
@@ -44,7 +44,7 @@ TEST(ALPHA, simple_1) {
     auto a1 = make_shared<Application>("", l1, bounds[1]);
     auto l2 = make_shared<Lambda>("", bounds[1], a1);
     auto res = l2->alpha_convert(*bounds[1], "y");
-    ASSERT_EQ(res->to_string(), "\\ y . (\\ x . x ) y ");
+    ASSERT_EQ(res->to_string(), "\\y . (\\x . x) y ");
 }
 TEST(BETA, conflicting_names) {
     // (\ x . (\ x . \ y . s u x x y ) c e x x ) s
@@ -67,7 +67,7 @@ TEST(BETA, conflicting_names) {
     auto res1 = out->beta_reduce();
     auto res2 = res1->beta_reduce();
     auto res3 = res2->beta_reduce();
-    ASSERT_EQ(res3->to_string(), "s u c c e s s ");
+    ASSERT_EQ(res3->to_string(), "((((((s) u) c) c) e) s) s ");
 }
 TEST(ALPHA, conflicting_names) {
     // (\ x . (\ x . \ y . s u x x y ) c e x x ) s
@@ -88,7 +88,7 @@ TEST(ALPHA, conflicting_names) {
     auto out = make_shared<Application>("", l3, unbound[4]);
 
     auto res = out->alpha_convert(*bound[1], "y")->alpha_convert(*bound[2], "z");
-    ASSERT_EQ(res->to_string(), "(\\ x . (\\ y . \\ z . s u y y z ) c e x x ) s ");
+    ASSERT_EQ(res->to_string(), "(\\x . ((((\\y . \\z . ((((s) u) y) y) z) c) e) x) x) s ");
 }
 TEST(BETA, first_part_no_reduction) {
     // (g) ((\ x . (x) x) o) d
@@ -101,7 +101,7 @@ TEST(BETA, first_part_no_reduction) {
     auto a4 = make_shared<Application>("outer", unbound[0], a3);
 
     auto res = a4->beta_reduce();
-    ASSERT_EQ(res->to_string(), "g o o d ");
+    ASSERT_EQ(res->to_string(), "(g) ((o) o) d ");
 }
 TEST(BETA, NORMAL_ORDER) {
     // from http://www.mathematik.uni-ulm.de/numerik/cpp/ss18/cpp-2018-06-19.pdf
@@ -118,4 +118,18 @@ TEST(BETA, NORMAL_ORDER) {
 
     auto res = a4->beta_reduce();
     ASSERT_EQ("a ", res->to_string());
+}
+TEST(STRING_REPR, test1) {
+    // (\x . a) (\x . (x) x) \y.(y) y
+    auto unbound = make_vars({"a"}, false);
+    auto bound = make_vars({"x", "x", "y"}, true);
+    auto a1 = make_shared<Application>("y y", bound[2], bound[2]);
+    auto l1 = make_shared<Lambda>("\\y", bound[2], a1);
+    auto a2 = make_shared<Application>("x x", bound[1], bound[1]);
+    auto l2 = make_shared<Lambda>("\\x...", bound[1], a2);
+    auto a3 = make_shared<Application>("(\\ x) (\\ y)", l2, l1);
+    auto l3 = make_shared<Lambda>("\\x", bound[0], unbound[0]);
+    auto a4 = make_shared<Application>("outer", l3, a3);
+
+    ASSERT_EQ(a4->to_string(), "(\\x . a) (\\x . (x) x) \\y . (y) y ");
 }

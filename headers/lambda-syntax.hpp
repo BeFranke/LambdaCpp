@@ -49,7 +49,7 @@ Expression_ptr build_syntax_tree(std::vector<token>::iterator start, std::vector
         // lambda
         if(!(std::get<0>(*(current + 2)) == OPERATOR && std::get<1>(*(current + 2))[0] == BODY_START))
             throw SyntaxException();
-        Variable_ptr head = build_syntax_tree(start + 1, start + 2, bound);
+        Variable_ptr head = std::static_pointer_cast<Variable>(build_syntax_tree(start + 1, start + 2, bound));
         auto is_in = std::find(bound.begin(), bound.end(), head);
         if(is_in == bound.end()) {
             bound.push_back(head);
@@ -86,4 +86,10 @@ Expression_ptr build_syntax_tree(std::vector<token>::iterator start, std::vector
         // wrong syntax
         throw SyntaxException();
     }
+}
+
+Expression_ptr build_syntax_tree(std::vector<token>::iterator start, std::vector<token>::iterator end,
+        std::string name = "") {
+    std::vector<Variable_ptr> bound;
+    return build_syntax_tree(start, end, bound, name);
 }
