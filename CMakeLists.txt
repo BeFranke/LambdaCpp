@@ -40,15 +40,17 @@ endif()
 # Now simply link against gtest or gtest_main as needed.
 # lambda-struct.hpp test
 set(CMAKE_CXX_FLAGS "--coverage")
-add_executable(lambda-struct-test test/lambda-struct.cpp headers/lambda-syntax.hpp)
+add_executable(lambda-struct-test test/lambda-struct.cpp src/headers/lambda-syntax.hpp)
 target_link_libraries(lambda-struct-test gtest_main)
 add_test(NAME lambda-struct-test COMMAND lambda-struct-test)
 #token test
-add_executable(tokenizer-test test/tokenizer.cpp headers/lambda-exceptions.hpp headers/tokenizer.hpp)
+add_executable(tokenizer-test test/tokenizer.cpp src/headers/lambda-exceptions.hpp src/headers/tokenizer.hpp)
 target_link_libraries(tokenizer-test gtest_main)
 add_test(NAME tokenizer-test COMMAND tokenizer-test)
 #lambda-syntax.hpp test
-add_executable(syntax-test test/lambda-syntax.cpp headers/lambda-exceptions.hpp headers/lambda-syntax.hpp)
+add_executable(syntax-test test/lambda-syntax.cpp src/headers/lambda-exceptions.hpp src/headers/lambda-syntax.hpp)
 target_link_libraries(syntax-test gtest_main)
 add_test(NAME syntax-test COMMAND syntax-test)
 ### END UNIT TEST INSERTION
+# repl
+add_executable(REPL src/headers/lambda-exceptions.hpp src/headers/lambda-struct.hpp src/headers/lambda-struct.hpp src/headers/tokenizer.hpp src/repl.cpp)

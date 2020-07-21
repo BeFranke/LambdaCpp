@@ -1,6 +1,6 @@
 #include <vector>
 #include "gtest/gtest.h"
-#include "../headers/lambda-syntax.hpp"
+#include "../src/headers/lambda-syntax.hpp"
 
 TEST(BUILD_TREE, test1) {
     // \x . x

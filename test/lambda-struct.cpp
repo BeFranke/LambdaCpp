@@ -1,6 +1,5 @@
-#include <vector>
 #include "gtest/gtest.h"
-#include "../headers/lambda-struct.hpp"
+#include "../src/headers/lambda-struct.hpp"
 
 using namespace std;
 
