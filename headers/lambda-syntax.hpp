@@ -4,10 +4,6 @@
 #include "lambda-struct.hpp"
 #include "tokenizer.hpp"
 
-/**
- * WARNING: This file is a mess right now
- */
-
 // predicates for parts of the syntax
 inline auto is_bracket_open = [](const token& t) {return std::get<0>(t) == SEPARATOR && std::get<1>(t)[0] == BRCK_OPN;};
 inline auto is_bracket_close = [](const token& t) {return std::get<0>(t) == SEPARATOR && std::get<1>(t)[0] == BRCK_CLS;};
