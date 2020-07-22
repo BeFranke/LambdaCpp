@@ -9,14 +9,16 @@ static std::unordered_map<std::string, Expression_ptr> known_symbols;
 int main() {
     do {
         std::cout << ">>";
-        int c;
-        std::stringstream ss;
-        while((c = std::cin.get()) != '\n') {
-            ss << c;
-        }
-        auto tokens = parse(ss);
+        auto tokens = parse(std::cin, '\n');
         // TODO: split assignments and put into known_symbols
-        auto expr = build_syntax_tree(tokens.begin(), tokens.end());
-        std::cout << expr->to_string() << "\n";
+        Expression_ptr expr;
+        try {
+            expr = build_syntax_tree(tokens.begin(), tokens.end());
+            std::cout << expr->to_string() << "\n";
+        }
+        catch(EmptyIteratorException) {
+            // User pressed enter without providing an Expression
+            std::cout << "\n";
+        }
     } while(!std::cin.eof());
 }

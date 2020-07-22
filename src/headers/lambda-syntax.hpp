@@ -10,6 +10,7 @@ inline auto is_bracket_open = [](const token& t) {return std::get<0>(t) == SEPAR
 inline auto is_bracket_close = [](const token& t) {return std::get<0>(t) == SEPARATOR && std::get<1>(t)[0] == BRCK_CLS;};
 inline auto statement_end = [](const token& t) {return std::get<0>(t) == SEPARATOR && std::get<1>(t)[0] == SEP;};
 inline auto is_lambda = [](const token& t) {return std::get<0>(t) == OPERATOR && std::get<1>(t)[0] == LAMBDA;};
+inline auto is_assignment = [](const token& t) { return std::get<0>(t) == OPERATOR && std::get<1>(t)[0] == ASSIGNMENT;};
 
 inline auto match_bracket(std::vector<token>::iterator open_bracket, std::vector<token>::iterator end) {
     unsigned int bracket_depth = 0;
@@ -32,6 +33,9 @@ Expression_ptr build_syntax_tree(std::vector<token>::iterator start, std::vector
      * builds a single Expression from the provided iterators
      * assignments have to be cut off beforehand and may be passed as "name"
      */
+
+    // check if the iterators are empty
+    if(start == end) throw EmptyIteratorException();
     // check for brackets around the whole expression
     std::vector<token>::iterator current = start;
     if(is_bracket_open(*current)) {
@@ -90,4 +94,29 @@ Expression_ptr build_syntax_tree(std::vector<token>::iterator start, std::vector
         std::string name = "") {
     std::vector<Variable_ptr> bound;
     return build_syntax_tree(start, end, bound, name);
+}
+
+std::vector<Expression_ptr> build_multiple_trees(std::vector<token>& toks) {
+    std::vector<Expression_ptr> result;
+    auto current = toks.begin(), end = toks.end();
+    while(1) {
+        auto next_sep = std::find_if(current, end, statement_end);
+        auto assign = std::find_if(current, end, is_assignment);
+        if(assign == next_sep) {
+            result.push_back(build_syntax_tree(current, next_sep));
+        }
+        else {
+            auto assignee = build_syntax_tree(current, assign);
+            Variable_ptr var;
+            try {
+                var = std::dynamic_pointer_cast<Variable>(assignee);
+            } catch(std::exception) {
+                throw SyntaxException();
+            }
+            result.push_back(build_syntax_tree(current, next_sep, var->to_string()));
+        }
+        if(next_sep == end) break;
+        current = next_sep + 1;
+    }
+    return result;
 }

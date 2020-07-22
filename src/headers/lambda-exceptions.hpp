@@ -52,3 +52,10 @@ class MaxIterationsExceeded : public std::exception {
         return "Maximum iterations exceeded!";
     }
 };
+
+class EmptyIteratorException : public std::exception {
+public:
+  const char* what() const noexcept override {
+      return "Iterator provided for Syntax tree are empty!";
+  }
+};

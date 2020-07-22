@@ -55,9 +55,9 @@ static inline void process_and_clear(unsigned int& count, std::stringstream& ss,
     }
 }
 
-std::vector<token> parse(std::istream& in) {
+std::vector<token> parse(std::istream& in, char return_on = EOF) {
     /**
-     * reads chars from the std::instream in, parses them into a vector of tokens to be passed to the syntactical
+     * reads chars from the std::istream in, parses them into a vector of tokens to be passed to the syntactical
      * analysis
      */
     auto result = std::vector<token>();
@@ -67,8 +67,9 @@ std::vector<token> parse(std::istream& in) {
     char c;
     // lambda to avoid typing out the process_and_clear call with the same arguments over and over again
     auto clear = [&count, &ss, &result, &current_token]() {process_and_clear(count, ss, result, current_token);};
-    auto except = [&ss] (char c) {std::string s = ss.str() + std::string(c, 1); throw SyntaxException(s);};
+    auto except = [&ss] (char c) {std::string s = ss.str() + std::string(1, c); throw SyntaxException(s);};
     while(in.get(c)) {
+        if(c == return_on) break;
         if(c == LAMBDA || c == BODY_START || c == ASSIGNMENT) {
             // operator is never part of another token, so previous token has ended
             clear();
