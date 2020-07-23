@@ -111,7 +111,7 @@ class Application final : public Expression {
         // taken from https://stackoverflow.com/questions/1765122/equality-test-for-derived-classes-in-c
         if(typeid(*this) != typeid(other)) return false;
         auto o = static_cast<const Application&>(other);
-        return fst == o.fst && snd == o.snd;
+        return *fst == *(o.fst) && *(snd) == *(o.snd);
     }
   private:
     Expression_ptr fst;
@@ -244,7 +244,7 @@ class Lambda final : public Expression {
          */
         if(typeid(*this) != typeid(other)) return false;
         auto o = static_cast<const Lambda&>(other);
-        return head == o.head && body == o.body;
+        return *head == *(o.head) && *body == *(o.body);
     }
   private:
     Variable_ptr head;
