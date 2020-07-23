@@ -24,7 +24,6 @@ int main() {
                 do {
                     if(i > 0) expr = reduced;
                     reduced = expr->beta_reduce();
-                    // TODO: the example (\ x. (x) x) (\ y. (y) a) x is evaluated wrong, which indicates an error in "=="
                 } while(!((*reduced) == (*expr)) && ++i < MAX_ITER);
                 if(i == MAX_ITER) {
                     std::cout << "Error: MAX_ITER exceeded!" << std::endl;
