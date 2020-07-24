@@ -4,10 +4,6 @@
 #include "headers/tokenizer.hpp"
 #include "headers/lambda-syntax.hpp"
 
-#ifndef MAX_ITER
-#define MAX_ITER 1000
-#endif
-
 static std::unordered_map<std::string, Expression_ptr> known_symbols;
 
 int main() {
@@ -19,16 +15,12 @@ int main() {
             Expression_ptr expr;
             try {
                 expr = build_syntax_tree(tokens.begin(), tokens.end());
-                Expression_ptr reduced;
-                int i = 0;
-                do {
-                    if(i > 0) expr = reduced;
-                    reduced = expr->beta_reduce();
-                } while(!((*reduced) == (*expr)) && ++i < MAX_ITER);
-                if(i == MAX_ITER) {
+                try {
+                    std::cout << expr->beta_reduce_full()->to_string() << std::endl;
+                }
+                catch(MaxIterationsExceeded) {
                     std::cout << "Error: MAX_ITER exceeded!" << std::endl;
                 }
-                else std::cout << expr->beta_reduce()->to_string() << std::endl;
             }
             catch (EmptyIteratorException) {
                 // User pressed enter without providing an Expression

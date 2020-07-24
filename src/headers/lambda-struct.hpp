@@ -1,6 +1,11 @@
 #pragma once
 #include <memory>
 #include <sstream>
+#include "lambda-exceptions.hpp"
+
+#ifndef MAX_ITER
+#define MAX_ITER 1000
+#endif
 
 // TODO: methods for alpha equivalence
 
@@ -35,7 +40,23 @@ class Expression {
     virtual Variable_ptr get_head() = 0;
     // literal equivalence
     virtual bool operator==(const Expression& other) const noexcept = 0;
+    bool operator!=(const Expression& other) const noexcept {
+        return !(*this == other);
+    }
     // virtual bool alpha_equals(const Expression& other) const noexcept = 0;
+    Expression_ptr beta_reduce_full() {
+        Expression_ptr reduced;
+        Expression_ptr expr = this->beta_reduce();
+        int i = 0;
+        do {
+            if(i > 0) expr = reduced;
+            reduced = expr->beta_reduce();
+        } while((*reduced) != (*expr) && ++i < MAX_ITER);
+        if(i == MAX_ITER) {
+            throw MaxIterationsExceeded();
+        }
+        return reduced;
+    }
 
   protected:
     Expression(std::string name) : name(name) {}
