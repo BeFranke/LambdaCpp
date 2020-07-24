@@ -10,6 +10,7 @@
 // TODO: methods for alpha equivalence
 // TODO: alpha_convert does not check if the new name already exists
 // TODO: invoke alpha_convert if beta reduction would lead to name clashes
+// TODO: "(\ x . (x) x) \ y. (y) y" terminates after one reduction, while it should lead to an infinite loop
 
 typedef unsigned long ID;
 
