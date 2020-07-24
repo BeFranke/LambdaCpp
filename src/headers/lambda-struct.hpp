@@ -8,6 +8,8 @@
 #endif
 
 // TODO: methods for alpha equivalence
+// TODO: alpha_convert does not check if the new name already exists
+// TODO: invoke alpha_convert if beta reduction would lead to name clashes
 
 typedef unsigned long ID;
 
