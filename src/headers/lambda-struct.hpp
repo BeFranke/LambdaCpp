@@ -37,9 +37,10 @@ class Expression {
     std::string get_name() const {
         return name;
     }
+    virtual bool check_for_name_clash(const std::string& new_name) const noexcept = 0;
     virtual Expression_ptr beta_reduce() = 0;
     virtual Expression_ptr bind(Variable_ptr, Expression_ptr) = 0;
-    virtual Expression_ptr alpha_convert(const Variable&, const std::string&) = 0;
+    virtual Expression_ptr alpha_convert(const Variable&, const std::string&, bool=true) = 0;
     virtual Variable_ptr get_head() = 0;
     // literal equivalence
     virtual bool operator==(const Expression& other) const noexcept = 0;
@@ -98,12 +99,15 @@ class Application final : public Expression {
         }
         else return res1;
     }
-    Expression_ptr alpha_convert(const Variable& old, const std::string& new_name) override {
+    Expression_ptr alpha_convert(const Variable& old, const std::string& new_name, bool check_clashes=true) override {
         /**
          * renames bound variable old_name to new_name
          */
+        if(check_clashes) {
+            if(this->check_for_name_clash(new_name)) throw NameClash();
+        }
         Expression_ptr res = std::make_shared<Application>(name, fst->alpha_convert(old, new_name),
-                snd->alpha_convert(old, new_name));
+                snd->alpha_convert(old, new_name), false);
         return res;
     }
     std::string to_string() const noexcept override {
@@ -136,6 +140,9 @@ class Application final : public Expression {
         if(typeid(*this) != typeid(other)) return false;
         auto o = static_cast<const Application&>(other);
         return *fst == *(o.fst) && *(snd) == *(o.snd);
+    }
+    bool check_for_name_clash(const std::string& new_name) const noexcept {
+        return fst->check_for_name_clash(new_name) || snd->check_for_name_clash(new_name);
     }
   private:
     Expression_ptr fst;
@@ -173,10 +180,13 @@ class Variable final : public Expression {
          */
         return std::make_shared<Variable>(name, bound, id);
     }
-    Expression_ptr alpha_convert(const Variable& old, const std::string& new_name) override {
+    Expression_ptr alpha_convert(const Variable& old, const std::string& new_name, bool check_clashes=true) override {
         /**
          * renames if name matches and variable is bound
          */
+        if(check_clashes) {
+            if(this->check_for_name_clash(new_name)) throw NameClash();
+        }
         std::string name;
         if(bound && id == old.id) name = new_name;
         else name = this->name;
@@ -203,6 +213,9 @@ class Variable final : public Expression {
         if(typeid(*this) != typeid(other)) return false;
         auto o = static_cast<const Variable&>(other);
         return bound == o.bound && id == o.id;
+    }
+    bool check_for_name_clash(const std::string& new_name) const noexcept {
+        return this->name.compare(new_name) == 0;
     }
   private:
     bool bound;
@@ -240,13 +253,16 @@ class Lambda final : public Expression {
         if(e1->get_id() == head->get_id()) return body->bind(e1, e2);
         return std::make_shared<Lambda>(name, head, body->bind(e1, e2));
     }
-    Expression_ptr alpha_convert(const Variable& old, const std::string& new_name) override {
+    Expression_ptr alpha_convert(const Variable& old, const std::string& new_name, bool check_clashes=true) override {
         /**
          * passes conversion on to head and body
          */
+        if(check_clashes) {
+            if(this->check_for_name_clash(new_name)) throw NameClash();
+        }
         return std::make_shared<Lambda>(name,
                 std::static_pointer_cast<Variable>(head->alpha_convert(old, new_name)),
-                body->alpha_convert(old, new_name));
+                body->alpha_convert(old, new_name), false);
     }
     Variable_ptr get_head() override {
         /**
@@ -269,6 +285,9 @@ class Lambda final : public Expression {
         if(typeid(*this) != typeid(other)) return false;
         auto o = static_cast<const Lambda&>(other);
         return *head == *(o.head) && *body == *(o.body);
+    }
+    bool check_for_name_clash(const std::string& new_name) const noexcept {
+        return head->check_for_name_clash(new_name) || body->check_for_name_clash(new_name);
     }
   private:
     Variable_ptr head;

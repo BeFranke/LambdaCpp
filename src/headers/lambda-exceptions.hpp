@@ -59,3 +59,10 @@ public:
       return "Iterator provided for Syntax tree are empty!";
   }
 };
+
+class NameClash : public std::exception {
+  public:
+    const char* what() const noexcept override {
+        return "Requested name already exists!";
+    }
+};
