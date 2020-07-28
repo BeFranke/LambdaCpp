@@ -165,3 +165,12 @@ TEST(BETA, no_normal_form) {
         if(i == 10) cout << *ap << endl;
     }
 }
+
+TEST(ALPHA, name_clash) {
+    // trying to rename x to y in \ x. (x) y
+    auto bound = make_vars({"x"}, true);
+    auto unbound = make_vars({"y"}, false);
+    auto xy = make_shared<Application>(bound[0], unbound[0]);
+    auto lx = make_shared<Lambda>(bound[0], xy);
+    ASSERT_THROW(lx->alpha_convert("x", "y"), NameClash);
+}

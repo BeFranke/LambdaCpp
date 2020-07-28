@@ -5,7 +5,6 @@
 
 // TODO: methods for alpha equivalence
 // TODO: invoke alpha_convert if beta reduction would lead to name clashes
-// TODO: "(\ x . (x) x) \ y. (y) y" terminates after one reduction, while it should lead to an infinite loop
 
 // forward declarations
 class Expression;
