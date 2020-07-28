@@ -63,11 +63,12 @@ class Variable final : public Expression {
         /**
          * renames if name matches and variable is bound
          */
-        if(check_clashes) {
+        /*if(check_clashes) {
             if(this->check_for_name_clash(new_name)) throw NameClash();
-        }
+        }*/
         if(bound && name.compare(old_name) == 0) {
-            return std::make_shared<Variable>(new_name, bound);
+            throw std::runtime_error("This should never happen! Code 555");
+            //return std::make_shared<Variable>(new_name, bound);
         }
         return shared_from_this();
     }
@@ -116,15 +117,20 @@ class Lambda final : public Expression {
     Expression_ptr alpha_convert(const std::string& old_name, const std::string& new_name,
                                  bool check_clashes=true) override {
         /**
-         * passes conversion on to head and body
+         * if head matches the new name, calls subsitute
+         * else passes conversion to body
          */
         if(check_clashes) {
             if(this->check_for_name_clash(new_name)) throw NameClash();
         }
-        auto res1 = head->alpha_convert(old_name, new_name, false);
-        auto res2 = body->alpha_convert(old_name, new_name, false);
-        if(res1 == head && res2 == body) return shared_from_this();
-        return std::make_shared<Lambda>(std::static_pointer_cast<Variable>(res1), res2);
+        if(head->get_name().compare(old_name) == 0) {
+            auto new_head = std::make_shared<Variable>(new_name, true);
+            auto new_body = body->substitute(head, new_head);
+            return std::make_shared<Lambda>(new_head, new_body);
+        }
+        auto new_body = body->alpha_convert(old_name, new_name);
+        if(new_body == body) return shared_from_this();
+        return std::make_shared<Lambda>(head, new_body);
     }
     Variable_ptr get_head() noexcept {
         /**
@@ -141,7 +147,9 @@ class Lambda final : public Expression {
         return body;
     }
     bool check_for_name_clash(const std::string& new_name) const noexcept {
-        return head->check_for_name_clash(new_name) || body->check_for_name_clash(new_name);
+        bool clash_head = head->check_for_name_clash(new_name);
+        bool clash_body = body->check_for_name_clash(new_name);
+        return clash_body && !clash_head;
     }
   private:
     Variable_ptr head;

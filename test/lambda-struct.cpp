@@ -83,27 +83,22 @@ TEST(BETA, conflicting_names) {
 }
 
 TEST(ALPHA, conflicting_names) {
-    // (\ x . (\ x . \ y . s u x x y ) c e x x ) s
-    // this time with alpha
     auto bound = make_vars({"x", "x", "y"}, true);
-    auto unbound = make_vars({"s", "u", "c", "e", "s"}, false);
-    auto a1 = make_shared<Application>(unbound[0], unbound[1]);
-    auto a2 = make_shared<Application>(a1, bound[1]);
-    auto a3 = make_shared<Application>(a2, bound[1]);
-    auto a4 = make_shared<Application>(a3, bound[2]);
-    auto l1 = make_shared<Lambda>(bound[2], a4);
-    auto l2 =  make_shared<Lambda>(bound[1], l1);
-    auto a5 = make_shared<Application>(l2, unbound[2]);
-    auto a6 = make_shared<Application>(a5, unbound[3]);
-    auto a7 = make_shared<Application>(a6, bound[0]);
-    auto a8 = make_shared<Application>(a7, bound[0]);
-    auto l3 = make_shared<Lambda>(bound[0], a8);
-    auto out = make_shared<Application>(l3, unbound[4]);
-
-    auto res = out->alpha_convert(bound[1]->get_name(), "y")->alpha_convert(bound[2]->get_name(), "z");
+    auto xy = make_shared<Application>(bound[2], bound[1]);
+    auto ly = make_shared<Lambda>(bound[2], xy);
+    auto lx = make_shared<Lambda>(bound[1], ly);
+    auto a1 = make_shared<Application>(lx, bound[0]);
+    auto a2 = make_shared<Application>(a1, bound[0]);
+    auto outer = make_shared<Lambda>(bound[0], a2);
+    cout << *outer << endl;
+    auto res1 = outer->alpha_convert("x", "u");
+    cout << *res1 << endl;
+    auto res2 = res1->alpha_convert("x", "v");
+    cout << *res2 << endl;
+    auto res3 = res2->alpha_convert("y", "w");
     stringstream ss;
-    ss << *res;
-    ASSERT_EQ(ss.str(), "(\\x . ((((\\y . \\z . ((((s) u) y) y) z) c) e) x) x) s");
+    ss << *res3;
+    ASSERT_EQ(ss.str(), "\\u . ((\\v . \\w . (w) v) u) u");
 }
 TEST(BETA, first_part_no_reduction) {
     // (g) ((\ x . (x) x) o) d
