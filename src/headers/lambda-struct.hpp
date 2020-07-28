@@ -3,9 +3,6 @@
 #include <sstream>
 #include "lambda-exceptions.hpp"
 
-// TODO: methods for alpha equivalence
-// TODO: invoke alpha_convert if beta reduction would lead to name clashes
-
 // forward declarations
 class Expression;
 class Variable;
