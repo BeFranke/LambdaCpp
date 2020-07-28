@@ -149,3 +149,19 @@ TEST(STRING_REPR, test1) {
     ss << *a4;
     ASSERT_EQ(ss.str(), "(\\x . a) (\\x . (x) x) \\y . (y) y");
 }
+
+TEST(BETA, no_normal_form) {
+    // (\ x . (x) x) \ y . (y) y
+    auto bound = make_vars({"x", "y"}, true);
+    auto xx = make_shared<Application>(bound[0], bound[0]);
+    auto yy = make_shared<Application>(bound[1], bound[1]);
+    auto lx = make_shared<Lambda>(bound[0], xx);
+    auto ly = make_shared<Lambda>(bound[1], yy);
+    auto ap = make_shared<Application>(lx, ly);
+    for(char i = 0; i < 99; ++i) {
+        auto ap_new = ap->beta_reduce();
+        ASSERT_NE(ap_new, ap);
+        ap = static_pointer_cast<Application>(ap_new);
+        if(i == 10) cout << *ap << endl;
+    }
+}

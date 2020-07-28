@@ -33,7 +33,7 @@ class Expression: public std::enable_shared_from_this<Expression> {
 
     /** @return Expression where bound variables with a name equal to the first argument were renamed to teh second
      * if third argument is true, throws Exception on name clash */
-    virtual Expression_ptr alpha_convert(const std::string&, const std::string&, bool=true) = 0;
+    virtual Expression_ptr alpha_convert(const std::string&, const std::string&) = 0;
     // virtual bool alpha_equals(const Expression& other) const noexcept = 0;
   protected:
     Expression() {}
@@ -58,8 +58,7 @@ class Variable final : public Expression {
          */
         return shared_from_this();
     }
-    Expression_ptr alpha_convert(const std::string& old_name, const std::string& new_name,
-                                 bool check_clashes=true) override {
+    Expression_ptr alpha_convert(const std::string& old_name, const std::string& new_name) override {
         /**
          * renames if name matches and variable is bound
          */
@@ -67,6 +66,7 @@ class Variable final : public Expression {
             if(this->check_for_name_clash(new_name)) throw NameClash();
         }*/
         if(bound && name.compare(old_name) == 0) {
+            // TODO remove if this indeed never happens
             throw std::runtime_error("This should never happen! Code 555");
             //return std::make_shared<Variable>(new_name, bound);
         }
@@ -114,16 +114,13 @@ class Lambda final : public Expression {
         if(res == body) return shared_from_this();
         return std::make_shared<Lambda>(head, res);
     }
-    Expression_ptr alpha_convert(const std::string& old_name, const std::string& new_name,
-                                 bool check_clashes=true) override {
+    Expression_ptr alpha_convert(const std::string& old_name, const std::string& new_name) override {
         /**
          * if head matches the new name, calls subsitute
          * else passes conversion to body
          */
-        if(check_clashes) {
-            if(this->check_for_name_clash(new_name)) throw NameClash();
-        }
         if(head->get_name().compare(old_name) == 0) {
+            if(this->check_for_name_clash(new_name)) throw NameClash();
             auto new_head = std::make_shared<Variable>(new_name, true);
             auto new_body = body->substitute(head, new_head);
             return std::make_shared<Lambda>(new_head, new_body);
@@ -194,16 +191,12 @@ class Application final : public Expression {
         }
         return std::make_shared<Application>(res1, snd);
     }
-    Expression_ptr alpha_convert(const std::string& old_name, const std::string& new_name,
-            bool check_clashes=true) override {
+    Expression_ptr alpha_convert(const std::string& old_name, const std::string& new_name) override {
         /**
          * renames bound variable old_name to new_name
          */
-        if(check_clashes) {
-            if(this->check_for_name_clash(new_name)) throw NameClash();
-        }
-        auto res1 = fst->alpha_convert(old_name, new_name, false);
-        auto res2 = snd->alpha_convert(old_name, new_name, false);
+        auto res1 = fst->alpha_convert(old_name, new_name);
+        auto res2 = snd->alpha_convert(old_name, new_name);
         if(res1 == fst && res2 == snd) return shared_from_this();
         return std::make_shared<Application>(res1, res2);
 
