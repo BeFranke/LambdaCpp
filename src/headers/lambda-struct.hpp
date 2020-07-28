@@ -17,7 +17,7 @@ typedef std::shared_ptr<Application> Application_ptr;
 typedef std::shared_ptr<Variable> Variable_ptr;
 typedef std::shared_ptr<Lambda> Lambda_ptr;
 
-  class Expression: public std::enable_shared_from_this<Expression> {
+class Expression: public std::enable_shared_from_this<Expression> {
     /**
      * abstract base class for all valid expressions
      */
@@ -28,7 +28,7 @@ typedef std::shared_ptr<Lambda> Lambda_ptr;
     /** @return Expression after one step of beta reduction*/
     virtual Expression_ptr beta_reduce() = 0;
 
-    /** @return Expression where Variable_ptr was replaced by Expression_ptr*/
+    /** @return Expression where first argument was replaced by second argument*/
     virtual Expression_ptr substitute(Variable_ptr, Expression_ptr) = 0;
 
     /** @return Expression where bound variables with a name equal to the first argument were renamed to teh second
@@ -66,10 +66,8 @@ class Variable final : public Expression {
         if(check_clashes) {
             if(this->check_for_name_clash(new_name)) throw NameClash();
         }
-        std::string name;
         if(bound && name.compare(old_name) == 0) {
-            name = new_name;
-            return std::make_shared<Variable>(name, bound);
+            return std::make_shared<Variable>(new_name, bound);
         }
         return shared_from_this();
     }
@@ -77,7 +75,7 @@ class Variable final : public Expression {
         /**
          * returns e2 if e1 matches itself, else returns copy of itself
          */
-        if(name.compare(e1->name) == 0) return e2;
+        if(this == e1.get()) return e2;
         return shared_from_this();
     }
     bool check_for_name_clash(const std::string& new_name) const noexcept {
@@ -123,8 +121,8 @@ class Lambda final : public Expression {
         if(check_clashes) {
             if(this->check_for_name_clash(new_name)) throw NameClash();
         }
-        auto res1 = head->alpha_convert(old_name, new_name);
-        auto res2 = body->alpha_convert(old_name, new_name);
+        auto res1 = head->alpha_convert(old_name, new_name, false);
+        auto res2 = body->alpha_convert(old_name, new_name, false);
         if(res1 == head && res2 == body) return shared_from_this();
         return std::make_shared<Lambda>(std::static_pointer_cast<Variable>(res1), res2);
     }
@@ -196,8 +194,8 @@ class Application final : public Expression {
         if(check_clashes) {
             if(this->check_for_name_clash(new_name)) throw NameClash();
         }
-        auto res1 = fst->alpha_convert(old_name, new_name);
-        auto res2 = snd->alpha_convert(old_name, new_name);
+        auto res1 = fst->alpha_convert(old_name, new_name, false);
+        auto res2 = snd->alpha_convert(old_name, new_name, false);
         if(res1 == fst && res2 == snd) return shared_from_this();
         return std::make_shared<Application>(res1, res2);
 

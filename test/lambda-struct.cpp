@@ -45,42 +45,43 @@ TEST(BETA, simple_2) {
 }
 
 TEST(ALPHA, simple_1) {
-    // lets rename the outer x in \ x . (\ x . x) x
-    auto bounds = make_vars({"x", "x"}, true);
+    // lets rename the x in \ x . (\ z . z) x
+    auto bounds = make_vars({"z", "x"}, true);
     auto l1 = make_shared<Lambda>(bounds[0], bounds[0]);
     auto a1 = make_shared<Application>(l1, bounds[1]);
     auto l2 = make_shared<Lambda>(bounds[1], a1);
     auto res = l2->alpha_convert("x", "y");
     stringstream ss;
     ss << *res;
-    ASSERT_EQ(ss.str(), "\\y . (\\x . x) y");
+    ASSERT_EQ(ss.str(), "\\y . (\\z . z) y");
 }
-
 TEST(BETA, conflicting_names) {
-    // (\ x . (\ x . \ y . s u x x y ) c e x x ) s
-    auto bound = make_vars({"x", "x", "y"}, true);
-    auto unbound = make_vars({"s", "u", "c", "e", "s"}, false);
-    auto a1 = make_shared<Application>(unbound[0], unbound[1]);
-    auto a2 = make_shared<Application>(a1, bound[1]);
-    auto a3 = make_shared<Application>(a2, bound[1]);
-    auto a4 = make_shared<Application>(a3, bound[2]);
-    auto l1 = make_shared<Lambda>(bound[2], a4);
-    auto l2 =  make_shared<Lambda>(bound[1], l1);
-    auto a5 = make_shared<Application>(l2, unbound[2]);
-    auto a6 = make_shared<Application>(a5, unbound[3]);
-    auto a7 = make_shared<Application>(a6, bound[0]);
-    auto a8 = make_shared<Application>(a7, bound[0]);
-    auto l3 = make_shared<Lambda>(bound[0], a8);
-    auto out = make_shared<Application>(l3, unbound[4]);
+    auto bound = make_vars({"x", "y", "x", "x"}, true);
+    auto unbound = make_vars({"b"}, false);
 
+    auto xy = make_shared<Application>(bound[2], bound[1]);
+    auto lx_xy = make_shared<Lambda>(bound[2], xy);
+    auto lx_ly = make_shared<Lambda>(bound[1], lx_xy);
+    auto a1 = make_shared<Application>(lx_ly, bound[0]);
+    auto id = make_shared<Lambda>(bound[3], bound[3]);
+    auto a2 = make_shared<Application>(a1, id);
+    auto lx_outer = make_shared<Lambda>(bound[0], a2);
+    auto outer = make_shared<Application>(lx_outer, unbound[0]);
 
-    auto res1 = out->beta_reduce();
+    cout << *outer << endl;
+    auto res1 = outer->beta_reduce();
+    cout << *res1 << endl;
     auto res2 = res1->beta_reduce();
+    cout << *res2 << endl;
     auto res3 = res2->beta_reduce();
+    cout << *res3 << endl;
+    auto res4 = res3->beta_reduce();
+
     stringstream ss;
-    ss << *res3;
-    ASSERT_EQ(ss.str(), "((((((s) u) c) c) e) s) s");
+    ss << *res4;
+    ASSERT_EQ(ss.str(), "b");
 }
+
 TEST(ALPHA, conflicting_names) {
     // (\ x . (\ x . \ y . s u x x y ) c e x x ) s
     // this time with alpha
