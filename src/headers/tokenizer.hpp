@@ -2,13 +2,14 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <regex>
 #include "lambda-exceptions.hpp"
 
 // TODO: add operations such as ==, =a (alpha equality)
 
 // syntactic constants
 // using '\' as replacement for "lambda" is stolen from Haskell
-enum class Symbol : char {
+enum class Symbol {
     // (\ x . x) a > invokes beta reduction (one step)
     // (\ x . x) a -n> invokes n steps of beta reduction
     // ( \ x. x) a -> invokes beta reduction until convergence
@@ -44,13 +45,32 @@ enum TOKEN_TYPE {
 class Token {
   public:
     Token() : str(""), tok(UNDEF) {}
+    operator bool() const {return tok != UNDEF;}
     std::string str;
     TOKEN_TYPE tok;
 };
 
-inline bool valid_conversion_cmd(Token& result, char c) {
+inline bool valid_conversion_cmd(const Token& result) noexcept {
     if(result.tok != COMMAND) return false;
-    // TODO use regex
+    std::regex rgx(R"((-[A-Za-z]+>[A-Za-z]+) | (((-[0-9]+) | -)?>))");
+    return std::regex_match(result.str, rgx, std::regex_constants::match_continuous);
+}
+
+inline bool reserved_symbol_start(char c) noexcept {
+    switch(c) {
+        case static_cast<int>(Symbol::LAMBDA):
+        case static_cast<int>(Symbol::BODY_START):
+        case static_cast<int>(Symbol::BRCKT_OPN):
+        case static_cast<int>(Symbol::BRCKT_CLS):
+        case static_cast<int>(Symbol::SEP):
+        case static_cast<int>(Symbol::COMMENT):
+        case static_cast<int>(Symbol::ASSIGNMENT):
+        case static_cast<int>(Symbol::CONVERSION_START):
+        case static_cast<int>(Symbol::CONVERSION_END):
+            return true;
+        default:
+            return false;
+    }
 }
 
 class Tokenizer {
@@ -63,10 +83,11 @@ class Tokenizer {
         auto init_token = [&result, &c](TOKEN_TYPE tt) { result.tok = tt; result.str += c;};
         auto update_token = [&result, &c]() {result.str += c;};
         bool comment = false;
-        while((is >> c), !isspace(c)) {
+        while((is >> c)) {
             if(comment) continue;
             if(count == 0) {
-                if(isalpha(c)) {
+                if(isspace(c)) continue;
+                else if(isalpha(c)) {
                     // variable name
                     init_token(IDENTIFIER);
                 }
@@ -90,9 +111,6 @@ class Tokenizer {
                 else if(c == static_cast<char>(Symbol::CONVERSION_START)) {
                     init_token(COMMAND);
                 }
-                else if(comment && c == '\n') {
-                    comment = false;
-                }
                 else if(isdigit(c)) {
                     init_token(LITERAL);
                 }
@@ -104,14 +122,34 @@ class Tokenizer {
                 else {
                     throw SyntaxException();
                 }
-                ++count;
             }
             else {
-                if(isalpha(c) && result.tok == IDENTIFIER || isdigit(c) && result.tok == LITERAL
-                    || valid_conversion_cmd(result, c)) {
+                if(result.tok == COMMAND) {
+                    if(isspace(c)) {
+                        if(valid_conversion_cmd(result)) break;
+                        throw SyntaxException();
+                    }
+                    else {
+                        // accumulate for regex matching
+                        update_token();
+                    }
+                }
+                else if(comment && c == '\n') {
+                    comment = false;
+                }
+                else if(reserved_symbol_start(c)) {
+                    is.unget();
+                    break;
+                }
+                else if(isalpha(c) && result.tok == IDENTIFIER || isdigit(c) && result.tok == LITERAL) {
                     update_token();
                 }
+                else if(isspace(c)) break;
+                else {
+                    throw SyntaxException();
+                }
             }
+            ++count;
         }
         return result;
     }
