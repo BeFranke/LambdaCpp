@@ -52,8 +52,8 @@ class Token {
 
 inline bool valid_conversion_cmd(const Token& result) noexcept {
     if(result.tok != COMMAND) return false;
-    std::regex rgx(R"((-[A-Za-z]+>[A-Za-z]+) | (((-[0-9]+) | -)?>))");
-    return std::regex_match(result.str, rgx, std::regex_constants::match_continuous);
+    std::regex rgx(R"(((-[a-zA-Z]+>[a-zA-Z]+)|((-\d?)?>)))");
+    return std::regex_match(result.str, rgx);
 }
 
 inline bool reserved_symbol_start(char c) noexcept {
@@ -111,6 +111,10 @@ class Tokenizer {
                 else if(c == static_cast<char>(Symbol::CONVERSION_START)) {
                     init_token(COMMAND);
                 }
+                else if(c == static_cast<char>(Symbol::CONVERSION_END)) {
+                    init_token(COMMAND);
+                    break;
+                }
                 else if(isdigit(c)) {
                     init_token(LITERAL);
                 }
@@ -124,16 +128,7 @@ class Tokenizer {
                 }
             }
             else {
-                if(result.tok == COMMAND) {
-                    if(isspace(c)) {
-                        if(valid_conversion_cmd(result)) break;
-                        throw SyntaxException();
-                    }
-                    else {
-                        // accumulate for regex matching
-                        update_token();
-                    }
-                }
+                if(isspace(c)) break;
                 else if(comment && c == '\n') {
                     comment = false;
                 }
@@ -141,16 +136,19 @@ class Tokenizer {
                     is.unget();
                     break;
                 }
-                else if(isalpha(c) && result.tok == IDENTIFIER || isdigit(c) && result.tok == LITERAL) {
+                else if(isalpha(c) && result.tok == IDENTIFIER || isdigit(c) && result.tok == LITERAL
+                    || result.tok == COMMAND) {
                     update_token();
                 }
-                else if(isspace(c)) break;
                 else {
                     throw SyntaxException();
                 }
             }
             ++count;
         }
+        if(result.tok == COMMAND && !valid_conversion_cmd(result)
+            && result.str[0] != static_cast<char>(Symbol::ASSIGNMENT))
+            throw SyntaxException();
         return result;
     }
   private:
