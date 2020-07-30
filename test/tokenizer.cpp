@@ -94,6 +94,7 @@ TEST(TOKENIZER, T10) {
     stringstream ss;
     ss << "\\ ? . ?";
     Tokenizer tz(ss);
+    tz.get();
     ASSERT_THROW(tz.get(), SyntaxException);
 }
 TEST(TOKENIZER, T11) {
@@ -141,4 +142,9 @@ TEST(VALID_CC, T8) {
     Token t = Token();
     t.str = "-5>x", t.tok = COMMAND;
     ASSERT_FALSE(valid_conversion_cmd(t));
+}
+TEST(VALID_CC, T9) {
+    Token t = Token();
+    t.str = "-77>", t.tok = COMMAND;
+    ASSERT_TRUE(valid_conversion_cmd(t));
 }

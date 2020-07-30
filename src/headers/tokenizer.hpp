@@ -52,7 +52,7 @@ class Token {
 
 inline bool valid_conversion_cmd(const Token& result) noexcept {
     if(result.tok != COMMAND) return false;
-    std::regex rgx(R"(((-[a-zA-Z]+>[a-zA-Z]+)|((-\d?)?>)))");
+    std::regex rgx(R"(((-[a-zA-Z]+>[a-zA-Z]+)|((-\d*)?>)))");
     return std::regex_match(result.str, rgx);
 }
 
@@ -132,13 +132,13 @@ class Tokenizer {
                 else if(comment && c == '\n') {
                     comment = false;
                 }
-                else if(reserved_symbol_start(c)) {
-                    is.unget();
-                    break;
-                }
                 else if(isalpha(c) && result.tok == IDENTIFIER || isdigit(c) && result.tok == LITERAL
                     || result.tok == COMMAND) {
                     update_token();
+                }
+                else if(reserved_symbol_start(c)) {
+                    is.unget();
+                    break;
                 }
                 else {
                     throw SyntaxException();
