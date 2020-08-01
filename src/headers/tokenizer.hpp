@@ -35,10 +35,15 @@ enum class Symbol {
  */
 enum TOKEN_TYPE {
     IDENTIFIER,
-    OPERATOR,
+    LAMBDA,
+    BODY_START,
     SEPARATOR,
+    BRACKET_OPEN,
+    BRACKET_CLOSE,
     LITERAL,
-    COMMAND,
+    CONV_END,
+    CONV_START,
+    ASSIGNMENT,
     UNDEF
 };
 
@@ -49,12 +54,6 @@ class Token {
     std::string str;
     TOKEN_TYPE tok;
 };
-
-inline bool valid_conversion_cmd(const Token& result) noexcept {
-    if(result.tok != COMMAND) return false;
-    std::regex rgx(R"(((-[a-zA-Z]+>[a-zA-Z]+)|((-\d*)?>)))");
-    return std::regex_match(result.str, rgx);
-}
 
 inline bool reserved_symbol_start(char c) noexcept {
     switch(c) {
@@ -83,7 +82,7 @@ class Tokenizer {
         auto init_token = [&result, &c](TOKEN_TYPE tt) { result.tok = tt; result.str += c;};
         auto update_token = [&result, &c]() {result.str += c;};
         bool comment = false;
-        while((is >> c)) {
+        while(is >> c) {
             if(comment) continue;
             if(count == 0) {
                 if(isspace(c)) continue;
@@ -91,12 +90,23 @@ class Tokenizer {
                     // variable name
                     init_token(IDENTIFIER);
                 }
-                else if(c == static_cast<char>(Symbol::LAMBDA) || c == static_cast<char>(Symbol::BODY_START)) {
-                    init_token(OPERATOR);
+                else if(c == static_cast<char>(Symbol::LAMBDA)) {
+                    init_token(LAMBDA);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::BRCKT_OPN) || c == static_cast<char>(Symbol::BRCKT_CLS) ||
-                        c == static_cast<char>(Symbol::SEP)) {
+                else if(c == static_cast<char>(Symbol::BODY_START)) {
+                    init_token(BODY_START);
+                    break;
+                }
+                else if(c == static_cast<char>(Symbol::BRCKT_OPN)) {
+                    init_token(BRACKET_OPEN);
+                    break;
+                }
+                else if(c == static_cast<char>(Symbol::BRCKT_CLS)) {
+                    init_token(BRACKET_CLOSE);
+                    break;
+                }
+                else if(c == static_cast<char>(Symbol::SEP)) {
                     init_token(SEPARATOR);
                     break;
                 }
@@ -105,23 +115,19 @@ class Tokenizer {
                     continue;
                 }
                 else if(c == static_cast<char>(Symbol::ASSIGNMENT)) {
-                    init_token(COMMAND);
+                    init_token(ASSIGNMENT);
                     break;
                 }
                 else if(c == static_cast<char>(Symbol::CONVERSION_START)) {
-                    init_token(COMMAND);
+                    init_token(CONV_START);
+                    break;
                 }
                 else if(c == static_cast<char>(Symbol::CONVERSION_END)) {
-                    init_token(COMMAND);
+                    init_token(CONV_END);
                     break;
                 }
                 else if(isdigit(c)) {
                     init_token(LITERAL);
-                }
-                else if(c == static_cast<char>(Symbol::CONVERSION_END)) {
-                    // one step of beta reduction
-                    init_token(COMMAND);
-                    break;
                 }
                 else {
                     throw SyntaxException();
@@ -132,8 +138,7 @@ class Tokenizer {
                 else if(comment && c == '\n') {
                     comment = false;
                 }
-                else if(isalpha(c) && result.tok == IDENTIFIER || isdigit(c) && result.tok == LITERAL
-                    || result.tok == COMMAND) {
+                else if(isalpha(c) && result.tok == IDENTIFIER || isdigit(c) && result.tok == LITERAL) {
                     update_token();
                 }
                 else if(reserved_symbol_start(c)) {
@@ -146,9 +151,6 @@ class Tokenizer {
             }
             ++count;
         }
-        if(result.tok == COMMAND && !valid_conversion_cmd(result)
-            && result.str[0] != static_cast<char>(Symbol::ASSIGNMENT))
-            throw SyntaxException();
         return result;
     }
   private:
