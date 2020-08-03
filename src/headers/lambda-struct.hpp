@@ -31,6 +31,7 @@ class Expression: public std::enable_shared_from_this<Expression> {
      * if third argument is true, throws Exception on name clash */
     virtual Expression_ptr alpha_convert(const std::string&, const std::string&) = 0;
     // virtual bool alpha_equals(const Expression& other) const noexcept = 0;
+    virtual ~Expression() {}
   protected:
     Expression() {}
 };

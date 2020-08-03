@@ -2,31 +2,80 @@
 #include "gtest/gtest.h"
 #include "../src/headers/lambda-syntax.hpp"
 
-TEST(BUILD_TREE, test1) {
-    // \x . x
-    std::vector<token> in = {{OPERATOR, "\\"}, {IDENTIFIER, "x"}, {OPERATOR, "."}, {IDENTIFIER, "x"}};
-    auto result = build_syntax_tree(in.begin(), in.end());
-    ASSERT_EQ(result->to_string(), "\\x . x ");
+class SyntaxTest : public ::testing::Test {
+  public:
+    SyntaxTest() : is(), os(), p(is) {}
+    std::stringstream is;
+    std::stringstream os;
+    Parser p;
+};
+
+// simple positive tests
+
+TEST_F(SyntaxTest, VariableParses) {
+    is << "x;";
+    auto result = std::dynamic_pointer_cast<Variable>(p.program().last_command().execute());
+    ASSERT_EQ(result->get_name(), "x");
 }
 
-TEST(BUILD_TREE, test2) {
-    // (\x . (x) y) h
-    std::vector<token> in = {{SEPARATOR, "("}, {OPERATOR, "\\"}, {IDENTIFIER, "x"}, {OPERATOR, "."},
-                             {SEPARATOR, "("}, {IDENTIFIER, "x"}, {SEPARATOR, ")"}, {IDENTIFIER, "y"},
-                             {SEPARATOR, ")"}, {IDENTIFIER, "z"}};
-    auto result = build_syntax_tree(in.begin(), in.end());
-    ASSERT_EQ(result->to_string(), "(\\x . (x) y) z ");
+TEST_F(SyntaxTest, LambdaParsesSimple) {
+    is << "\\ x . x;";
+    auto result = std::dynamic_pointer_cast<Lambda>(p.program().last_command().execute());
+    os << *result;
+    ASSERT_EQ(os.str(), "\\x . x");
 }
 
-TEST(BUILD_TREE, test3) {
-    // from http://www.mathematik.uni-ulm.de/numerik/cpp/ss18/cpp-2018-06-19.pdf
-    // (\x . a) (\x . (x) x) \y.(y) y
-    std::vector<token> in = {{SEPARATOR, "("}, {OPERATOR, "\\"}, {IDENTIFIER, "x"}, {OPERATOR, "."},
-                             {IDENTIFIER, "a"}, {SEPARATOR, ")"}, {SEPARATOR, "("}, {OPERATOR, "\\"},
-                             {IDENTIFIER, "x"}, {OPERATOR, "."}, {SEPARATOR, "("}, {IDENTIFIER, "x"},
-                             {SEPARATOR, ")"}, {IDENTIFIER, "x"}, {SEPARATOR, ")"}, {OPERATOR, "\\"},
-                             {IDENTIFIER, "y"}, {OPERATOR, "."}, {SEPARATOR, "("}, {IDENTIFIER, "y"},
-                             {SEPARATOR, ")"}, {IDENTIFIER, "y"}};
-    auto result = build_syntax_tree(in.begin(), in.end());
-    ASSERT_EQ(result->to_string(), "(\\x . a) (\\x . (x) x) \\y . (y) y ");
+TEST_F(SyntaxTest, ApplicationParsesSimple) {
+    is << "(f) x;";
+    auto result = std::dynamic_pointer_cast<Application>(p.program().last_command().execute());
+    os << *result;
+    ASSERT_EQ(os.str(), "(f) x");
+}
+
+TEST_F(SyntaxTest, AssignmentParsesSimple) {
+    is << "A = a;";
+    auto prog = p.program();
+    ASSERT_NE(prog.symbols().find("A"), prog.symbols().end());
+    auto expr = std::dynamic_pointer_cast<Variable>(prog.symbols()["A"].execute());
+    ASSERT_EQ(expr->get_name(), "a");
+}
+
+TEST_F(SyntaxTest, AlphaParsesSimple) {
+    is << "\\ x . x -x>a;";
+    auto lambda = p.program().last_command().execute();
+    os << *lambda;
+    ASSERT_EQ(os.str(), "\\a . a");
+}
+
+TEST_F(SyntaxTest, BetaParsesSimple) {
+    is << "(\\ x . x) a >;";
+    auto var = p.program().last_command().execute();
+    os << *var;
+    ASSERT_EQ(os.str(), "a");
+}
+
+// exception tests
+
+TEST_F(SyntaxTest, NoSemicolon) {
+    is << "\\ x . x";
+    ASSERT_THROW(p.program(), SyntaxException);
+}
+
+TEST_F(SyntaxTest, IllegalAssignment) {
+    is << "\\ x. x = (f) a;";
+    ASSERT_THROW(p.program(), SyntaxException);
+}
+
+TEST_F(SyntaxTest, IllegalReduction) {
+    is << "(f) a -6>t;";
+    ASSERT_THROW(p.program(), SyntaxException);
+}
+
+// complex positive tests
+
+TEST_F(SyntaxTest, MultiLine) {
+    is << "A = (\\ x . x) a >; (x) A;";
+    auto var = p.program().last_command().execute();
+    os << *var;
+    ASSERT_EQ(os.str(), "(x) a");
 }

@@ -1,52 +1,64 @@
 #pragma once
 #include <algorithm>
 #include <cassert>
+#include <string>
 #include "lambda-exceptions.hpp"
 #include "lambda-struct.hpp"
 #include "tokenizer.hpp"
-
-// TODO: TEST
-// TODO: build the syntax tree while parsing
-// TODO conversion hierarchy
+#include "program.hpp"
+#include "church-encoding.hpp"
 
 // recursive descent parser inspired by https://en.wikipedia.org/wiki/Recursive_descent_parser
 // and https://www.geeksforgeeks.org/recursive-descent-parser/
+// adapted to build a syntax tree while parsing
 // I built a LL(2) grammar for this, hence we need two lookaheads
 class Parser {
   public:
     Parser(std::istream& in) : tz(in), bound() {}
-    void program() {
+    Program program() {
         la1 = tz.get();
         la2 = tz.get();
-        if(la1.tok == IDENTIFIER && la2.tok == ASSIGNMENT) {
-            res = assignment();
-        }
-        else {
-            res = rvalue();
-        }
-        if(la1.tok != SEPARATOR) throw SyntaxException();
+        do {
+            if(la1.tok == IDENTIFIER && la2.tok == ASSIGNMENT) {
+                res = assignment();
+            }
+            else {
+                res = rvalue();
+            }
+            if(la1.tok != SEPARATOR) throw SyntaxException("Malformed lambda!");
+            next_token();
+        } while(la1);
+        return Program(known_symbols, res);
     }
-    Expression_ptr assignment() {
-        if(la1.tok != IDENTIFIER) throw SyntaxException();
+    Command assignment() {
+        if(la1.tok != IDENTIFIER) throw SyntaxException("Assignment may only assign to variable");
         std::string name = la1.str;
+        if(!isupper(name[0])) throw SyntaxException("Name-bindings must start with uppercase letter!");
         next_token();
         if(la1.tok != ASSIGNMENT) throw SyntaxException();
         next_token();
-        Expression_ptr e = rvalue();
-        known_symbols[name] = res;
+        Command e = rvalue();
+        known_symbols[name] = e;
         return e;
     }
-    Expression_ptr rvalue() {
+    Command rvalue() {
         Expression_ptr e = expression();
+        std::shared_ptr<Conversion> c;
         if(la1.tok == CONV_START) {
             if(la2.tok == IDENTIFIER) {
-                alpha();
+                c = alpha();
             }
             else {
-                beta();
+                c = beta();
             }
         }
-        return e;
+        else if(la1.tok == CONV_END) {
+            c = beta();
+        }
+        else {
+            c = std::make_shared<Conversion>();
+        }
+        return Command(e, c);
     }
     Expression_ptr expression() {
         if(la1.tok == LAMBDA) {
@@ -73,46 +85,69 @@ class Parser {
             return std::make_shared<Application>(fst, snd);
         }
         else if(la1.tok == IDENTIFIER) {
+            if(!islower(la1.str[0])) {
+                if(known_symbols.find(la1.str) == known_symbols.end())
+                    throw SyntaxException("Variables must start with lowercase letter!");
+                else {
+                    auto key = la1.str;
+                    next_token();
+                    // TODO: this weakens the boundary between building the syntax tree and execution,
+                    // can this be done better?
+                    return known_symbols[key].execute();
+                }
+            }
             if(auto v = bound.find(la1.str); v != bound.end()) {
+                next_token();
                 return v->second;
             }
-            return std::make_shared<Variable>(la1.str, false);
+            auto name = la1.str;
+            next_token();
+            return std::make_shared<Variable>(name, false);
         }
         else if(la1.tok == LITERAL) {
-            throw std::runtime_error("Not implemented yet");
-            // TODO: do something with the literal
+            auto num = stoi(la1.str);
+            next_token();
+            return church_encode(num);
         }
         else throw SyntaxException();
     }
-    void alpha() {
+    std::shared_ptr<AlphaConversion> alpha() {
         auto tokens = {CONV_START, IDENTIFIER, CONV_END, IDENTIFIER};
+        std::string names[2];
+        unsigned short i = 0;
         for(auto t: tokens) {
             if(la1.tok != t) throw SyntaxException();
+            if(la1.tok == IDENTIFIER) names[i++] = la1.str;
             next_token();
         }
-
+        return std::make_shared<AlphaConversion>(names[0], names[1]);
     }
-    void beta() {
+    std::shared_ptr<BetaReduction> beta() {
         if(la1.tok == CONV_END) {
             next_token();
-            return;
+            return std::make_shared<BetaReduction>(1);
         }
         else if(la1.tok == CONV_START) {
             next_token();
             if(la1.tok == CONV_END) {
                 next_token();
-                return;;
+                return std::make_shared<BetaReduction>(0);
             }
             else if(la1.tok == LITERAL && la2.tok == CONV_END) {
                 next_token();
                 next_token();
-                return;
+                try {
+                    return std::make_shared<BetaReduction>(std::stol(la1.str));
+                }
+                catch(std::invalid_argument) {
+                    throw SyntaxException("Malformed reduction!");
+                }
             }
-            else throw SyntaxException();
+            else throw SyntaxException("Malformed conversion command");
         }
         else throw SyntaxException();
     }
-    bool next_token() {
+    void next_token() {
         la1 = la2;
         la2 = tz.get();
     }
@@ -121,9 +156,7 @@ class Parser {
     Token la1;
     Token la2;
     Tokenizer tz;
-    Expression_ptr res;
+    Command res;
     std::unordered_map<std::string, Variable_ptr> bound;
-    std::unordered_map<std::string, Expression_ptr> known_symbols;
-    Token command;
+    std::unordered_map<std::string, Command> known_symbols;
 };
-
