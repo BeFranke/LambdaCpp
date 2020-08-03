@@ -5,8 +5,6 @@
 #include <regex>
 #include "lambda-exceptions.hpp"
 
-// TODO: add operations such as ==, =a (alpha equality)
-
 // syntactic constants
 // using '\' as replacement for "lambda" is stolen from Haskell
 enum class Symbol {

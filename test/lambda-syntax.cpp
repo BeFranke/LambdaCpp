@@ -71,11 +71,21 @@ TEST_F(SyntaxTest, IllegalReduction) {
     ASSERT_THROW(p.program(), SyntaxException);
 }
 
+TEST_F(SyntaxTest, WrongVariableCase) {
+    is << "(f) A;";
+    ASSERT_THROW(p.program(), SyntaxException);
+}
+
+TEST_F(SyntaxTest, WrongVariableCase2) {
+    is << "a = (f) b;";
+    ASSERT_THROW(p.program(), SyntaxException);
+}
+
 // complex positive tests
 
 TEST_F(SyntaxTest, MultiLine) {
-    is << "A = (\\ x . x) a >; (x) A;";
+    is << "A = \\ x . x; (A) y;";
     auto var = p.program().last_command().execute();
     os << *var;
-    ASSERT_EQ(os.str(), "(x) a");
+    ASSERT_EQ(os.str(), "(\\x . x) y");
 }
