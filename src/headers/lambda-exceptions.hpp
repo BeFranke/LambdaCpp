@@ -35,13 +35,6 @@ class MaxIterationsExceeded : public std::exception {
     }
 };
 
-class EmptyIteratorException : public std::exception {
-public:
-  const char* what() const noexcept override {
-      return "Iterator provided for Syntax tree are empty!";
-  }
-};
-
 class NameClash : public std::exception {
   public:
     const char* what() const noexcept override {
