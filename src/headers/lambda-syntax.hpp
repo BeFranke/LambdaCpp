@@ -8,6 +8,18 @@
 #include "program.hpp"
 #include "church-encoding.hpp"
 
+/**
+ * ABSTRACT:
+ * This header contains a recursive descent parser inside the class Parser.
+ * It receives Tokens from the Tokenizer (see tokenizer.hpp) and parses them into an object of class Program
+ * (see program.hpp). While parsing, it builds one lambda-syntax tree (see lambda-struct.hpp) per encountered
+ * lambda expression, it also splits away assignments and beta-reduction / alpha conversion commands that then
+ * get handled by the Program object.
+ * The class Parser defines one method per non-terminal symbol in the grammar, as well as the utility method
+ * Parser::next_token, which updates the two lookaheads by one step, and Parser::reset for re-using the object.
+ */
+
+
 // recursive descent parser inspired by https://en.wikipedia.org/wiki/Recursive_descent_parser
 // and https://www.geeksforgeeks.org/recursive-descent-parser/
 // adapted to build a syntax tree while parsing
@@ -150,6 +162,11 @@ class Parser {
     void next_token() {
         la1 = la2;
         la2 = tz.get();
+    }
+    void reset() {
+        bound.clear();
+        known_symbols.clear();
+        res = Command();
     }
   private:
     // lookaheads

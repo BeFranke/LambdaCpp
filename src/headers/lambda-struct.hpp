@@ -3,6 +3,18 @@
 #include <sstream>
 #include "lambda-exceptions.hpp"
 
+/**
+ * ABSTRACT:
+ * This file contains a class-polymorphism to represent lambda expressions. User-supplied commands like
+ * "beta reduce this expression" are intentionally split away into the file "program.hpp", so that this header can
+ * be re-used for other purposes more directly.
+ * This header defines a base class for all valid lambda expressions, called "Expression". Child classes are
+ * "Lambda" (e.g. \\ x. x), "Application" (e.g. ((f) x) and "Variable" (e.g. x).
+ * The important polymorphic methods are Expression::beta_reduce for invoking one step of beta reduction,
+ * Expression::alpha_convert for alpha conversion.
+ * The methods Expression::check_for_name_clash and Expression::substitute are for internal use.
+ */
+
 // forward declarations
 class Expression;
 class Variable;
@@ -30,13 +42,13 @@ class Expression: public std::enable_shared_from_this<Expression> {
     /** @return Expression where bound variables with a name equal to the first argument were renamed to teh second
      * if third argument is true, throws Exception on name clash */
     virtual Expression_ptr alpha_convert(const std::string&, const std::string&) = 0;
-    // virtual bool alpha_equals(const Expression& other) const noexcept = 0;
+
     virtual ~Expression() {}
   protected:
     Expression() {}
 };
 
-  class Variable final : public Expression {
+class Variable final : public Expression {
     /**
      * Variables have a name and can be bound or not
      * e.g. x
@@ -57,16 +69,8 @@ class Expression: public std::enable_shared_from_this<Expression> {
     }
     Expression_ptr alpha_convert(const std::string& old_name, const std::string& new_name) override {
         /**
-         * renames if name matches and variable is bound
+         * identity, actual renaming is done via Variable::substitute()
          */
-        /*if(check_clashes) {
-            if(this->check_for_name_clash(new_name)) throw NameClash();
-        }*/
-        if(bound && name.compare(old_name) == 0) {
-            // TODO remove if this indeed never happens
-            throw std::runtime_error("This should never happen! Code 555");
-            //return std::make_shared<Variable>(new_name, bound);
-        }
         return std::static_pointer_cast<Expression>(shared_from_this());
     }
     Expression_ptr substitute(Variable_ptr e1, Expression_ptr e2) override {

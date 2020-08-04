@@ -5,6 +5,13 @@
 #include <regex>
 #include "lambda-exceptions.hpp"
 
+/**
+ * ABSTRACT:
+ * This file defines the class Tokenizer, which parses characters from a std::istream and parses them into Tokens.
+ * Tokenizer::get can then be used to retrieve Tokens one by one, yielding a Token of type "UNDEF" when the end of the
+ * stream is reached.
+ */
+
 // syntactic constants
 // using '\' as replacement for "lambda" is stolen from Haskell
 enum class Symbol {
@@ -28,8 +35,6 @@ enum class Symbol {
  * possible types of tokens for easier syntactical parsing later on
  * "LITERAL" is included so integers can be used in the lambda expression
  * that could then get expanded by Church encoding
- * "COMMAND" is meant to represent non-lambda calculus symbols that are included in the mini-language, i.e. assignments
- * and reduction commands
  */
 enum TOKEN_TYPE {
     IDENTIFIER,
@@ -46,6 +51,12 @@ enum TOKEN_TYPE {
 };
 
 class Token {
+    /**
+     * A container for a TOKEN_TYPE and a std::string.
+     * The std::string gives details about the token, e.g. the name of an identifier.
+     * Tokens may have the TOKEN_TYPE "UNDEF", which means the Tokenizer has reached the end of the stream.
+     * Tokens of this type evaluate to "false" in a boolean context.
+     */
   public:
     Token() : str(""), tok(UNDEF) {}
     operator bool() const {return tok != UNDEF;}
@@ -72,7 +83,12 @@ inline bool reserved_symbol_start(char c) noexcept {
 
 class Tokenizer {
   public:
+    /** @param is std::istream to read from */
     Tokenizer(std::istream& is) : is(is) {}
+    /**
+     * gets the next token from the input stream by parsing one or more characters from the stream
+     * @return
+     */
     Token get() {
         Token result = Token();
         char c;
