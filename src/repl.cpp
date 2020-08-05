@@ -1,34 +1,27 @@
-#include <unordered_map>
 #include <iostream>
-#include "headers/lambda-struct.hpp"
-#include "headers/tokenizer.hpp"
 #include "headers/lambda-syntax.hpp"
 
-static std::unordered_map<std::string, Expression_ptr> known_symbols;
+#ifndef MAX_ITER
+#define MAX_ITER 1000
+#endif
 
 int main() {
-    do {
+    Parser parser(std::cin);
+    while(true) {
         std::cout << ">> ";
         try {
-            auto tokens = parse(std::cin, '\n');
-            // TODO: split assignments and put into known_symbols
-            Expression_ptr expr;
             try {
-                expr = build_syntax_tree(tokens.begin(), tokens.end());
-                try {
-                    std::cout << expr->beta_reduce_full()->to_string() << std::endl;
-                }
-                catch(MaxIterationsExceeded) {
-                    std::cout << "Error: MAX_ITER exceeded!" << std::endl;
-                }
-            }
-            catch (EmptyIteratorException) {
-                // User pressed enter without providing an Expression
-                std::cout << "\n";
+                Program p = parser.program();
+                auto com = p.last_command();
+                com.set_max_iter(MAX_ITER);
+                auto ex = com.execute();
+                std::cout << *ex << std::endl;
+            } catch(EmptyException&) {
+                continue;
             }
         }
-        catch (SyntaxException e) {
-            std::cout << e.what() << "\n";
+        catch (SyntaxException& e) {
+            std::cout << e.what() << std::endl;
         }
-    } while(!std::cin.eof());
+    }
 }

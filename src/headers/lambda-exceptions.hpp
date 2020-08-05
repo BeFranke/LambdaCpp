@@ -35,6 +35,13 @@ class MaxIterationsExceeded : public std::exception {
     }
 };
 
+class EmptyException : public std::exception {
+public:
+  const char* what() const noexcept override {
+      return "Stream provided for syntax tree is empty!";
+  }
+};
+
 class NameClash : public std::exception {
   public:
     const char* what() const noexcept override {

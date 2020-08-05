@@ -72,6 +72,11 @@ class Command {
     Expression_ptr execute() const {
         return c->execute(ex);
     }
+    void set_max_iter(unsigned long iter) {
+        auto b = std::dynamic_pointer_cast<BetaReduction>(c);
+        if(b != nullptr)
+            b->num_steps = b->num_steps > iter ? iter : b->num_steps;
+    }
     Expression_ptr ex;
     std::shared_ptr<Conversion> c;
 };

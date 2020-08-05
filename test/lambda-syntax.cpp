@@ -84,7 +84,7 @@ TEST_F(SyntaxTest, WrongVariableCase2) {
 // complex positive tests
 
 TEST_F(SyntaxTest, MultiLine) {
-    is << "A = \\ x . x; (A) y;";
+    is << "A = \\ x . \n x";
     auto var = p.program().last_command().execute();
     os << *var;
     ASSERT_EQ(os.str(), "(\\x . x) y");

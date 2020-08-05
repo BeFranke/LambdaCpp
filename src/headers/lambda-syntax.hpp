@@ -28,18 +28,17 @@ class Parser {
   public:
     Parser(std::istream& in) : tz(in), bound() {}
     Program program() {
+        tz.reset();
         la1 = tz.get();
         la2 = tz.get();
-        do {
-            if(la1.tok == IDENTIFIER && la2.tok == ASSIGNMENT) {
-                res = assignment();
-            }
-            else {
-                res = rvalue();
-            }
-            if(la1.tok != SEPARATOR) throw SyntaxException("Malformed lambda!");
-            next_token();
-        } while(la1);
+        if(la1.tok == IDENTIFIER && la2.tok == ASSIGNMENT) {
+            res = assignment();
+        }
+        else {
+            res = rvalue();
+        }
+        if(la1.tok != SEPARATOR) throw SyntaxException("Malformed lambda!");
+        next_token();
         return Program(known_symbols, res);
     }
     Command assignment() {
@@ -151,7 +150,7 @@ class Parser {
                 try {
                     return std::make_shared<BetaReduction>(std::stol(la1.str));
                 }
-                catch(std::invalid_argument) {
+                catch(std::invalid_argument&) {
                     throw SyntaxException("Malformed reduction!");
                 }
             }
@@ -161,7 +160,8 @@ class Parser {
     }
     void next_token() {
         la1 = la2;
-        la2 = tz.get();
+        if(!tz.is_end()) la2 = tz.get();
+        else la2.tok = UNDEF;
     }
     void reset() {
         bound.clear();

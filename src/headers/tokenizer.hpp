@@ -8,8 +8,7 @@
 /**
  * ABSTRACT:
  * This file defines the class Tokenizer, which parses characters from a std::istream and parses them into Tokens.
- * Tokenizer::get can then be used to retrieve Tokens one by one, yielding a Token of type "UNDEF" when the end of the
- * stream is reached.
+ * Tokenizer::get can then be used to retrieve Tokens one by one
  */
 
 // syntactic constants
@@ -28,7 +27,7 @@ enum class Symbol {
     COMMENT = '#',
     ASSIGNMENT = '=',
     CONVERSION_END = '>',
-    CONVERSION_START = '-',
+    CONVERSION_START = '-'
 };
 
 /**
@@ -54,8 +53,6 @@ class Token {
     /**
      * A container for a TOKEN_TYPE and a std::string.
      * The std::string gives details about the token, e.g. the name of an identifier.
-     * Tokens may have the TOKEN_TYPE "UNDEF", which means the Tokenizer has reached the end of the stream.
-     * Tokens of this type evaluate to "false" in a boolean context.
      */
   public:
     Token() : str(""), tok(UNDEF) {}
@@ -84,22 +81,27 @@ inline bool reserved_symbol_start(char c) noexcept {
 class Tokenizer {
   public:
     /** @param is std::istream to read from */
-    Tokenizer(std::istream& is) : is(is) {}
+    Tokenizer(std::istream& is) : is(is), input_end(false) {}
     /**
      * gets the next token from the input stream by parsing one or more characters from the stream
      * @return
      */
     Token get() {
+        if(input_end) throw EmptyException();
         Token result = Token();
-        char c;
+        char c = 0;
+        char c_prev;
         unsigned short count = 0;
         auto init_token = [&result, &c](TOKEN_TYPE tt) { result.tok = tt; result.str += c;};
         auto update_token = [&result, &c]() {result.str += c;};
         bool comment = false;
-        while(is >> c) {
-            if(comment) continue;
+        while(c_prev = c, is.get(c)) {
+            if(c == '\n' && c_prev == static_cast<char>(Symbol::SEP)) {
+                input_end = true;
+                return result;
+            }
             if(count == 0) {
-                if(isspace(c)) continue;
+                if(isspace(c) || comment) continue;
                 else if(isalpha(c)) {
                     // variable name
                     init_token(IDENTIFIER);
@@ -167,6 +169,13 @@ class Tokenizer {
         }
         return result;
     }
+    bool is_end() const noexcept {
+        return input_end;
+    }
+    void reset() {
+        input_end = false;
+    }
   private:
+    bool input_end;
     std::istream& is;
 };
