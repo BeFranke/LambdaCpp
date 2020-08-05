@@ -82,8 +82,8 @@ TEST(TOKENIZER, T7) {
 TEST(TOKENIZER, T8) {
     stringstream ss;
     ss << "# this is a comment\n A = \\ x . x; (A) y;";
-    TOKEN_TYPE expcted[] = {IDENTIFIER, ASSIGNMENT, LAMBDA, IDENTIFIER, BODY_START, IDENTIFIER, SEPARATOR, BRACKET_OPEN,
-                            IDENTIFIER, BRACKET_CLOSE, IDENTIFIER, SEPARATOR};
+    TOKEN_TYPE expcted[] = {NAME, ASSIGNMENT, LAMBDA, IDENTIFIER, BODY_START, IDENTIFIER, SEPARATOR, BRACKET_OPEN,
+                            NAME, BRACKET_CLOSE, IDENTIFIER, SEPARATOR};
     Tokenizer tz(ss);
     unsigned short i = 0;
     for(Token t; (t = tz.get()); ++i) {
@@ -93,7 +93,7 @@ TEST(TOKENIZER, T8) {
 TEST(TOKENIZER, T9) {
     stringstream ss;
     ss << "ID = \\ x. x;";
-    TOKEN_TYPE expcted[] = {IDENTIFIER, ASSIGNMENT, LAMBDA, IDENTIFIER, BODY_START, IDENTIFIER, SEPARATOR};
+    TOKEN_TYPE expcted[] = {NAME, ASSIGNMENT, LAMBDA, IDENTIFIER, BODY_START, IDENTIFIER, SEPARATOR};
     Tokenizer tz(ss);
     unsigned short i = 0;
     for(Token t = tz.get(); t; t = tz.get(), ++i) {

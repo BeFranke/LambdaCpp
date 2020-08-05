@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 #include <regex>
+#include <algorithm>
 #include "lambda-exceptions.hpp"
 
 /**
@@ -37,6 +38,7 @@ enum class Symbol {
  */
 enum TOKEN_TYPE {
     IDENTIFIER,
+    NAME,
     LAMBDA,
     BODY_START,
     SEPARATOR,
@@ -55,7 +57,7 @@ class Token {
      * The std::string gives details about the token, e.g. the name of an identifier.
      */
   public:
-    Token() : str(""), tok(UNDEF) {}
+    Token() : str(), tok(UNDEF) {}
     operator bool() const {return tok != UNDEF;}
     std::string str;
     TOKEN_TYPE tok;
@@ -84,27 +86,25 @@ class Tokenizer {
     Tokenizer(std::istream& is) : is(is), input_end(false) {}
     /**
      * gets the next token from the input stream by parsing one or more characters from the stream
-     * @return
+     * @return Token-object
      */
     Token get() {
-        if(input_end) throw EmptyException();
         Token result = Token();
-        char c = 0;
-        char c_prev;
+        char c;
         unsigned short count = 0;
         auto init_token = [&result, &c](TOKEN_TYPE tt) { result.tok = tt; result.str += c;};
         auto update_token = [&result, &c]() {result.str += c;};
         bool comment = false;
-        while(c_prev = c, is.get(c)) {
-            if(c == '\n' && c_prev == static_cast<char>(Symbol::SEP)) {
-                input_end = true;
-                return result;
-            }
+        while(is >> c) {
             if(count == 0) {
                 if(isspace(c) || comment) continue;
-                else if(isalpha(c)) {
+                else if(islower(c)) {
                     // variable name
                     init_token(IDENTIFIER);
+                }
+                else if(isupper(c)) {
+                    // named function
+                    init_token(NAME);
                 }
                 else if(c == static_cast<char>(Symbol::LAMBDA)) {
                     init_token(LAMBDA);
@@ -154,7 +154,8 @@ class Tokenizer {
                 else if(comment && c == '\n') {
                     comment = false;
                 }
-                else if(isalpha(c) && result.tok == IDENTIFIER || isdigit(c) && result.tok == LITERAL) {
+                else if(isalpha(c) && (result.tok == IDENTIFIER || result.tok == NAME)
+                    || isdigit(c) && result.tok == LITERAL) {
                     update_token();
                 }
                 else if(reserved_symbol_start(c)) {
@@ -168,12 +169,6 @@ class Tokenizer {
             ++count;
         }
         return result;
-    }
-    bool is_end() const noexcept {
-        return input_end;
-    }
-    void reset() {
-        input_end = false;
     }
   private:
     bool input_end;

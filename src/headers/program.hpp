@@ -52,7 +52,7 @@ class BetaReduction : public Conversion {
     BetaReduction(unsigned int num_steps) : num_steps(num_steps) {}
     Expression_ptr execute(Expression_ptr ex) const override {
         Expression_ptr newex;
-        for(unsigned int i = 0; i < num_steps; ++i) {
+        for(unsigned int i = 0; i < num_steps || num_steps == 0; ++i) {
             newex = ex->beta_reduce();
             if(newex == ex) break;
             ex = newex;

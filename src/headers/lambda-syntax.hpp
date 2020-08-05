@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cassert>
 #include <string>
+#include <set>
 #include "lambda-exceptions.hpp"
 #include "lambda-struct.hpp"
 #include "tokenizer.hpp"
@@ -23,31 +24,29 @@
 // recursive descent parser inspired by https://en.wikipedia.org/wiki/Recursive_descent_parser
 // and https://www.geeksforgeeks.org/recursive-descent-parser/
 // adapted to build a syntax tree while parsing
-// I built a LL(2) grammar for this, hence we need two lookaheads
+// I built a LL(1) grammar for this, hence we only need one lookahead (here, this is cur)
 class Parser {
   public:
     Parser(std::istream& in) : tz(in), bound() {}
     Program program() {
-        tz.reset();
-        la1 = tz.get();
-        la2 = tz.get();
-        if(la1.tok == IDENTIFIER && la2.tok == ASSIGNMENT) {
+        cur = tz.get();
+        if(cur.tok == NAME) {
             res = assignment();
         }
         else {
             res = rvalue();
         }
-        if(la1.tok != SEPARATOR) throw SyntaxException("Malformed lambda!");
-        next_token();
+        if(cur.tok != SEPARATOR) throw SyntaxException("Malformed lambda!");
+        //next_token();
         return Program(known_symbols, res);
     }
     Command assignment() {
-        if(la1.tok != IDENTIFIER) throw SyntaxException("Assignment may only assign to variable");
-        std::string name = la1.str;
+        if(cur.tok != NAME) throw SyntaxException("Assignment may only assign to variable");
+        std::string name = cur.str;
         if(!isupper(name[0])) throw SyntaxException("Name-bindings must start with uppercase letter!");
-        next_token();
-        if(la1.tok != ASSIGNMENT) throw SyntaxException();
-        next_token();
+        cur = tz.get();
+        if(cur.tok != ASSIGNMENT) throw SyntaxException();
+        cur = tz.get();
         Command e = rvalue();
         known_symbols[name] = e;
         return e;
@@ -55,16 +54,8 @@ class Parser {
     Command rvalue() {
         Expression_ptr e = expression();
         std::shared_ptr<Conversion> c;
-        if(la1.tok == CONV_START) {
-            if(la2.tok == IDENTIFIER) {
-                c = alpha();
-            }
-            else {
-                c = beta();
-            }
-        }
-        else if(la1.tok == CONV_END) {
-            c = beta();
+        if(cur.tok == CONV_START || cur.tok == CONV_END) {
+           c = convert();
         }
         else {
             c = std::make_shared<Conversion>();
@@ -72,96 +63,97 @@ class Parser {
         return Command(e, c);
     }
     Expression_ptr expression() {
-        if(la1.tok == LAMBDA) {
+        if(cur.tok == LAMBDA) {
             // backup the bound-map, because there could already be a variable with the same name as the new head
             std::unordered_map<std::string, Variable_ptr> backup_bound = bound;
-            next_token();
-            if(la1.tok != IDENTIFIER) throw SyntaxException();
+            cur = tz.get();
+            if(cur.tok != IDENTIFIER) throw SyntaxException();
             // build head variable
-            Variable_ptr head = std::make_shared<Variable>(la1.str, true);
-            bound[la1.str] = head;
-            next_token();
-            if(la1.tok != BODY_START) throw SyntaxException();
-            next_token();
+            Variable_ptr head = std::make_shared<Variable>(cur.str, true);
+            bound[cur.str] = head;
+            cur = tz.get();
+            if(cur.tok != BODY_START) throw SyntaxException();
+            cur = tz.get();
             Expression_ptr body = expression();
             bound = backup_bound;
             return std::make_shared<Lambda>(head, body);
         }
-        else if(la1.tok == BRACKET_OPEN) {
-            next_token();
+        else if(cur.tok == BRACKET_OPEN) {
+            cur = tz.get();
             Expression_ptr fst = expression();
-            if(la1.tok != BRACKET_CLOSE) throw SyntaxException();
-            next_token();
+            if(cur.tok != BRACKET_CLOSE) throw SyntaxException();
+            cur = tz.get();
             Expression_ptr snd = expression();
             return std::make_shared<Application>(fst, snd);
         }
-        else if(la1.tok == IDENTIFIER) {
-            if(!islower(la1.str[0])) {
-                if(known_symbols.find(la1.str) == known_symbols.end())
+        else if(cur.tok == IDENTIFIER) {
+            if(!islower(cur.str[0])) {
+                if(known_symbols.find(cur.str) == known_symbols.end())
                     throw SyntaxException("Variables must start with lowercase letter!");
                 else {
-                    auto key = la1.str;
-                    next_token();
+                    auto key = cur.str;
+                    cur = tz.get();
                     // TODO: this weakens the boundary between building the syntax tree and execution,
                     // can this be done better?
                     return known_symbols[key].execute();
                 }
             }
-            if(auto v = bound.find(la1.str); v != bound.end()) {
-                next_token();
+            if(auto v = bound.find(cur.str); v != bound.end()) {
+                cur = tz.get();
                 return v->second;
             }
-            auto name = la1.str;
-            next_token();
+            auto name = cur.str;
+            cur = tz.get();
             return std::make_shared<Variable>(name, false);
         }
-        else if(la1.tok == LITERAL) {
-            auto num = stoi(la1.str);
-            next_token();
+        else if(cur.tok == LITERAL) {
+            auto num = stoi(cur.str);
+            cur = tz.get();
             return church_encode(num);
         }
         else throw SyntaxException();
     }
+    std::shared_ptr<Conversion> convert() {
+        if(cur.tok == CONV_START) {
+            cur = tz.get();
+            if(cur.tok == IDENTIFIER) return alpha();
+            else return beta();
+        }
+        else if(cur.tok == CONV_END) {
+            cur = tz.get();
+            return std::make_shared<BetaReduction>(1);
+        }
+        else {
+            throw SyntaxException("Malformed conversion command!");
+        }
+    }
     std::shared_ptr<AlphaConversion> alpha() {
-        auto tokens = {CONV_START, IDENTIFIER, CONV_END, IDENTIFIER};
+        auto tokens = {IDENTIFIER, CONV_END, IDENTIFIER};
         std::string names[2];
         unsigned short i = 0;
         for(auto t: tokens) {
-            if(la1.tok != t) throw SyntaxException();
-            if(la1.tok == IDENTIFIER) names[i++] = la1.str;
-            next_token();
+            if(cur.tok != t) throw SyntaxException();
+            if(cur.tok == IDENTIFIER) names[i++] = cur.str;
+            cur = tz.get();
         }
         return std::make_shared<AlphaConversion>(names[0], names[1]);
     }
     std::shared_ptr<BetaReduction> beta() {
-        if(la1.tok == CONV_END) {
-            next_token();
-            return std::make_shared<BetaReduction>(1);
+        if(cur.tok == CONV_END) {
+            cur = tz.get();
+            return std::make_shared<BetaReduction>(0);
         }
-        else if(la1.tok == CONV_START) {
-            next_token();
-            if(la1.tok == CONV_END) {
-                next_token();
-                return std::make_shared<BetaReduction>(0);
+        else if(cur.tok == LITERAL) {
+            unsigned int cnt = std::stol(cur.str);
+            cur = tz.get();
+            try {
+                return std::make_shared<BetaReduction>(cnt);
             }
-            else if(la1.tok == LITERAL && la2.tok == CONV_END) {
-                next_token();
-                next_token();
-                try {
-                    return std::make_shared<BetaReduction>(std::stol(la1.str));
-                }
-                catch(std::invalid_argument&) {
-                    throw SyntaxException("Malformed reduction!");
-                }
+            catch(std::invalid_argument&) {
+                throw SyntaxException("Malformed reduction!");
             }
-            else throw SyntaxException("Malformed conversion command");
         }
-        else throw SyntaxException();
-    }
-    void next_token() {
-        la1 = la2;
-        if(!tz.is_end()) la2 = tz.get();
-        else la2.tok = UNDEF;
+        else throw SyntaxException("Malformed conversion command");
     }
     void reset() {
         bound.clear();
@@ -169,9 +161,8 @@ class Parser {
         res = Command();
     }
   private:
-    // lookaheads
-    Token la1;
-    Token la2;
+    //lookahead
+    Token cur;
     Tokenizer tz;
     Command res;
     std::unordered_map<std::string, Variable_ptr> bound;

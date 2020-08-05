@@ -48,3 +48,5 @@ class NameClash : public std::exception {
         return "Requested name already exists!";
     }
 };
+
+class Interrupt : public std::exception {};
