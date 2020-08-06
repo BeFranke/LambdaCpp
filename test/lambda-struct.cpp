@@ -166,6 +166,19 @@ TEST(BETA, no_normal_form) {
     }
 }
 
+TEST(BETA, lambda) {
+    // \ x . (\ y . x) a
+    auto bound = make_vars({"x", "y"}, true);
+    auto unbound = make_vars({"a"}, false);
+    auto inner = make_shared<Lambda>(bound[1], bound[0]);
+    auto app = make_shared<Application>(inner, unbound[0]);
+    auto outer = make_shared<Lambda>(bound[0], app);
+    auto res = outer->beta_reduce();
+    stringstream ss;
+    ss << *res;
+    ASSERT_EQ(ss.str(), "\\x . x");
+}
+
 TEST(ALPHA, name_clash) {
     // trying to rename x to y in \ x. (x) y
     auto bound = make_vars({"x"}, true);
