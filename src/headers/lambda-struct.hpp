@@ -81,12 +81,12 @@ class Variable final : public Expression {
         return std::static_pointer_cast<Expression>(shared_from_this());
     }
     bool check_for_name_clash(const std::string& new_name) const noexcept override{
-        return this->name.compare(new_name) == 0;
+        return this->name == new_name;
     }
 
   private:
-    bool bound;
     std::string name;
+    bool bound;
 };
 
 class Lambda final : public Expression {

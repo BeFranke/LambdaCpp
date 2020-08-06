@@ -35,13 +35,6 @@ class MaxIterationsExceeded : public std::exception {
     }
 };
 
-class EmptyException : public std::exception {
-public:
-  const char* what() const noexcept override {
-      return "Stream provided for syntax tree is empty!";
-  }
-};
-
 class NameClash : public std::exception {
   public:
     const char* what() const noexcept override {
@@ -49,4 +42,8 @@ class NameClash : public std::exception {
     }
 };
 
-class Interrupt : public std::exception {};
+class ReservedSymbol : public std::exception {
+  public:
+    ReservedSymbol(std::string symbol) : symbol(std::move(symbol)) {}
+    std::string symbol;
+};

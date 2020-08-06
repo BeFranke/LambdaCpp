@@ -26,7 +26,8 @@
 // I built a LL(1) grammar for this, hence we only need one lookahead (here, this is cur)
 class Parser {
   public:
-    Parser(std::istream& in) : tz(in), bound() {}
+    Parser(std::istream& in, unsigned long max_iter=0, std::set<std::string> reserved={})
+        : tz(in, reserved), bound(), max_iter(max_iter) {}
     Program statement() {
         cur = tz.get();
         if(cur.tok == NAME) {
@@ -150,9 +151,9 @@ class Parser {
     std::shared_ptr<BetaReduction> beta() {
         if(cur.tok == LITERAL) {
             try {
-                unsigned int cnt = std::stol(cur.str);
+                unsigned int iters = std::stol(cur.str);
                 cur = tz.get();
-                return std::make_shared<BetaReduction>(cnt);
+                return std::make_shared<BetaReduction>(iters > max_iter ? max_iter : iters);
             }
             catch(std::invalid_argument&) {
                 throw SyntaxException("Malformed reduction!");
@@ -172,4 +173,5 @@ class Parser {
     Command res;
     std::unordered_map<std::string, Variable_ptr> bound;
     std::unordered_map<std::string, Command> known_symbols;
+    unsigned long max_iter;
 };

@@ -83,7 +83,7 @@ inline bool reserved_symbol_start(char c) noexcept {
 class Tokenizer {
   public:
     /** @param is std::istream to read from */
-    Tokenizer(std::istream& is) : is(is), input_end(false) {}
+    Tokenizer(std::istream& is, std::set<std::string> reserved) : is(is), reserved(reserved) {}
     /**
      * gets the next token from the input stream by parsing one or more characters from the stream
      * @return Token-object
@@ -145,6 +145,9 @@ class Tokenizer {
                 else if(isdigit(c)) {
                     init_token(LITERAL);
                 }
+                else if(std::string s(1, c); is_reserved(s)) {
+                    throw ReservedSymbol(s);
+                }
                 else {
                     throw SyntaxException();
                 }
@@ -154,8 +157,8 @@ class Tokenizer {
                 else if(comment && c == '\n') {
                     comment = false;
                 }
-                else if(isalpha(c) && (result.tok == IDENTIFIER || result.tok == NAME)
-                    || isdigit(c) && result.tok == LITERAL) {
+                else if((isalpha(c) && (result.tok == IDENTIFIER || result.tok == NAME))
+                    || (isdigit(c) && result.tok == LITERAL)) {
                     update_token();
                 }
                 else if(reserved_symbol_start(c)) {
@@ -168,9 +171,15 @@ class Tokenizer {
             }
             ++count;
         }
+        if(result.tok == IDENTIFIER && is_reserved(result.str)) {
+            throw ReservedSymbol(result.str);
+        }
         return result;
     }
   private:
-    bool input_end;
+    inline bool is_reserved(const std::string& str) {
+        return std::any_of(reserved.begin(), reserved.end(), [str](const std::string& e) { return e == str;});
+    }
     std::istream& is;
+    std::set<std::string> reserved;
 };
