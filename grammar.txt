@@ -1,0 +1,24 @@
+// formal description of the grammar of the mini-language with tokens as smallest unit
+// Terminal symbols are amendable by modifying class Symbol in src/headers/tokenizer.hpp
+// e is the empty word
+// UPPERCASE words are terminals that do not have a fixed representation, i.e. Variable names and numeric literals
+
+<statement>         -> NAME <named-operation> ;
+                    -> <rvalue> ;
+<named-operation>   -> <name-modify>
+                    -> e
+<name-modify>       -> = rvalue
+                    -> <conversion>
+<rvalue>            -> <expression> <command>
+<expression>        -> \ VARIABLE . <expression>
+                    -> ( <expression> ) <expression>
+                    -> VARIABLE
+                    -> LITERAL
+<command>           -> <conversion>
+                    -> e
+<conversion>        -> - <conversion-long>
+                    -> >
+<conversion-long>   -> <alpha>
+                    -> <beta>
+<alpha>             -> VARIABLE > VARIABLE
+<beta>              -> LITERAL >

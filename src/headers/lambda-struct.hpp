@@ -6,7 +6,7 @@
 /**
  * ABSTRACT:
  * This file contains a class-polymorphism to represent lambda expressions. User-supplied commands like
- * "beta reduce this expression" are intentionally split away into the file "program.hpp", so that this header can
+ * "beta reduce this expression" are intentionally split away into the file "statement.hpp", so that this header can
  * be re-used for other purposes more directly.
  * This header defines a base class for all valid lambda expressions, called "Expression". Child classes are
  * "Lambda" (e.g. \\ x. x), "Application" (e.g. ((f) x) and "Variable" (e.g. x).

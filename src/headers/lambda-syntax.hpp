@@ -13,11 +13,11 @@
  * ABSTRACT:
  * This header contains a recursive descent parser inside the class Parser.
  * It receives Tokens from the Tokenizer (see tokenizer.hpp) and parses them into an object of class Program
- * (see program.hpp). While parsing, it builds one lambda-syntax tree (see lambda-struct.hpp) per encountered
+ * (see statement.hpp). While parsing, it builds one lambda-syntax tree (see lambda-struct.hpp) per encountered
  * lambda expression, it also splits away assignments and beta-reduction / alpha conversion commands that then
  * get handled by the Program object.
  * The class Parser defines one method per non-terminal symbol in the grammar, as well as the utility method
- * Parser::next_token, which updates the two lookaheads by one step, and Parser::reset for re-using the object.
+ * Parser::reset for re-using the object.
  */
 
 // TODO: modify grammar to allow name_get with reduction
@@ -29,10 +29,12 @@
 class Parser {
   public:
     Parser(std::istream& in) : tz(in), bound() {}
-    Program program() {
+    Program statement() {
         cur = tz.get();
         if(cur.tok == NAME) {
-            res = name_get_or_set();
+            std::string name = cur.str;
+            cur = tz.get();
+            res = named_operation(name);
         }
         else {
             res = rvalue();
@@ -41,35 +43,29 @@ class Parser {
         //next_token();
         return Program(known_symbols, res);
     }
-    Command name_get_or_set() {
-        if(cur.tok != NAME) throw SyntaxException("Assignment may only assign to variable");
-        std::string name = cur.str;
-        cur = tz.get();
-        if(cur.tok == ASSIGNMENT) {
-            return assignment(name);
-        }
-        return name_get(name);
-    }
-    Command name_get(std::string& name) {
-        if(known_symbols.find(name) == known_symbols.end()) throw SyntaxException("Unknown symbol!");
-        return known_symbols[name];
-    }
-    Command assignment(std::string& name) {
-        if(cur.tok != ASSIGNMENT) throw SyntaxException("Assignment needs \"=\" symbol!");
-        cur = tz.get();
-        Command e = rvalue();
-        known_symbols[name] = e;
-        return e;
-    }
-    Command rvalue() {
-        Expression_ptr e = expression();
-        std::shared_ptr<Conversion> c;
-        if(cur.tok == CONV_START || cur.tok == CONV_END) {
-           c = convert();
+    Command named_operation(std::string& name) {
+        if(cur.tok == ASSIGNMENT || cur.tok == CONV_START || cur.tok == CONV_END) {
+            return name_modify(name);
         }
         else {
-            c = std::make_shared<Conversion>();
+            if(known_symbols.find(name) == known_symbols.end()) throw SyntaxException("Unknown symbol!");
+            return known_symbols[name];
         }
+    }
+    Command name_modify(std::string& name) {
+        if(cur.tok == ASSIGNMENT) {
+            cur = tz.get();
+            Command e = rvalue();
+            known_symbols[name] = e;
+            return e;
+        } else {
+            if(known_symbols.find(name) == known_symbols.end()) throw SyntaxException("Unknown symbol!");
+            return Command(known_symbols[name].execute(), command());
+        }
+    }
+    Command rvalue() {
+        auto e = expression();
+        auto c = command();
         return Command(e, c);
     }
     Expression_ptr expression() {
@@ -105,13 +101,6 @@ class Parser {
             cur = tz.get();
             return std::make_shared<Variable>(name, false);
         }
-        else if(cur.tok == NAME){
-            auto key = cur.str;
-            cur = tz.get();
-            // TODO: this weakens the boundary between building the syntax tree and execution,
-            // can this be done better?
-            return known_symbols[key].execute();
-        }
         else if(cur.tok == LITERAL) {
             auto num = stoi(cur.str);
             cur = tz.get();
@@ -119,15 +108,31 @@ class Parser {
         }
         else throw SyntaxException();
     }
-    std::shared_ptr<Conversion> convert() {
+    std::shared_ptr<Conversion> command() {
+        if(cur.tok == CONV_START || cur.tok == CONV_END) {
+            return conversion();
+        }
+        else return std::make_shared<Conversion>();
+    }
+    std::shared_ptr<Conversion> conversion() {
         if(cur.tok == CONV_START) {
             cur = tz.get();
-            if(cur.tok == IDENTIFIER) return alpha();
-            else return beta();
+            return conversion_long();
         }
         else if(cur.tok == CONV_END) {
             cur = tz.get();
             return std::make_shared<BetaReduction>(1);
+        }
+        else {
+            throw SyntaxException("Malformed conversion command!");
+        }
+    }
+    std::shared_ptr<Conversion> conversion_long() {
+        if(cur.tok == IDENTIFIER) {
+            return alpha();
+        }
+        else if(cur.tok == LITERAL) {
+            return beta();
         }
         else {
             throw SyntaxException("Malformed conversion command!");
@@ -145,14 +150,10 @@ class Parser {
         return std::make_shared<AlphaConversion>(names[0], names[1]);
     }
     std::shared_ptr<BetaReduction> beta() {
-        if(cur.tok == CONV_END) {
-            cur = tz.get();
-            return std::make_shared<BetaReduction>(0);
-        }
-        else if(cur.tok == LITERAL) {
-            unsigned int cnt = std::stol(cur.str);
-            cur = tz.get();
+        if(cur.tok == LITERAL) {
             try {
+                unsigned int cnt = std::stol(cur.str);
+                cur = tz.get();
                 return std::make_shared<BetaReduction>(cnt);
             }
             catch(std::invalid_argument&) {

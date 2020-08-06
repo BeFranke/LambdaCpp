@@ -11,7 +11,7 @@ int main() {
         std::cout << ">> ";
         try {
             try {
-                Program p = parser.program();
+                Program p = parser.statement();
                 auto com = p.last_command();
                 com.set_max_iter(MAX_ITER);
                 auto ex = com.execute();
