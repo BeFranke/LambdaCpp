@@ -20,8 +20,6 @@
  * Parser::reset for re-using the object.
  */
 
-// TODO: modify grammar to allow name_get with reduction
-
 // recursive descent parser inspired by https://en.wikipedia.org/wiki/Recursive_descent_parser
 // and https://www.geeksforgeeks.org/recursive-descent-parser/
 // adapted to build a syntax tree while parsing

@@ -10,7 +10,9 @@ class SyntaxTest : public ::testing::Test {
     Parser p;
 };
 
-// simple positive tests
+
+
+// positive tests
 
 TEST_F(SyntaxTest, VariableParses) {
     is << "x;";
@@ -54,7 +56,34 @@ TEST_F(SyntaxTest, BetaParsesSimple) {
     ASSERT_EQ(os.str(), "a");
 }
 
-// exception tests
+TEST_F(SyntaxTest, Retrieval1) {
+    is << "ID = \\ x . x;";
+    p.statement();
+    is << "ID;";
+    auto var = p.statement().last_command().execute();
+    os << *var;
+    ASSERT_EQ(os.str(), "\\x . x");
+}
+
+TEST_F(SyntaxTest, Retrieval2) {
+    is << "ID = (\\ x . x) a >;";
+    p.statement();
+    is << "ID;";
+    auto var = p.statement().last_command().execute();
+    os << *var;
+    ASSERT_EQ(os.str(), "a");
+}
+
+TEST_F(SyntaxTest, Retrieval3) {
+    is << "ID = (\\ x . x) a;";
+    p.statement();
+    is << "ID >;";
+    auto var = p.statement().last_command().execute();
+    os << *var;
+    ASSERT_EQ(os.str(), "a");
+}
+
+// negative tests
 
 TEST_F(SyntaxTest, NoSemicolon) {
     is << "\\ x . x";
@@ -80,4 +109,3 @@ TEST_F(SyntaxTest, WrongVariableCase2) {
     is << "a = (f) b;";
     ASSERT_THROW(p.statement(), SyntaxException);
 }
-
