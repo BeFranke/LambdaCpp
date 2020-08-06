@@ -42,6 +42,7 @@ class Parser {
         //next_token();
         return Program(known_symbols, res);
     }
+  private:
     Command named_operation(std::string& name) {
         if(cur.tok == ASSIGNMENT || cur.tok == CONV_START || cur.tok == CONV_END) {
             return name_modify(name);
@@ -114,27 +115,23 @@ class Parser {
         else return std::make_shared<Conversion>();
     }
     std::shared_ptr<Conversion> conversion() {
+        assert(cur.tok == CONV_END || cur.tok == CONV_START);
         if(cur.tok == CONV_START) {
             cur = tz.get();
             return conversion_long();
         }
-        else if(cur.tok == CONV_END) {
+        else {
             cur = tz.get();
             return std::make_shared<BetaReduction>(1);
         }
-        else {
-            throw SyntaxException("Malformed conversion command!");
-        }
     }
     std::shared_ptr<Conversion> conversion_long() {
+        assert(cur.tok == IDENTIFIER || cur.tok == LITERAL || cur.tok == CONV_END);
         if(cur.tok == IDENTIFIER) {
             return alpha();
         }
-        else if(cur.tok == LITERAL || cur.tok == CONV_END) {
-            return beta();
-        }
         else {
-            throw SyntaxException("Malformed conversion command!");
+            return beta();
         }
     }
     std::shared_ptr<AlphaConversion> alpha() {
@@ -149,28 +146,19 @@ class Parser {
         return std::make_shared<AlphaConversion>(names[0], names[1]);
     }
     std::shared_ptr<BetaReduction> beta() {
+        assert(cur.tok == LITERAL || cur.tok == CONV_END);
         if(cur.tok == LITERAL) {
-            try {
-                unsigned int iters = std::stol(cur.str);
-                cur = tz.get();
-                return std::make_shared<BetaReduction>(iters > max_iter ? max_iter : iters);
-            }
-            catch(std::invalid_argument&) {
-                throw SyntaxException("Malformed reduction!");
-            }
+            // this conversion can not fail, as the Tokenizer only allows digits to be appended to a literal
+            unsigned int iters = std::stol(cur.str);
+            cur = tz.get();
+            return std::make_shared<BetaReduction>(iters > max_iter ? max_iter : iters);
+
         }
-        else if(cur.tok == CONV_END) {
+        else {
             cur = tz.get();
             return std::make_shared<BetaReduction>(max_iter);
         }
-        else throw SyntaxException("Malformed conversion command");
     }
-    void reset() {
-        bound.clear();
-        known_symbols.clear();
-        res = Command();
-    }
-  private:
     //lookahead
     Token cur;
     Tokenizer tz;
