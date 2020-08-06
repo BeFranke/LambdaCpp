@@ -87,3 +87,8 @@ TEST(TOKENIZER, T14) {
     Tokenizer tz(ss, {"exit"});
     ASSERT_THROW(tz.get(), ReservedSymbol);
 }
+
+TEST(TOKENIZER, T15) {
+    TOKEN_TYPE expcted[] = {LITERAL, LITERAL};
+    std_test("true false", expcted);
+}

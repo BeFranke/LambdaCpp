@@ -12,8 +12,6 @@
  * Tokenizer::get can then be used to retrieve Tokens one by one
  */
 
-// TODO: test tokenization of true and false
-
 // syntactic constants
 // using '\' as replacement for "lambda" is stolen from Haskell
 enum class Symbol {

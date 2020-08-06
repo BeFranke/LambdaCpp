@@ -10,8 +10,6 @@ class SyntaxTest : public ::testing::Test {
     Parser p;
 };
 
-// TODO: test true and false
-
 // positive tests
 
 TEST_F(SyntaxTest, VariableParses) {
@@ -97,6 +95,29 @@ TEST_F(SyntaxTest, Literal) {
     ASSERT_EQ(os.str(), "\\y . \\x . (y) x");
 }
 
+TEST_F(SyntaxTest, Retrieval4) {
+    is << "ID = \\ x . x;";
+    p.statement();
+    is << "(ID) a >;";
+    auto var = p.statement().last_command().execute();
+    os << *var;
+    ASSERT_EQ(os.str(), "a");
+}
+
+TEST_F(SyntaxTest, test_true) {
+    is << "true;";
+    auto var = p.statement().last_command().execute();
+    os << *var;
+    ASSERT_EQ(os.str(), "\\a . \\b . a");
+}
+TEST_F(SyntaxTest, test_false) {
+    is << "false;";
+    auto var = p.statement().last_command().execute();
+    os << *var;
+    ASSERT_EQ(os.str(), "\\a . \\b . b");
+}
+
+
 // negative tests
 
 TEST_F(SyntaxTest, NoSemicolon) {
@@ -124,11 +145,8 @@ TEST_F(SyntaxTest, WrongVariableCase2) {
     ASSERT_THROW(p.statement(), SyntaxException);
 }
 
-TEST_F(SyntaxTest, Retrieval4) {
-    is << "ID = \\ x . x;";
-    p.statement();
-    is << "(ID) a >;";
-    auto var = p.statement().last_command().execute();
-    os << *var;
-    ASSERT_EQ(os.str(), "a");
+TEST_F(SyntaxTest, WrongBeta) {
+    is << "(\\ x . x) a -true>;";
+    ASSERT_THROW(p.statement(), SyntaxException);
 }
+

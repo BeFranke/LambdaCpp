@@ -106,7 +106,9 @@ class Parser {
                 return church_encode(num);
             } catch(std::invalid_argument&) {
                 // literal was boolean
-                if(cur.str == "true") return church_true();
+                auto val = cur.str;
+                cur = tz.get();
+                if(val == "true") return church_true();
                 else return church_false();
             }
         }
