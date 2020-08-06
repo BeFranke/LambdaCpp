@@ -20,6 +20,7 @@
  * Parser::next_token, which updates the two lookaheads by one step, and Parser::reset for re-using the object.
  */
 
+// TODO: modify grammar to allow name_get with reduction
 
 // recursive descent parser inspired by https://en.wikipedia.org/wiki/Recursive_descent_parser
 // and https://www.geeksforgeeks.org/recursive-descent-parser/
@@ -31,7 +32,7 @@ class Parser {
     Program program() {
         cur = tz.get();
         if(cur.tok == NAME) {
-            res = assignment();
+            res = name_get_or_set();
         }
         else {
             res = rvalue();
@@ -40,12 +41,21 @@ class Parser {
         //next_token();
         return Program(known_symbols, res);
     }
-    Command assignment() {
+    Command name_get_or_set() {
         if(cur.tok != NAME) throw SyntaxException("Assignment may only assign to variable");
         std::string name = cur.str;
-        if(!isupper(name[0])) throw SyntaxException("Name-bindings must start with uppercase letter!");
         cur = tz.get();
-        if(cur.tok != ASSIGNMENT) throw SyntaxException();
+        if(cur.tok == ASSIGNMENT) {
+            return assignment(name);
+        }
+        return name_get(name);
+    }
+    Command name_get(std::string& name) {
+        if(known_symbols.find(name) == known_symbols.end()) throw SyntaxException("Unknown symbol!");
+        return known_symbols[name];
+    }
+    Command assignment(std::string& name) {
+        if(cur.tok != ASSIGNMENT) throw SyntaxException("Assignment needs \"=\" symbol!");
         cur = tz.get();
         Command e = rvalue();
         known_symbols[name] = e;
@@ -72,7 +82,7 @@ class Parser {
             Variable_ptr head = std::make_shared<Variable>(cur.str, true);
             bound[cur.str] = head;
             cur = tz.get();
-            if(cur.tok != BODY_START) throw SyntaxException();
+            if(cur.tok != BODY_START) throw SyntaxException("Malformed lambda!");
             cur = tz.get();
             Expression_ptr body = expression();
             bound = backup_bound;
@@ -81,23 +91,12 @@ class Parser {
         else if(cur.tok == BRACKET_OPEN) {
             cur = tz.get();
             Expression_ptr fst = expression();
-            if(cur.tok != BRACKET_CLOSE) throw SyntaxException();
+            if(cur.tok != BRACKET_CLOSE) throw SyntaxException("unmatched bracket!");
             cur = tz.get();
             Expression_ptr snd = expression();
             return std::make_shared<Application>(fst, snd);
         }
         else if(cur.tok == IDENTIFIER) {
-            if(!islower(cur.str[0])) {
-                if(known_symbols.find(cur.str) == known_symbols.end())
-                    throw SyntaxException("Variables must start with lowercase letter!");
-                else {
-                    auto key = cur.str;
-                    cur = tz.get();
-                    // TODO: this weakens the boundary between building the syntax tree and execution,
-                    // can this be done better?
-                    return known_symbols[key].execute();
-                }
-            }
             if(auto v = bound.find(cur.str); v != bound.end()) {
                 cur = tz.get();
                 return v->second;
@@ -105,6 +104,13 @@ class Parser {
             auto name = cur.str;
             cur = tz.get();
             return std::make_shared<Variable>(name, false);
+        }
+        else if(cur.tok == NAME){
+            auto key = cur.str;
+            cur = tz.get();
+            // TODO: this weakens the boundary between building the syntax tree and execution,
+            // can this be done better?
+            return known_symbols[key].execute();
         }
         else if(cur.tok == LITERAL) {
             auto num = stoi(cur.str);
