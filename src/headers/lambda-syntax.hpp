@@ -130,7 +130,7 @@ class Parser {
         if(cur.tok == IDENTIFIER) {
             return alpha();
         }
-        else if(cur.tok == LITERAL) {
+        else if(cur.tok == LITERAL || cur.tok == CONV_END) {
             return beta();
         }
         else {
@@ -158,6 +158,10 @@ class Parser {
             catch(std::invalid_argument&) {
                 throw SyntaxException("Malformed reduction!");
             }
+        }
+        else if(cur.tok == CONV_END) {
+            cur = tz.get();
+            return std::make_shared<BetaReduction>(max_iter);
         }
         else throw SyntaxException("Malformed conversion command");
     }

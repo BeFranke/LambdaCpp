@@ -56,6 +56,13 @@ TEST_F(SyntaxTest, BetaParsesSimple) {
     ASSERT_EQ(os.str(), "a");
 }
 
+TEST_F(SyntaxTest, BetaParses) {
+    is << "(\\ y . (\\ x . x) y ) a ->;";
+    auto var = p.statement().last_command().execute();
+    os << *var;
+    ASSERT_EQ(os.str(), "a");
+}
+
 TEST_F(SyntaxTest, Retrieval1) {
     is << "ID = \\ x . x;";
     p.statement();
@@ -81,6 +88,13 @@ TEST_F(SyntaxTest, Retrieval3) {
     auto var = p.statement().last_command().execute();
     os << *var;
     ASSERT_EQ(os.str(), "a");
+}
+
+TEST_F(SyntaxTest, Literal) {
+    is << "(1) 1->;";
+    auto var = p.statement().last_command().execute()->alpha_convert("x", "y");
+    os << *var;
+    ASSERT_EQ(os.str(), "\\y . \\x . (y) x");
 }
 
 // negative tests
