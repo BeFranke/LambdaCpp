@@ -6,8 +6,9 @@
 #endif
 
 int main() {
-    Parser parser(std::cin, MAX_ITER, {"exit", "?"});
-    std::cout << "This is a REPL for lambda expressions." << std::endl << "To exit, type \"exit;\"." << std::endl;
+    std::set<std::string> reserved = {"exit", "?"};
+    Parser parser(std::cin, reserved, MAX_ITER);
+    std::cout << "This is a REPL for lambda expressions." << std::endl << "To exit, type \"exit\"." << std::endl;
     std::cout << "For help, type \"?\"." << std::endl;
     while(true) {
         std::cout << ">> ";

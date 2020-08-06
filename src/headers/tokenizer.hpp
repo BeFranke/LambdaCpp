@@ -83,7 +83,7 @@ inline bool reserved_symbol_start(char c) noexcept {
 class Tokenizer {
   public:
     /** @param is std::istream to read from */
-    Tokenizer(std::istream& is, std::set<std::string> reserved) : is(is), reserved(reserved) {}
+    Tokenizer(std::istream& is, std::set<std::string> reserved={}) : is(is), reserved(reserved) {}
     /**
      * gets the next token from the input stream by parsing one or more characters from the stream
      * @return Token-object
@@ -95,9 +95,9 @@ class Tokenizer {
         auto init_token = [&result, &c](TOKEN_TYPE tt) { result.tok = tt; result.str += c;};
         auto update_token = [&result, &c]() {result.str += c;};
         bool comment = false;
-        while(is >> c) {
+        while(is.get(c)) {
             if(count == 0) {
-                if(isspace(c) || comment) continue;
+                if(isspace(c)) continue;
                 else if(islower(c)) {
                     // variable name
                     init_token(IDENTIFIER);
@@ -128,7 +128,6 @@ class Tokenizer {
                 }
                 else if(c == static_cast<char>(Symbol::COMMENT)) {
                     comment = true;
-                    continue;
                 }
                 else if(c == static_cast<char>(Symbol::ASSIGNMENT)) {
                     init_token(ASSIGNMENT);
@@ -153,10 +152,16 @@ class Tokenizer {
                 }
             }
             else {
-                if(isspace(c)) break;
-                else if(comment && c == '\n') {
-                    comment = false;
+                if(comment) {
+                    if(c == '\n') {
+                        comment = false;
+                        count = 0;
+                    }
+                    else {
+                        continue;
+                    }
                 }
+                else if(isspace(c)) break;
                 else if((isalpha(c) && (result.tok == IDENTIFIER || result.tok == NAME))
                     || (isdigit(c) && result.tok == LITERAL)) {
                     update_token();

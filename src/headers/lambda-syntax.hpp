@@ -26,8 +26,10 @@
 // I built a LL(1) grammar for this, hence we only need one lookahead (here, this is cur)
 class Parser {
   public:
-    Parser(std::istream& in, unsigned long max_iter=0, std::set<std::string> reserved={})
+    Parser(std::istream& in, std::set<std::string>& reserved, unsigned long max_iter=0)
         : tz(in, reserved), bound(), max_iter(max_iter) {}
+    Parser(std::istream& in, unsigned long max_iter=0)
+            : tz(in), bound(), max_iter(max_iter) {}
     Program statement() {
         cur = tz.get();
         if(cur.tok == NAME) {
