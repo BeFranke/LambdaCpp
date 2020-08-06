@@ -12,6 +12,8 @@
  * Tokenizer::get can then be used to retrieve Tokens one by one
  */
 
+// TODO: test tokenization of true and false
+
 // syntactic constants
 // using '\' as replacement for "lambda" is stolen from Haskell
 enum class Symbol {
@@ -178,6 +180,10 @@ class Tokenizer {
         }
         if(result.tok == IDENTIFIER && is_reserved(result.str)) {
             throw ReservedSymbol(result.str);
+        }
+        else if(result.tok == IDENTIFIER && (result.str == "true" || result.str == "false")) {
+            // true and false are literals
+            result.tok = LITERAL;
         }
         return result;
     }

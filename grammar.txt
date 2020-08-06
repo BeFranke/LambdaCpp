@@ -11,9 +11,11 @@
                     -> <conversion>
 <rvalue>            -> <expression> <command>
 <expression>        -> \ VARIABLE . <expression>
-                    -> ( <expression> ) <expression>
+                    -> ( <application>
                     -> VARIABLE
                     -> LITERAL
+<application>       -> NAME ) <expression>
+                    -> <expression> ) <expression>
 <command>           -> <conversion>
                     -> e
 <conversion>        -> - <conversion-long>

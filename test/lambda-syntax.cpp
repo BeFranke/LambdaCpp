@@ -10,7 +10,7 @@ class SyntaxTest : public ::testing::Test {
     Parser p;
 };
 
-
+// TODO: test true and false
 
 // positive tests
 
@@ -122,4 +122,13 @@ TEST_F(SyntaxTest, WrongVariableCase) {
 TEST_F(SyntaxTest, WrongVariableCase2) {
     is << "a = (f) b;";
     ASSERT_THROW(p.statement(), SyntaxException);
+}
+
+TEST_F(SyntaxTest, Retrieval4) {
+    is << "ID = \\ x . x;";
+    p.statement();
+    is << "(ID) a >;";
+    auto var = p.statement().last_command().execute();
+    os << *var;
+    ASSERT_EQ(os.str(), "a");
 }

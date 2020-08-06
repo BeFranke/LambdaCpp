@@ -88,11 +88,7 @@ class Parser {
         }
         else if(cur.tok == BRACKET_OPEN) {
             cur = tz.get();
-            Expression_ptr fst = expression();
-            if(cur.tok != BRACKET_CLOSE) throw SyntaxException("unmatched bracket!");
-            cur = tz.get();
-            Expression_ptr snd = expression();
-            return std::make_shared<Application>(fst, snd);
+            return application();
         }
         else if(cur.tok == IDENTIFIER) {
             if(auto v = bound.find(cur.str); v != bound.end()) {
@@ -104,11 +100,33 @@ class Parser {
             return std::make_shared<Variable>(name, false);
         }
         else if(cur.tok == LITERAL) {
-            auto num = stoi(cur.str);
-            cur = tz.get();
-            return church_encode(num);
+            try {
+                auto num = stoi(cur.str);
+                cur = tz.get();
+                return church_encode(num);
+            } catch(std::invalid_argument&) {
+                // literal was boolean
+                if(cur.str == "true") return church_true();
+                else return church_false();
+            }
         }
         else throw SyntaxException();
+    }
+    Expression_ptr application() {
+        Expression_ptr fst;
+        if(cur.tok == NAME) {
+            if(known_symbols.find(cur.str) == known_symbols.end()) throw SyntaxException("Unknown symbol!");
+            fst = known_symbols[cur.str].execute();
+            cur = tz.get();
+
+        }
+        else {
+            fst = expression();
+        }
+        if(cur.tok != BRACKET_CLOSE) throw SyntaxException("unmatched bracket!");
+        cur = tz.get();
+        auto snd = expression();
+        return std::make_shared<Application>(fst, snd);
     }
     std::shared_ptr<Conversion> command() {
         if(cur.tok == CONV_START || cur.tok == CONV_END) {
@@ -150,10 +168,14 @@ class Parser {
     std::shared_ptr<BetaReduction> beta() {
         assert(cur.tok == LITERAL || cur.tok == CONV_END);
         if(cur.tok == LITERAL) {
-            // this conversion can not fail, as the Tokenizer only allows digits to be appended to a literal
-            unsigned int iters = std::stol(cur.str);
-            cur = tz.get();
-            return std::make_shared<BetaReduction>(iters > max_iter ? max_iter : iters);
+            try {
+                unsigned int iters = std::stol(cur.str);
+                cur = tz.get();
+                return std::make_shared<BetaReduction>(iters > max_iter ? max_iter : iters);
+            }
+            catch (std::invalid_argument&) {
+                throw SyntaxException("Beta Reduction can only be specified with numbers!");
+            }
 
         }
         else {
