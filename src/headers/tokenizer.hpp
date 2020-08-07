@@ -4,11 +4,12 @@
 #include <memory>
 #include <regex>
 #include <algorithm>
+#include <set>
 #include "lambda-exceptions.hpp"
 
 /**
  * ABSTRACT:
- * This file defines the class Tokenizer, which parses characters from a std::istream and parses them into Tokens.
+ * This file defines the class Tokenizer, which reads characters from a std::istream and parses them into Tokens.
  * Tokenizer::get can then be used to retrieve Tokens one by one
  */
 

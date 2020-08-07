@@ -16,8 +16,7 @@
  * (see statement.hpp). While parsing, it builds one lambda-syntax tree (see lambda-struct.hpp) per encountered
  * lambda expression, it also splits away assignments and beta-reduction / alpha conversion commands that then
  * get handled by the Program object.
- * The class Parser defines one method per non-terminal symbol in the grammar, as well as the utility method
- * Parser::reset for re-using the object.
+ * The class Parser defines one method per non-terminal symbol in the grammar.
  */
 
 // recursive descent parser inspired by https://en.wikipedia.org/wiki/Recursive_descent_parser

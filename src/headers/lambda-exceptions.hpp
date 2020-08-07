@@ -7,7 +7,7 @@
  * ABSTRACT: This header contains all kinds of exceptions that could be thrown in the other headers
  */
 
-static const std::string SYNTAX_HEAD = "Error: unexpected syntax!";
+static const std::string SYNTAX_HEAD = "Error: unexpected syntax! ";
 
 
 class SyntaxParseException : public std::exception {
