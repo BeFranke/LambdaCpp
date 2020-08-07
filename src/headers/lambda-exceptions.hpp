@@ -4,7 +4,8 @@
 #include <iostream>
 
 /**
- * ABSTRACT: This header contains all kinds of exceptions that could be thrown in the other headers
+ * ABSTRACT: This header contains all kinds of exceptions that could be thrown
+ * in the other headers
  */
 
 static const std::string SYNTAX_HEAD = "Error: unexpected syntax! ";
@@ -23,7 +24,8 @@ class SyntaxParseException : public std::exception {
 
 class SyntaxException : public SyntaxParseException {
   public:
-    SyntaxException(std::string line) : SyntaxParseException(SYNTAX_HEAD + line) {}
+    SyntaxException(std::string line) : SyntaxParseException(SYNTAX_HEAD + line)
+    {}
     SyntaxException() : SyntaxParseException(SYNTAX_HEAD) {}
 };
 
