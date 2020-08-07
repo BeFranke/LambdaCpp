@@ -9,7 +9,8 @@
 
 /**
  * ABSTRACT:
- * This file defines the class Tokenizer, which reads characters from a std::istream and parses them into Tokens.
+ * This file defines the class Tokenizer, which reads characters from a
+ * std::istream and parses them into Tokens.
  * Tokenizer::get can then be used to retrieve Tokens one by one
  */
 
@@ -55,7 +56,8 @@ enum TOKEN_TYPE {
 class Token {
     /**
      * A container for a TOKEN_TYPE and a std::string.
-     * The std::string gives details about the token, e.g. the name of an identifier.
+     * The std::string gives details about the token, e.g. the name of an
+     * identifier.
      */
   public:
     Token() : str(), tok(UNDEF) {}
@@ -81,20 +83,26 @@ inline bool reserved_symbol_start(char c) noexcept {
     }
 }
 
-template <class Container>
+template <class Container=std::set<std::string>>
 class Tokenizer {
   public:
     /** @param is std::istream to read from */
-    Tokenizer(std::istream& is, Container reserved={}) : is(is), reserved(reserved) {}
+    Tokenizer(std::istream& is, Container reserved) : is(is),
+        reserved(reserved) {}
+
+    Tokenizer(std::istream& is) : is(is), reserved() {}
     /**
-     * gets the next token from the input stream by parsing one or more characters from the stream
+     * gets the next token from the input stream by parsing one or more
+     * characters from the stream
      * @return Token-object
      */
     Token get() {
         Token result = Token();
         char c;
         unsigned short count = 0;
-        auto init_token = [&result, &c](TOKEN_TYPE tt) { result.tok = tt; result.str += c;};
+        auto init_token = [&result, &c](TOKEN_TYPE tt) {
+            result.tok = tt; result.str += c;
+        };
         auto update_token = [&result, &c]() {result.str += c;};
         bool comment = false;
         while(is.get(c)) {
@@ -159,9 +167,7 @@ class Tokenizer {
                         comment = false;
                         count = 0;
                     }
-                    else {
-                        continue;
-                    }
+                    continue;
                 }
                 else if(isspace(c)) break;
                 else if((isalpha(c) && (result.tok == IDENTIFIER || result.tok == NAME))
