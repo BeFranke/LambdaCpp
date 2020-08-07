@@ -170,7 +170,8 @@ class Tokenizer {
                     continue;
                 }
                 else if(isspace(c)) break;
-                else if((isalpha(c) && (result.tok == IDENTIFIER || result.tok == NAME))
+                else if((isalpha(c) && (result.tok == IDENTIFIER
+                    || result.tok == NAME))
                     || (isdigit(c) && result.tok == LITERAL)) {
                     update_token();
                 }
@@ -187,7 +188,8 @@ class Tokenizer {
         if(result.tok == IDENTIFIER && is_reserved(result.str)) {
             throw ReservedSymbol(result.str);
         }
-        else if(result.tok == IDENTIFIER && (result.str == "true" || result.str == "false")) {
+        else if(result.tok == IDENTIFIER && (result.str == "true"
+            || result.str == "false")) {
             // true and false are literals
             result.tok = LITERAL;
         }
@@ -195,7 +197,11 @@ class Tokenizer {
     }
   private:
     inline bool is_reserved(const std::string& str) {
-        return std::any_of(reserved.begin(), reserved.end(), [str](const std::string& e) { return e == str;});
+        return std::any_of(
+                reserved.begin(), reserved.end(), [str](const std::string& e) {
+                    return e == str;
+                }
+                );
     }
     std::istream& is;
     Container reserved;

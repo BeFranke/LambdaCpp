@@ -27,7 +27,7 @@
 // adapted to build a syntax tree while parsing
 // I built a LL(1) grammar for this, hence we only need one lookahead
 // (here, this is cur)
-template <typename Container>
+template <typename Container = std::set<std::string>>
 class Parser {
   public:
     Parser(std::istream& in, Container& reserved, unsigned long max_iter=0)
@@ -42,7 +42,8 @@ class Parser {
         else {
             res = rvalue();
         }
-        if(cur.tok != SEPARATOR) throw SyntaxException("Malformed lambda!");
+        if(cur.tok != SEPARATOR)
+            throw SyntaxException("Missing semicolon!");
         //next_token();
         return Program(known_symbols, res);
     }
@@ -53,6 +54,7 @@ class Parser {
         if(cur.tok != NAME)
             throw SyntaxException("Only variables starting with an "
                                   "uppercase letter may be assigned to.");
+        auto name = cur.str;
         cur = tz.get();
         if(cur.tok != NAME_DEFINE)
             throw SyntaxException("Unclosed definition!");
@@ -61,8 +63,6 @@ class Parser {
         if(cur.tok != ASSIGNMENT)
             throw SyntaxException("defined symbol must be assigned to!");
 
-        cur = tz.get();
-        auto name = cur.str;
         cur = tz.get();
         Command e = rvalue();
         known_symbols[name] = e;
@@ -155,6 +155,9 @@ class Parser {
         if(cur.tok == LITERAL) {
             try {
                 unsigned int iters = std::stol(cur.str);
+                cur = tz.get();
+                if(cur.tok != CONV_END)
+                    throw SyntaxException("Malformed beta reduction!");
                 cur = tz.get();
                 return std::make_shared<BetaReduction>(
                         iters > max_iter && max_iter != 0 ? max_iter : iters
