@@ -23,9 +23,10 @@
 // and https://www.geeksforgeeks.org/recursive-descent-parser/
 // adapted to build a syntax tree while parsing
 // I built a LL(1) grammar for this, hence we only need one lookahead (here, this is cur)
+template <typename Container>
 class Parser {
   public:
-    Parser(std::istream& in, std::set<std::string>& reserved, unsigned long max_iter=0)
+    Parser(std::istream& in, Container& reserved, unsigned long max_iter=0)
         : tz(in, reserved), bound(), max_iter(max_iter) {}
     Parser(std::istream& in, unsigned long max_iter=0)
             : tz(in), bound(), max_iter(max_iter) {}
@@ -172,7 +173,7 @@ class Parser {
             try {
                 unsigned int iters = std::stol(cur.str);
                 cur = tz.get();
-                return std::make_shared<BetaReduction>(iters > max_iter ? max_iter : iters);
+                return std::make_shared<BetaReduction>(iters > max_iter && max_iter != 0 ? max_iter : iters);
             }
             catch (std::invalid_argument&) {
                 throw SyntaxException("Beta Reduction can only be specified with numbers!");
@@ -186,7 +187,7 @@ class Parser {
     }
     //lookahead
     Token cur;
-    Tokenizer tz;
+    Tokenizer<Container> tz;
     Command res;
     std::unordered_map<std::string, Variable_ptr> bound;
     std::unordered_map<std::string, Command> known_symbols;

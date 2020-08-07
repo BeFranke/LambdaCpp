@@ -81,10 +81,11 @@ inline bool reserved_symbol_start(char c) noexcept {
     }
 }
 
+template <typename Container>
 class Tokenizer {
   public:
     /** @param is std::istream to read from */
-    Tokenizer(std::istream& is, std::set<std::string> reserved={}) : is(is), reserved(reserved) {}
+    Tokenizer(std::istream& is, Container reserved={}) : is(is), reserved(reserved) {}
     /**
      * gets the next token from the input stream by parsing one or more characters from the stream
      * @return Token-object
@@ -191,5 +192,5 @@ class Tokenizer {
         return std::any_of(reserved.begin(), reserved.end(), [str](const std::string& e) { return e == str;});
     }
     std::istream& is;
-    std::set<std::string> reserved;
+    Container reserved;
 };
