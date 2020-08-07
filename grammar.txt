@@ -3,25 +3,22 @@
 // e is the empty word
 // UPPERCASE words are terminals that do not have a fixed representation, i.e. Variable names and numeric literals
 
-<statement>         -> NAME <named-operation> ;
+<statement>         -> <assignment> ;
                     -> <rvalue> ;
-<named-operation>   -> <name-modify>
-                    -> e
-<name-modify>       -> = rvalue
-                    -> <conversion>
-<rvalue>            -> <expression> <command>
+<assignment>        -> ' NAME ' = <rvalue>
+<rvalue>            -> <expression> <conversion>
 <expression>        -> \ VARIABLE . <expression>
-                    -> ( <application>
+                    -> ( <expression> ) <expression>
                     -> VARIABLE
                     -> LITERAL
-<application>       -> NAME ) <expression>
-                    -> <expression> ) <expression>
-<command>           -> <conversion>
-                    -> e
-<conversion>        -> - <conversion-long>
-                    -> >
-<conversion-long>   -> <alpha>
+                    -> NAME
+<conversion>        -> <alpha>
                     -> <beta>
+                    -> e
 <alpha>             -> VARIABLE > VARIABLE
 <beta>              -> LITERAL >
                     -> >
+
+
+// The idea to simplify the grammar by requiring " ' "-characters in assignments was taken from
+// https://www.chatzi.org/lci/

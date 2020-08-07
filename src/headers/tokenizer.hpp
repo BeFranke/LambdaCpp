@@ -29,7 +29,7 @@ enum class Symbol {
     COMMENT = '#',
     ASSIGNMENT = '=',
     CONVERSION_END = '>',
-    CONVERSION_START = '-'
+    NAME_DEFINE = '\''
 };
 
 /**
@@ -47,8 +47,8 @@ enum TOKEN_TYPE {
     BRACKET_CLOSE,
     LITERAL,
     CONV_END,
-    CONV_START,
     ASSIGNMENT,
+    NAME_DEFINE,
     UNDEF
 };
 
@@ -73,15 +73,15 @@ inline bool reserved_symbol_start(char c) noexcept {
         case static_cast<int>(Symbol::SEP):
         case static_cast<int>(Symbol::COMMENT):
         case static_cast<int>(Symbol::ASSIGNMENT):
-        case static_cast<int>(Symbol::CONVERSION_START):
         case static_cast<int>(Symbol::CONVERSION_END):
+        case static_cast<int>(Symbol::NAME_DEFINE):
             return true;
         default:
             return false;
     }
 }
 
-template <typename Container>
+template <class Container>
 class Tokenizer {
   public:
     /** @param is std::istream to read from */
@@ -135,10 +135,6 @@ class Tokenizer {
                     init_token(ASSIGNMENT);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::CONVERSION_START)) {
-                    init_token(CONV_START);
-                    break;
-                }
                 else if(c == static_cast<char>(Symbol::CONVERSION_END)) {
                     init_token(CONV_END);
                     break;
@@ -148,6 +144,10 @@ class Tokenizer {
                 }
                 else if(std::string s(1, c); is_reserved(s)) {
                     throw ReservedSymbol(s);
+                }
+                else if(c == static_cast<char>(Symbol::NAME_DEFINE)) {
+                    init_token(NAME_DEFINE);
+                    break;
                 }
                 else {
                     throw SyntaxException();
