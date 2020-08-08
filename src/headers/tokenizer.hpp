@@ -88,7 +88,15 @@ class Tokenizer {
   public:
     /** @param is std::istream to read from */
     Tokenizer(std::istream& is, Container reserved) : is(is),
-        reserved(reserved) {}
+        reserved(reserved) {
+        for(auto r: reserved) {
+            if(!(r.size() == 1 || islower(r[0]))) {
+                throw InvalidReservedSymbol("Only lower-case words or single "
+                                     "non-alphanumeric characters are "
+                                     "supported as reserved symbols");
+            }
+        }
+    }
 
     Tokenizer(std::istream& is) : is(is), reserved() {}
     /**
@@ -98,7 +106,7 @@ class Tokenizer {
      */
     Token get() {
         Token result = Token();
-        char c;
+        char c = 0;
         unsigned short count = 0;
         auto init_token = [&result, &c](TOKEN_TYPE tt) {
             result.tok = tt; result.str += c;

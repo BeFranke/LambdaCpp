@@ -49,3 +49,13 @@ class ReservedSymbol : public std::exception {
     ReservedSymbol(std::string symbol) : symbol(std::move(symbol)) {}
     std::string symbol;
 };
+
+  class InvalidReservedSymbol : public std::exception {
+    public:
+      InvalidReservedSymbol(std::string txt) : txt(txt) {}
+      const char* what() const noexcept override {
+          return txt.c_str();
+      }
+    private:
+      std::string txt;
+  };

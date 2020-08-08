@@ -96,3 +96,15 @@ TEST(TOKENIZER, T14) {
     TOKEN_TYPE expcted[] = {LITERAL, LITERAL};
     std_test("true false", expcted);
 }
+
+TEST(TOKENIZER, EOF_exit) {
+    stringstream ss;
+    ss.str("");
+    Tokenizer tz(ss);
+    ASSERT_EQ(tz.get().tok, UNDEF);
+}
+
+TEST(TOKENIZER, invalid_reserved1) {
+    stringstream ss;
+    ASSERT_THROW(Tokenizer tz(ss, {"?hallo"}), InvalidReservedSymbol);
+}
