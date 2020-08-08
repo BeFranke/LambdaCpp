@@ -160,7 +160,8 @@ class Parser {
                     throw SyntaxException("Malformed beta reduction!");
                 cur = tz.get();
                 return std::make_shared<BetaReduction>(
-                        iters > max_iter && max_iter != 0 ? max_iter : iters
+                        iters > max_iter && max_iter != 0 ? max_iter : iters,
+                        max_iter
                         );
             }
             catch (std::invalid_argument&) {
@@ -170,7 +171,7 @@ class Parser {
         }
         else {
             cur = tz.get();
-            return std::make_shared<BetaReduction>(max_iter);
+            return std::make_shared<BetaReduction>(max_iter, max_iter);
         }
     }
     //lookahead

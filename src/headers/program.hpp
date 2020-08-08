@@ -29,7 +29,7 @@ class Conversion {
     /**
      * Base class, represents identity conversion
      */
-    public:
+  public:
     /**
      * @param ex Expression to convert
      * @return converted Expression as Expression_ptr (may be identical to ex)
@@ -55,17 +55,24 @@ class BetaReduction : public Conversion {
      * early if convergence is reached.
      */
   public:
-    BetaReduction(unsigned int num_steps) : num_steps(num_steps) {}
+    BetaReduction(unsigned long num_steps, unsigned long max_iter) :
+        num_steps(num_steps), max_iter(max_iter) {}
     Expression_ptr execute(Expression_ptr ex) const override {
         Expression_ptr newex;
-        for(unsigned int i = 0; i < num_steps || num_steps == 0; ++i) {
+        unsigned int i;
+        for(i = 0; (i < num_steps || num_steps == 0)
+            && (i < max_iter || max_iter == 0); ++i) {
             newex = ex->beta_reduce();
             if(newex == ex) break;
             ex = newex;
         }
+        if(i == max_iter) {
+            throw MaxIterationsExceeded();
+        }
         return newex;
     }
-    unsigned int num_steps;
+    unsigned long num_steps;
+    unsigned long max_iter;
 };
 
 class Command {

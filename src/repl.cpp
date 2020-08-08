@@ -5,6 +5,15 @@
 #define MAX_ITER 1000
 #endif
 
+void flush() {
+    // flushing cin, from
+    // https://stackoverflow.com/questions/257091/how-do-i-flush-the-cin-buffer
+    std::cin.clear();
+    std::cin.ignore(
+            std::numeric_limits<std::streamsize>::max(), '\n'
+    );
+}
+
 int main() {
     std::set<std::string> reserved = {"exit", "?"};
     Parser parser(std::cin, reserved, MAX_ITER);
@@ -39,12 +48,13 @@ int main() {
         }
         catch (SyntaxException& e) {
             std::cout << e.what() << std::endl;
-            // flushing cin, from
-            // https://stackoverflow.com/questions/257091/how-do-i-flush-the-cin-buffer
-            std::cin.clear();
-            std::cin.ignore(
-                    std::numeric_limits<std::streamsize>::max(), '\n'
-                    );
+            flush();
+        }
+        catch (MaxIterationsExceeded&) {
+            std::cout << "Error: Maximum iterations exceeded! "
+                         "Expression does not seem to have a normal form."
+                         << std::endl;
+            flush();
         }
     }
 }

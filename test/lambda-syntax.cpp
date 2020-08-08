@@ -192,3 +192,14 @@ TEST_F(SyntaxTest, BetaUnclosed) {
     ASSERT_THROW(p.statement(), SyntaxException);
 }
 
+TEST_F(SyntaxTest, MaxIter) {
+    Parser<> p1 = Parser(is, 10);
+    is << "(\\x . (x) x) \\y . (y) y >;";
+    ASSERT_THROW(p1.statement().last_command().execute(),
+                 MaxIterationsExceeded);
+}
+
+TEST_F(SyntaxTest, lowercaseAssign) {
+    is << "'a' = 5;";
+    ASSERT_THROW(p.statement(),SyntaxException);
+}

@@ -52,6 +52,10 @@ add_executable(syntax-test test/lambda-syntax.cpp src/headers/lambda-exceptions.
 target_link_libraries(syntax-test gtest_main)
 add_test(NAME syntax-test COMMAND syntax-test)
 #church-encoding.hpp test
+add_executable(program-test src/headers/program.hpp src/headers/lambda-struct.hpp)
+target_link_libraries(program-test gtest_main)
+add_test(NAME program-test COMMAND program-test)
+#program.hpp test
 add_executable(church-test test/church-encoding.cpp src/headers/church-encoding.hpp)
 target_link_libraries(church-test gtest_main)
 add_test(NAME church-test COMMAND church-test)
