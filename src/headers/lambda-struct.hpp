@@ -121,9 +121,9 @@ class Lambda final : public Expression {
          * if e1 matches head, binds head and returns body
          * else passes binding on to body
          */
-        if(e1 == head) return body->substitute(e1, e2);
         auto res = body->substitute(e1, e2);
-        if(res == body) return std::static_pointer_cast<Expression>(
+        if(e1 == head) return res;
+        else if(res == body) return std::static_pointer_cast<Expression>(
                 shared_from_this()
                 );
         return std::make_shared<Lambda>(head, res);
