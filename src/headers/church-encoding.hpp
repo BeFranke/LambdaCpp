@@ -5,7 +5,8 @@
 /**
  * ABSTRACT:
  * This file is used for encoding natural numbers into lambda calculus.
- * This also represents a possible extension to the framework: simple mathematical operations could be supported
+ * This also represents a possible extension to the framework: simple
+ * mathematical operations could be supported
  */
 
 /**
