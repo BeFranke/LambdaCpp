@@ -22,15 +22,15 @@ enum class Symbol {
     // ( \ x. x) a -> invokes beta reduction until convergence
     // (\ x . x) a -x>y invokes alpha conversion
     // Y = (\ x . x) a binds lambda expression to name 'Y'
-    LAMBDA = '\\',
-    BODY_START = '.',
-    BRCKT_OPN = '(',
-    BRCKT_CLS = ')',
-    SEP = ';',
-    COMMENT = '#',
-    ASSIGNMENT = '=',
-    CONVERSION_END = '>',
-    NAME_DEFINE = '\''
+    lambda = '\\',
+    body_start = '.',
+    bracket_open = '(',
+    bracket_close = ')',
+    separator = ';',
+    comment = '#',
+    assignment = '=',
+    conversion_end = '>',
+    name_definition = '\''
 };
 
 /**
@@ -38,19 +38,19 @@ enum class Symbol {
  * "LITERAL" is included so integers can be used in the lambda expression
  * that could then get expanded by Church encoding
  */
-enum TOKEN_TYPE {
-    IDENTIFIER,
-    NAME,
-    LAMBDA,
-    BODY_START,
-    SEPARATOR,
-    BRACKET_OPEN,
-    BRACKET_CLOSE,
-    LITERAL,
-    CONV_END,
-    ASSIGNMENT,
-    NAME_DEFINE,
-    UNDEF
+enum class TokenType {
+    identifier,
+    name,
+    lambda,
+    body_start,
+    separator,
+    bracket_open,
+    bracket_close,
+    literal,
+    conv_end,
+    assignment,
+    name_define,
+    undefined
 };
 
 class Token {
@@ -60,23 +60,23 @@ class Token {
      * identifier.
      */
   public:
-    Token() : str(), tok(UNDEF) {}
-    operator bool() const {return tok != UNDEF;}
+    Token() : str(), tok(TokenType::undefined) {}
+    operator bool() const {return tok != TokenType::undefined;}
     std::string str;
-    TOKEN_TYPE tok;
+    TokenType tok;
 };
 
 inline bool reserved_symbol_start(char c) noexcept {
     switch(c) {
-        case static_cast<int>(Symbol::LAMBDA):
-        case static_cast<int>(Symbol::BODY_START):
-        case static_cast<int>(Symbol::BRCKT_OPN):
-        case static_cast<int>(Symbol::BRCKT_CLS):
-        case static_cast<int>(Symbol::SEP):
-        case static_cast<int>(Symbol::COMMENT):
-        case static_cast<int>(Symbol::ASSIGNMENT):
-        case static_cast<int>(Symbol::CONVERSION_END):
-        case static_cast<int>(Symbol::NAME_DEFINE):
+        case static_cast<int>(Symbol::lambda):
+        case static_cast<int>(Symbol::body_start):
+        case static_cast<int>(Symbol::bracket_open):
+        case static_cast<int>(Symbol::bracket_close):
+        case static_cast<int>(Symbol::separator):
+        case static_cast<int>(Symbol::comment):
+        case static_cast<int>(Symbol::assignment):
+        case static_cast<int>(Symbol::conversion_end):
+        case static_cast<int>(Symbol::name_definition):
             return true;
         default:
             return false;
@@ -108,7 +108,7 @@ class Tokenizer {
         Token result = Token();
         char c = 0;
         unsigned short count = 0;
-        auto init_token = [&result, &c](TOKEN_TYPE tt) {
+        auto init_token = [&result, &c](TokenType tt) {
             result.tok = tt; result.str += c;
         };
         auto update_token = [&result, &c]() {result.str += c;};
@@ -118,51 +118,51 @@ class Tokenizer {
                 if(isspace(c)) continue;
                 else if(islower(c)) {
                     // variable name
-                    init_token(IDENTIFIER);
+                    init_token(TokenType::identifier);
                 }
                 else if(isupper(c)) {
                     // named function
-                    init_token(NAME);
+                    init_token(TokenType::name);
                 }
-                else if(c == static_cast<char>(Symbol::LAMBDA)) {
-                    init_token(LAMBDA);
+                else if(c == static_cast<char>(Symbol::lambda)) {
+                    init_token(TokenType::lambda);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::BODY_START)) {
-                    init_token(BODY_START);
+                else if(c == static_cast<char>(Symbol::body_start)) {
+                    init_token(TokenType::body_start);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::BRCKT_OPN)) {
-                    init_token(BRACKET_OPEN);
+                else if(c == static_cast<char>(Symbol::bracket_open)) {
+                    init_token(TokenType::bracket_open);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::BRCKT_CLS)) {
-                    init_token(BRACKET_CLOSE);
+                else if(c == static_cast<char>(Symbol::bracket_close)) {
+                    init_token(TokenType::bracket_close);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::SEP)) {
-                    init_token(SEPARATOR);
+                else if(c == static_cast<char>(Symbol::separator)) {
+                    init_token(TokenType::separator);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::COMMENT)) {
+                else if(c == static_cast<char>(Symbol::comment)) {
                     comment = true;
                 }
-                else if(c == static_cast<char>(Symbol::ASSIGNMENT)) {
-                    init_token(ASSIGNMENT);
+                else if(c == static_cast<char>(Symbol::assignment)) {
+                    init_token(TokenType::assignment);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::CONVERSION_END)) {
-                    init_token(CONV_END);
+                else if(c == static_cast<char>(Symbol::conversion_end)) {
+                    init_token(TokenType::conv_end);
                     break;
                 }
                 else if(isdigit(c)) {
-                    init_token(LITERAL);
+                    init_token(TokenType::literal);
                 }
                 else if(std::string s(1, c); is_reserved(s)) {
                     throw ReservedSymbol(s);
                 }
-                else if(c == static_cast<char>(Symbol::NAME_DEFINE)) {
-                    init_token(NAME_DEFINE);
+                else if(c == static_cast<char>(Symbol::name_definition)) {
+                    init_token(TokenType::name_define);
                     break;
                 }
                 else {
@@ -178,9 +178,9 @@ class Tokenizer {
                     continue;
                 }
                 else if(isspace(c)) break;
-                else if((isalpha(c) && (result.tok == IDENTIFIER
-                    || result.tok == NAME))
-                    || (isdigit(c) && result.tok == LITERAL)) {
+                else if((isalpha(c) && (result.tok == TokenType::identifier
+                    || result.tok == TokenType::name))
+                    || (isdigit(c) && result.tok == TokenType::literal)) {
                     update_token();
                 }
                 else if(reserved_symbol_start(c)) {
@@ -193,13 +193,13 @@ class Tokenizer {
             }
             ++count;
         }
-        if(result.tok == IDENTIFIER && is_reserved(result.str)) {
+        if(result.tok == TokenType::identifier && is_reserved(result.str)) {
             throw ReservedSymbol(result.str);
         }
-        else if(result.tok == IDENTIFIER && (result.str == "true"
-            || result.str == "false")) {
+        else if(result.tok == TokenType::identifier && (result.str == "true"
+                                             || result.str == "false")) {
             // true and false are literals
-            result.tok = LITERAL;
+            result.tok = TokenType::literal;
         }
         return result;
     }

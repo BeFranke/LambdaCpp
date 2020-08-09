@@ -36,31 +36,31 @@ class Parser {
             : tz(in), bound(), max_iter(max_iter) {}
     Program statement() {
         cur = tz.get();
-        if(cur.tok == NAME_DEFINE) {
+        if(cur.tok == name_define) {
             res = assignment();
         }
         else {
             res = rvalue();
         }
-        if(cur.tok != SEPARATOR)
+        if(cur.tok != separator)
             throw SyntaxException("Missing semicolon!");
         //next_token();
         return Program(known_symbols, res);
     }
   private:
     Command assignment() {
-        assert(cur.tok == NAME_DEFINE);
+        assert(cur.tok == name_define);
         cur = tz.get();
-        if(cur.tok != NAME)
+        if(cur.tok != name)
             throw SyntaxException("Only variables starting with an "
                                   "uppercase letter may be assigned to.");
         auto name = cur.str;
         cur = tz.get();
-        if(cur.tok != NAME_DEFINE)
+        if(cur.tok != name_define)
             throw SyntaxException("Unclosed definition!");
 
         cur = tz.get();
-        if(cur.tok != ASSIGNMENT)
+        if(cur.tok != assignment)
             throw SyntaxException("defined symbol must be assigned to!");
 
         cur = tz.get();
@@ -74,34 +74,34 @@ class Parser {
         return Command(e, c);
     }
     Expression_ptr expression() {
-        if(cur.tok == LAMBDA) {
+        if(cur.tok == lambda) {
             // backup the bound-map, because there could already be a variable
             // with the same name as the new head
             std::unordered_map<std::string, Variable_ptr> backup_bound = bound;
             cur = tz.get();
-            if(cur.tok != IDENTIFIER) throw SyntaxException();
+            if(cur.tok != identifier) throw SyntaxException();
             // build head variable
             Variable_ptr head = std::make_shared<Variable>(cur.str, true);
             bound[cur.str] = head;
             cur = tz.get();
-            if(cur.tok != BODY_START)
+            if(cur.tok != body_start)
                 throw SyntaxException("Malformed lambda!");
             cur = tz.get();
             Expression_ptr body = expression();
             bound = backup_bound;
             return std::make_shared<Lambda>(head, body);
         }
-        else if(cur.tok == BRACKET_OPEN) {
+        else if(cur.tok == bracket_open) {
             cur = tz.get();
             Expression_ptr fst;
             fst = expression();
-            if(cur.tok != BRACKET_CLOSE)
+            if(cur.tok != bracket_close)
                 throw SyntaxException("unmatched bracket!");
             cur = tz.get();
             auto snd = expression();
             return std::make_shared<Application>(fst, snd);
         }
-        else if(cur.tok == IDENTIFIER) {
+        else if(cur.tok == identifier) {
             if(auto v = bound.find(cur.str); v != bound.end()) {
                 cur = tz.get();
                 return v->second;
@@ -110,7 +110,7 @@ class Parser {
             cur = tz.get();
             return std::make_shared<Variable>(name, false);
         }
-        else if(cur.tok == LITERAL) {
+        else if(cur.tok == literal) {
             try {
                 auto num = stoi(cur.str);
                 cur = tz.get();
@@ -123,7 +123,7 @@ class Parser {
                 else return church_false();
             }
         }
-        else if(cur.tok == NAME) {
+        else if(cur.tok == name) {
             auto name = cur.str;
             cur = tz.get();
             if(known_symbols.find(name) == known_symbols.end())
@@ -133,30 +133,30 @@ class Parser {
         else throw SyntaxException();
     }
     std::shared_ptr<Conversion> conversion() {
-        if(cur.tok == LITERAL || cur.tok == CONV_END)
+        if(cur.tok == literal || cur.tok == conv_end)
             return beta();
-        else if(cur.tok == IDENTIFIER)
+        else if(cur.tok == identifier)
             return alpha();
         else return std::make_shared<Conversion>();
     }
     std::shared_ptr<AlphaConversion> alpha() {
-        auto tokens = {IDENTIFIER, CONV_END, IDENTIFIER};
+        auto tokens = {identifier, conv_end, identifier};
         std::string names[2];
         unsigned short i = 0;
         for(auto t: tokens) {
             if(cur.tok != t) throw SyntaxException();
-            if(cur.tok == IDENTIFIER) names[i++] = cur.str;
+            if(cur.tok == identifier) names[i++] = cur.str;
             cur = tz.get();
         }
         return std::make_shared<AlphaConversion>(names[0], names[1]);
     }
     std::shared_ptr<BetaReduction> beta() {
-        assert(cur.tok == LITERAL || cur.tok == CONV_END);
-        if(cur.tok == LITERAL) {
+        assert(cur.tok == literal || cur.tok == conv_end);
+        if(cur.tok == literal) {
             try {
                 unsigned int iters = std::stol(cur.str);
                 cur = tz.get();
-                if(cur.tok != CONV_END)
+                if(cur.tok != conv_end)
                     throw SyntaxException("Malformed beta reduction!");
                 cur = tz.get();
                 return std::make_shared<BetaReduction>(
