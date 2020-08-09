@@ -172,13 +172,4 @@ TEST(TOKENIZER, overwriteSymbolError) {
     };
     stringstream ss;
     Tokenizer<set<string>, MySymbol> tz(ss);
-    TokenType expected[] = {TokenType::lambda, TokenType::identifier,
-                            TokenType::body_start, TokenType::identifier,
-                            TokenType::separator};
-    ss << "\\x.x\n";
-    unsigned short i = 0;
-    for(Token t = tz.get(); t; t = tz.get(), ++i) {
-        ASSERT_EQ(t.tok, expected[i]);
-    }
-    ASSERT_GE(i, 1);
 }*/
