@@ -35,7 +35,7 @@ enum class Symbol {
 
 /**
  * possible types of tokens for easier syntactical parsing later on
- * "LITERAL" is included so integers can be used in the lambda expression
+ * "literal" is included so integers can be used in the lambda expression
  * that could then get expanded by Church encoding
  */
 enum class TokenType {
@@ -83,7 +83,7 @@ inline bool reserved_symbol_start(char c) noexcept {
     }
 }
 
-template <class Container=std::set<std::string>>
+template <class Container=std::set<std::string>, typename SymbolClass = Symbol>
 class Tokenizer {
   public:
     /** @param is std::istream to read from */
@@ -124,34 +124,34 @@ class Tokenizer {
                     // named function
                     init_token(TokenType::name);
                 }
-                else if(c == static_cast<char>(Symbol::lambda)) {
+                else if(c == static_cast<char>(SymbolClass::lambda)) {
                     init_token(TokenType::lambda);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::body_start)) {
+                else if(c == static_cast<char>(SymbolClass::body_start)) {
                     init_token(TokenType::body_start);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::bracket_open)) {
+                else if(c == static_cast<char>(SymbolClass::bracket_open)) {
                     init_token(TokenType::bracket_open);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::bracket_close)) {
+                else if(c == static_cast<char>(SymbolClass::bracket_close)) {
                     init_token(TokenType::bracket_close);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::separator)) {
+                else if(c == static_cast<char>(SymbolClass::separator)) {
                     init_token(TokenType::separator);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::comment)) {
+                else if(c == static_cast<char>(SymbolClass::comment)) {
                     comment = true;
                 }
-                else if(c == static_cast<char>(Symbol::assignment)) {
+                else if(c == static_cast<char>(SymbolClass::assignment)) {
                     init_token(TokenType::assignment);
                     break;
                 }
-                else if(c == static_cast<char>(Symbol::conversion_end)) {
+                else if(c == static_cast<char>(SymbolClass::conversion_end)) {
                     init_token(TokenType::conv_end);
                     break;
                 }
@@ -161,7 +161,7 @@ class Tokenizer {
                 else if(std::string s(1, c); is_reserved(s)) {
                     throw ReservedSymbol(s);
                 }
-                else if(c == static_cast<char>(Symbol::name_definition)) {
+                else if(c == static_cast<char>(SymbolClass::name_definition)) {
                     init_token(TokenType::name_define);
                     break;
                 }

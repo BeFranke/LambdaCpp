@@ -128,3 +128,57 @@ TEST(TOKENIZER, invalid_reserved1) {
     stringstream ss;
     ASSERT_THROW(Tokenizer tz(ss, {"?hallo"}), InvalidReservedSymbol);
 }
+
+TEST(TOKENIZER, overwriteSymbol) {
+    enum class MySymbol {
+        lambda = '\\',
+        body_start = '.',
+        bracket_open = '(',
+        bracket_close = ')',
+        // this one has changed
+        separator = '\n',
+        comment = '#',
+        assignment = '=',
+        conversion_end = '>',
+        name_definition = '\''
+    };
+    stringstream ss;
+    Tokenizer<set<string>, MySymbol> tz(ss);
+    TokenType expected[] = {TokenType::lambda, TokenType::identifier,
+                            TokenType::body_start, TokenType::identifier,
+                            TokenType::separator};
+    ss << "\\x.x\n";
+    unsigned short i = 0;
+    for(Token t = tz.get(); t; t = tz.get(), ++i) {
+        ASSERT_EQ(t.tok, expected[i]);
+    }
+    ASSERT_GE(i, 1);
+}
+
+/* This test does intentionally not compile, it is there to assert that
+ * trying to specify a replacement for the Symbol class that does not define
+ * every needed symbol leads to a compilation error.
+TEST(TOKENIZER, overwriteSymbolError) {
+    enum class MySymbol {
+        body_start = '.',
+        bracket_open = '(',
+        bracket_close = ')',
+        // this one has changed
+        separator = '\n',
+        comment = '#',
+        assignment = '=',
+        conversion_end = '>',
+        name_definition = '\''
+    };
+    stringstream ss;
+    Tokenizer<set<string>, MySymbol> tz(ss);
+    TokenType expected[] = {TokenType::lambda, TokenType::identifier,
+                            TokenType::body_start, TokenType::identifier,
+                            TokenType::separator};
+    ss << "\\x.x\n";
+    unsigned short i = 0;
+    for(Token t = tz.get(); t; t = tz.get(), ++i) {
+        ASSERT_EQ(t.tok, expected[i]);
+    }
+    ASSERT_GE(i, 1);
+}*/
