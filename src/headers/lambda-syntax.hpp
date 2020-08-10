@@ -31,21 +31,21 @@ template <typename Container = std::set<std::string>>
 class Parser {
   public:
     Parser(std::istream& in, Container& reserved, unsigned long max_iter=0)
-        : tz(in, reserved), bound(), max_iter(max_iter) {}
+        : tz(in, reserved), bound(), max_iter(max_iter), res() {}
     Parser(std::istream& in, unsigned long max_iter=0)
-            : tz(in), bound(), max_iter(max_iter) {}
+            : tz(in), bound(), max_iter(max_iter), res() {}
     Program statement() {
         cur = tz.get();
         if(cur.tok == TokenType::name_define) {
-            res = assignment();
+            res[res.last_key] = assignment();
         }
         else {
-            res = rvalue();
+            res[res.last_key] = rvalue();
         }
         if(cur.tok != TokenType::separator)
             throw SyntaxException("Missing semicolon!");
         //next_token();
-        return Program(known_symbols, res);
+        return res;
     }
   private:
     Command assignment() {
@@ -65,7 +65,7 @@ class Parser {
 
         cur = tz.get();
         Command e = rvalue();
-        known_symbols[name] = e;
+        res[name] = e;
         return e;
     }
     Command rvalue() {
@@ -126,9 +126,9 @@ class Parser {
         else if(cur.tok == TokenType::name) {
             auto name = cur.str;
             cur = tz.get();
-            if(known_symbols.find(name) == known_symbols.end())
+            if(!res.contains(name))
                 throw SyntaxException("Undefined symbol: " + name + "!");
-            return known_symbols[name].execute();
+            return res[name].execute();
         }
         else throw SyntaxException();
     }
@@ -178,8 +178,7 @@ class Parser {
     //lookahead
     Token cur;
     Tokenizer<Container> tz;
-    Command res;
-    std::unordered_map<std::string, Variable_ptr> bound;
-    std::unordered_map<std::string, Command> known_symbols;
     unsigned long max_iter;
+    Program res;
+    std::unordered_map<std::string, Variable_ptr> bound;
 };

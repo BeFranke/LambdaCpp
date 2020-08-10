@@ -8,43 +8,36 @@
  * in the other headers
  */
 
-static const std::string SYNTAX_HEAD = "Error: unexpected syntax! ";
+static const std::string SYNTAX_HEAD = "SyntaxError: ";
 
+class LambdaException : public std::exception {};
 
-class SyntaxParseException : public std::exception {
+class SyntaxException : public LambdaException {
   public:
-    SyntaxParseException() = delete;
-    SyntaxParseException(std::string text) : std::exception(), text(text) {}
+    SyntaxException(std::string line) : line(SYNTAX_HEAD + line) {}
+    SyntaxException() : line(SYNTAX_HEAD) {}
+    std::string line;
     const char* what() const noexcept override {
-        return text.c_str();
-    }
-  private:
-    std::string text;
-};
-
-class SyntaxException : public SyntaxParseException {
-  public:
-    SyntaxException(std::string line) : SyntaxParseException(SYNTAX_HEAD + line)
-    {}
-    SyntaxException() : SyntaxParseException(SYNTAX_HEAD) {}
-};
-
-
-class MaxIterationsExceeded : public std::exception {
-  public:
-    const char* what() const noexcept override {
-        return "Maximum iterations exceeded!";
+        return line.c_str();
     }
 };
 
-class NameClash : public std::exception {
+
+class MaxIterationsExceeded : public LambdaException {
   public:
     const char* what() const noexcept override {
-        return "Requested name already exists!";
+        return "Maximum iterations exceeded";
     }
 };
 
-class ReservedSymbol : public std::exception {
+class NameClash : public LambdaException {
+  public:
+    const char* what() const noexcept override {
+        return "Requested name already exists";
+    }
+};
+
+class ReservedSymbol : public LambdaException {
   public:
     ReservedSymbol(std::string symbol) : symbol(std::move(symbol)) {}
     std::string symbol;

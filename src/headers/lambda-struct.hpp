@@ -23,10 +23,10 @@ class Expression;
 class Variable;
 class Application;
 class Lambda;
-typedef std::shared_ptr<Expression> Expression_ptr;
-typedef std::shared_ptr<Application> Application_ptr;
-typedef std::shared_ptr<Variable> Variable_ptr;
-typedef std::shared_ptr<Lambda> Lambda_ptr;
+typedef std::shared_ptr<const Expression> Expression_ptr;
+typedef std::shared_ptr<const Application> Application_ptr;
+typedef std::shared_ptr<const Variable> Variable_ptr;
+typedef std::shared_ptr<const Lambda> Lambda_ptr;
 
 class Expression: public std::enable_shared_from_this<Expression> {
     /**
@@ -38,21 +38,26 @@ class Expression: public std::enable_shared_from_this<Expression> {
     virtual bool check_for_name_clash(const std::string&) const noexcept = 0;
 
     /** @return Expression after one step of beta reduction*/
-    virtual Expression_ptr beta_reduce() = 0;
+    virtual Expression_ptr beta_reduce() const = 0;
 
     /** @return Expression where first argument was replaced by second
      * argument*/
-    virtual Expression_ptr substitute(Variable_ptr, Expression_ptr) = 0;
+    virtual Expression_ptr substitute(Variable_ptr, Expression_ptr) const = 0;
 
     /** @return Expression where bound variables with a name equal to the first
      * argument were renamed to the second
      * if third argument is true, throws Exception on name clash */
-    virtual Expression_ptr alpha_convert(const std::string&, const std::string&) = 0;
+    virtual Expression_ptr alpha_convert(const std::string&,
+                                         const std::string&) const = 0;
 
     virtual ~Expression() {}
-  protected:
-    Expression() {}
+
+    virtual std::ostream& print(std::ostream&) const = 0;
 };
+
+std::ostream& operator<<(std::ostream& os, const Expression& ex) {
+    return ex.print(os);
+}
 
 class Variable final : public Expression {
     /**
@@ -68,29 +73,32 @@ class Variable final : public Expression {
     std::string get_name() const noexcept {
         return name;
     }
-    Expression_ptr beta_reduce() override {
+    Expression_ptr beta_reduce() const override {
         /**
          * beta reduction of variable is identity
          */
-        return std::static_pointer_cast<Expression>(shared_from_this());
+        return shared_from_this();
     }
     Expression_ptr alpha_convert(const std::string& old_name,
-                                 const std::string& new_name) override {
+                                 const std::string& new_name) const override {
         /**
          * identity, actual renaming is done via Variable::substitute()
          */
-        return std::static_pointer_cast<Expression>(shared_from_this());
+        return shared_from_this();
     }
-    Expression_ptr substitute(Variable_ptr e1, Expression_ptr e2) override {
+    Expression_ptr substitute(Variable_ptr e1, Expression_ptr e2) const override {
         /**
          * returns e2 if e1 matches itself, else returns copy of itself
          */
         if(this == e1.get()) return e2;
-        return std::static_pointer_cast<Expression>(shared_from_this());
+        return shared_from_this();
     }
     bool check_for_name_clash(const std::string& new_name) const noexcept
         override {
         return this->name == new_name;
+    }
+    std::ostream& print(std::ostream& os) const override{
+        return os << name;
     }
 
   private:
@@ -106,30 +114,27 @@ class Lambda final : public Expression {
      */
   public:
     Lambda(Variable_ptr head, Expression_ptr body) : head(head), body(body) {}
-    Expression_ptr beta_reduce() override {
+    Expression_ptr beta_reduce() const override {
         /**
          * beta reduction needs an application, so it gets passed down to body
          */
         auto res = body->beta_reduce();
-        if(res == body) return std::static_pointer_cast<Expression>(
-                shared_from_this()
-                );
+        if(res == body) return shared_from_this();
         return std::make_shared<Lambda>(head, res);
     }
-    Expression_ptr substitute(Variable_ptr e1, Expression_ptr e2) override {
+    Expression_ptr substitute(Variable_ptr e1, Expression_ptr e2) const
+        override {
         /**
          * if e1 matches head, binds head and returns body
          * else passes binding on to body
          */
         auto res = body->substitute(e1, e2);
         if(e1 == head) return res;
-        else if(res == body) return std::static_pointer_cast<Expression>(
-                shared_from_this()
-                );
+        else if(res == body) return shared_from_this();
         return std::make_shared<Lambda>(head, res);
     }
     Expression_ptr alpha_convert(const std::string& old_name,
-                                 const std::string& new_name) override {
+                                 const std::string& new_name) const override {
         /**
          * if head matches the new name, calls subsitute
          * else passes conversion to body
@@ -141,18 +146,17 @@ class Lambda final : public Expression {
             return std::make_shared<Lambda>(new_head, new_body);
         }
         auto new_body = body->alpha_convert(old_name, new_name);
-        if(new_body == body) return std::static_pointer_cast<Expression>(
-                shared_from_this());
+        if(new_body == body) return shared_from_this();
         return std::make_shared<Lambda>(head, new_body);
     }
-    Variable_ptr get_head() noexcept {
+    Variable_ptr get_head() const noexcept {
         /**
          * returns head, the variable in the abstraction
          * e.g. \ x . x y -> x is head
          */
         return head;
     }
-    Expression_ptr get_body() noexcept {
+    Expression_ptr get_body() const noexcept {
         /**
          * returns body, the expression after the abstraction
          * e.g. \ x . x y -> x y is body
@@ -164,6 +168,9 @@ class Lambda final : public Expression {
         bool clash_head = head->check_for_name_clash(new_name);
         bool clash_body = body->check_for_name_clash(new_name);
         return clash_body && !clash_head;
+    }
+    std::ostream& print(std::ostream& os) const override {
+        return os << "\\" << *head << " . " << *body;
     }
   private:
     Variable_ptr head;
@@ -178,80 +185,69 @@ class Application final : public Expression {
      */
   public:
     Application(Expression_ptr fst, Expression_ptr snd) : Expression(),
-        fst(fst), snd(snd) {}
+                                                          function(fst), argument(snd) {}
 
     Expression_ptr substitute(Variable_ptr e_old, Expression_ptr e_new)
-        override {
+        const override {
         /**
          * binds e_old to e_new in both expressions of this application
          * returns new Expression
          */
 
-        auto fst_new = fst->substitute(e_old, e_new);
-        auto snd_new = snd->substitute(e_old, e_new);
-        if(fst_new == fst && snd_new == snd)
-            return std::static_pointer_cast<Expression>(shared_from_this());
+        auto fst_new = function->substitute(e_old, e_new);
+        auto snd_new = argument->substitute(e_old, e_new);
+        if(fst_new == function && snd_new == argument)
+            return shared_from_this();
         return std::make_shared<Application>(fst_new, snd_new);
     }
-    Expression_ptr beta_reduce() override {
+    Expression_ptr beta_reduce() const override {
         /**
          * invokes a beta reduction:
-         * if fst is a lambda, binds second to the bound variable in fst
-         * otherwise, passes beta-reduction on to fst and snd
+         * if function is a lambda, binds second to the bound variable in function
+         * otherwise, passes beta-reduction on to function and argument
          */
-        if(Lambda_ptr lbd = std::dynamic_pointer_cast<Lambda>(fst); lbd)
-            return lbd->substitute(lbd->get_head(), snd);
+        if(Lambda_ptr lbd = std::dynamic_pointer_cast<const Lambda>(function);
+            lbd)
+            return lbd->substitute(lbd->get_head(), argument);
 
-        auto res1 = fst->beta_reduce();
-        if(res1 == fst) {
-            // no changes, i.e. fst is in normal form
-            auto res2 = snd->beta_reduce();
-            if(res2 == snd) return std::static_pointer_cast<Expression>(
-                    shared_from_this());
-            return std::make_shared<Application>(fst, snd->beta_reduce());
+        auto res1 = function->beta_reduce();
+        if(res1 == function) {
+            // no changes, i.e. function is in normal form
+            auto res2 = argument->beta_reduce();
+            if(res2 == argument) return shared_from_this();
+            return std::make_shared<Application>(function, argument->beta_reduce());
         }
-        return std::make_shared<Application>(res1, snd);
+        return std::make_shared<Application>(res1, argument);
     }
     Expression_ptr alpha_convert(const std::string& old_name,
-                                 const std::string& new_name) override {
+                                 const std::string& new_name) const override {
         /**
          * renames bound variable old_name to new_name
          */
-        auto res1 = fst->alpha_convert(old_name, new_name);
-        auto res2 = snd->alpha_convert(old_name, new_name);
-        if(res1 == fst && res2 == snd)
-            return std::static_pointer_cast<Expression>(shared_from_this());
+        auto res1 = function->alpha_convert(old_name, new_name);
+        auto res2 = argument->alpha_convert(old_name, new_name);
+        if(res1 == function && res2 == argument)
+            return shared_from_this();
         return std::make_shared<Application>(res1, res2);
 
     }
     bool check_for_name_clash(const std::string& new_name) const noexcept
         override {
-        return fst->check_for_name_clash(new_name) ||
-            snd->check_for_name_clash(new_name);
+        return function->check_for_name_clash(new_name) ||
+               argument->check_for_name_clash(new_name);
     }
-    Expression_ptr get_first() noexcept {
-        return fst;
+    Expression_ptr get_function() const noexcept {
+        return function;
     }
-    Expression_ptr get_second() noexcept {
-        return snd;
+    Expression_ptr get_argument() const noexcept {
+        return argument;
+    }
+    std::ostream& print(std::ostream& os) const override {
+        return os << "(" << *function << ") " << *argument;
     }
   private:
-    Expression_ptr fst;
-    Expression_ptr snd;
+    Expression_ptr function;
+    Expression_ptr argument;
 };
 
-std::ostream& operator<<(std::ostream& os, const Expression& ex) {
-    if(typeid(ex) == typeid(Variable)) {
-        auto v = static_cast<const Variable&>(ex);
-        os << v.get_name();
-    }
-    else if(typeid(ex) == typeid(Lambda)) {
-        auto l = static_cast<const Lambda&>(ex);
-        os << '\\' << *l.get_head() << " . " << *l.get_body();
-    }
-    else if(typeid(ex) == typeid(Application)) {
-        auto a = static_cast<const Application&>(ex);
-        os << "(" << *a.get_first() << ") " << *a.get_second();
-    }
-    return os;
-}
+

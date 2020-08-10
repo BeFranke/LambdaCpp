@@ -14,7 +14,7 @@ class SyntaxTest : public ::testing::Test {
 
 TEST_F(SyntaxTest, VariableParses) {
     is << "x;";
-    auto result = std::dynamic_pointer_cast<Variable>(
+    auto result = std::dynamic_pointer_cast<const Variable>(
             p.statement().last_command().execute()
             );
     ASSERT_EQ(result->get_name(), "x");
@@ -22,7 +22,7 @@ TEST_F(SyntaxTest, VariableParses) {
 
 TEST_F(SyntaxTest, LambdaParsesSimple) {
     is << "\\ x . x;";
-    auto result = std::dynamic_pointer_cast<Lambda>(
+    auto result = std::dynamic_pointer_cast<const Lambda>(
             p.statement().last_command().execute()
             );
     os << *result;
@@ -31,7 +31,7 @@ TEST_F(SyntaxTest, LambdaParsesSimple) {
 
 TEST_F(SyntaxTest, ApplicationParsesSimple) {
     is << "(f) x;";
-    auto result = std::dynamic_pointer_cast<Application>(
+    auto result = std::dynamic_pointer_cast<const Application>(
             p.statement().last_command().execute()
             );
     os << *result;
@@ -41,9 +41,9 @@ TEST_F(SyntaxTest, ApplicationParsesSimple) {
 TEST_F(SyntaxTest, AssignmentParsesSimple) {
     is << "'A' = a;";
     auto prog = p.statement();
-    ASSERT_NE(prog.symbols().find("A"), prog.symbols().end());
-    auto expr = std::dynamic_pointer_cast<Variable>(
-            prog.symbols()["A"].execute()
+    ASSERT_TRUE(prog.contains("A"));
+    auto expr = std::dynamic_pointer_cast<const Variable>(
+            prog["A"].execute()
             );
     ASSERT_EQ(expr->get_name(), "a");
 }

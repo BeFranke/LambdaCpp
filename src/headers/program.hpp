@@ -96,15 +96,22 @@ class Program {
      * the input
      */
   public:
-    Program(std::unordered_map<std::string, Command>& ks, Command& li) :
-        known_symbols(ks), last_input(li) {}
-    inline std::unordered_map<std::string, Command> symbols() {
-        return known_symbols;
+    Program() : known_symbols() {}
+    inline Command& last_command() {
+        return known_symbols[last_key];
     }
-    inline const Command& last_command() {
-        return last_input;
+    Command& operator[](const std::string& key) {
+        return known_symbols[key];
     }
+    Command& operator[](std::string& key) {
+        return known_symbols[key];
+    }
+    inline bool contains(const std::string key) const {
+        return known_symbols.find(key) != known_symbols.end();
+    }
+    static const std::string last_key;
   private:
     std::unordered_map<std::string, Command> known_symbols;
-    Command last_input;
 };
+
+const std::string Program::last_key = "last";

@@ -5,7 +5,7 @@ using namespace std;
 
 inline vector<Variable_ptr> make_vars(vector<string> names, bool bound) {
     vector<Variable_ptr> res(names.size());
-    for(int i = 0; i < names.size(); ++i) {
+    for(unsigned int i = 0; i < names.size(); ++i) {
         res[i] = make_shared<Variable>(names[i], bound);
     }
     return res;
@@ -153,15 +153,15 @@ TEST(STRING_REPR, test1) {
 TEST(BETA, no_normal_form) {
     // (\ x . (x) x) \ y . (y) y
     auto bound = make_vars({"x", "y"}, true);
-    auto xx = make_shared<Application>(bound[0], bound[0]);
-    auto yy = make_shared<Application>(bound[1], bound[1]);
-    auto lx = make_shared<Lambda>(bound[0], xx);
-    auto ly = make_shared<Lambda>(bound[1], yy);
-    auto ap = make_shared<Application>(lx, ly);
+    auto xx = make_shared<const Application>(bound[0], bound[0]);
+    auto yy = make_shared<const Application>(bound[1], bound[1]);
+    auto lx = make_shared<const Lambda>(bound[0], xx);
+    auto ly = make_shared<const Lambda>(bound[1], yy);
+    auto ap = make_shared<const Application>(lx, ly);
     for(char i = 0; i < 99; ++i) {
         auto ap_new = ap->beta_reduce();
         ASSERT_NE(ap_new, ap);
-        ap = static_pointer_cast<Application>(ap_new);
+        ap = static_pointer_cast<const Application>(ap_new);
         if(i == 10) cout << *ap << endl;
     }
 }
