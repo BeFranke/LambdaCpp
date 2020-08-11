@@ -187,3 +187,12 @@ TEST(ALPHA, name_clash) {
     auto lx = make_shared<Lambda>(bound[0], xy);
     ASSERT_THROW(lx->alpha_convert("x", "y"), NameClash);
 }
+
+TEST(ALPHA, identity) {
+    // trying to rename u to v in (x) y
+    auto bound = make_vars({"x"}, true);
+    auto unbound = make_vars({"y"}, false);
+    auto xy = make_shared<Application>(bound[0], unbound[0]);
+    auto res = xy->alpha_convert("u", "v");
+    ASSERT_EQ(xy, res);
+}
