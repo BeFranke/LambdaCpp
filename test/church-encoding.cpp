@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/headers/church-encoding.hpp"
+#include "../src/lib/church-encoding.hpp"
 
 TEST(CHURCH, zero) {
     Expression_ptr res = church_encode(0);

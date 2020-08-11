@@ -1,5 +1,5 @@
 #include <iostream>
-#include "headers/lambda-syntax.hpp"
+#include "lib/lambda-syntax.hpp"
 
 #ifndef MAX_ITER
 #define MAX_ITER 1000

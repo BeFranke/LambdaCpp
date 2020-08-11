@@ -1,6 +1,6 @@
 #include <vector>
 #include "gtest/gtest.h"
-#include "../src/headers/lambda-syntax.hpp"
+#include "../src/lib/lambda-syntax.hpp"
 
 class SyntaxTest : public ::testing::Test {
   public:

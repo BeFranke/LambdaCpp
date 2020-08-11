@@ -1,6 +1,4 @@
-#pragma once
-
-#include "lambda-struct.hpp"
+#include "church-encoding.hpp"
 
 /**
  * ABSTRACT:

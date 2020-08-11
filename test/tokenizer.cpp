@@ -1,6 +1,6 @@
 #include <iostream>
 #include "gtest/gtest.h"
-#include "../src/headers/tokenizer.hpp"
+#include "../src/lib/tokenizer.hpp"
 
 using namespace std;
 

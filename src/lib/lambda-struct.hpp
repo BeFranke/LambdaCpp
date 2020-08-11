@@ -55,9 +55,7 @@ class Expression: public std::enable_shared_from_this<Expression> {
     virtual std::ostream& print(std::ostream&) const = 0;
 };
 
-std::ostream& operator<<(std::ostream& os, const Expression& ex) {
-    return ex.print(os);
-}
+std::ostream& operator<<(std::ostream& os, const Expression& ex);
 
 class Variable final : public Expression {
     /**

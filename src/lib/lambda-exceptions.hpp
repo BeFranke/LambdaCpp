@@ -5,7 +5,7 @@
 
 /**
  * ABSTRACT: This header contains all kinds of exceptions that could be thrown
- * in the other headers
+ * in the other lib
  */
 
 static const std::string SYNTAX_HEAD = "SyntaxError: ";
@@ -43,12 +43,12 @@ class ReservedSymbol : public LambdaException {
     std::string symbol;
 };
 
-  class InvalidReservedSymbol : public std::exception {
-    public:
-      InvalidReservedSymbol(std::string txt) : txt(txt) {}
-      const char* what() const noexcept override {
-          return txt.c_str();
-      }
-    private:
-      std::string txt;
-  };
+class InvalidReservedSymbol : public std::exception {
+  public:
+    InvalidReservedSymbol(std::string txt) : txt(txt) {}
+    const char* what() const noexcept override {
+      return txt.c_str();
+    }
+  private:
+    std::string txt;
+};
