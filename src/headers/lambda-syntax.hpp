@@ -31,16 +31,16 @@ template <typename Container = std::set<std::string>>
 class Parser {
   public:
     Parser(std::istream& in, Container& reserved, unsigned long max_iter=0)
-        : tz(in, reserved), bound(), max_iter(max_iter), program() {}
+        : program(), tz(in, reserved), bound(), max_iter(max_iter) {}
     Parser(std::istream& in, unsigned long max_iter=0)
-            : tz(in), bound(), max_iter(max_iter), program() {}
+            : program(), tz(in), bound(), max_iter(max_iter) {}
     Program statement() {
         cur = tz.get();
         if(cur.tok == TokenType::name_define) {
-            program[program.last_key] = assignment();
+            program[Program::last_key] = assignment();
         }
         else {
-            program[program.last_key] = rvalue();
+            program[Program::last_key] = rvalue();
         }
         if(cur.tok != TokenType::separator)
             throw SyntaxException("Missing semicolon");
@@ -180,6 +180,6 @@ class Parser {
     //lookahead
     Token cur;
     Tokenizer<Container> tz;
-    unsigned long max_iter;
     std::unordered_map<std::string, Variable_ptr> bound;
+    unsigned long max_iter;
 };
