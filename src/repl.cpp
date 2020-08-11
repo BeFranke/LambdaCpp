@@ -26,6 +26,7 @@ int main() {
             Program p = parser.statement();
             auto com = p.last_command();
             auto ex = com.execute();
+            parser.program["Ans"] = com;
             std::cout << *ex << std::endl;
         }
         catch(ReservedSymbol& r) {

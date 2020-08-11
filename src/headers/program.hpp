@@ -66,7 +66,7 @@ class BetaReduction : public Conversion {
             if(newex == ex) break;
             ex = newex;
         }
-        if(i == max_iter) {
+        if(i == max_iter && max_iter != 0) {
             throw MaxIterationsExceeded();
         }
         return newex;

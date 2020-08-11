@@ -31,41 +31,42 @@ template <typename Container = std::set<std::string>>
 class Parser {
   public:
     Parser(std::istream& in, Container& reserved, unsigned long max_iter=0)
-        : tz(in, reserved), bound(), max_iter(max_iter), res() {}
+        : tz(in, reserved), bound(), max_iter(max_iter), program() {}
     Parser(std::istream& in, unsigned long max_iter=0)
-            : tz(in), bound(), max_iter(max_iter), res() {}
+            : tz(in), bound(), max_iter(max_iter), program() {}
     Program statement() {
         cur = tz.get();
         if(cur.tok == TokenType::name_define) {
-            res[res.last_key] = assignment();
+            program[program.last_key] = assignment();
         }
         else {
-            res[res.last_key] = rvalue();
+            program[program.last_key] = rvalue();
         }
         if(cur.tok != TokenType::separator)
-            throw SyntaxException("Missing semicolon!");
+            throw SyntaxException("Missing semicolon");
         //next_token();
-        return res;
+        return program;
     }
+    Program program;
   private:
     Command assignment() {
         assert(cur.tok == TokenType::name_define);
         cur = tz.get();
         if(cur.tok != TokenType::name)
             throw SyntaxException("Only variables starting with an "
-                                  "uppercase letter may be assigned to.");
+                                  "uppercase letter may be assigned to");
         auto name = cur.str;
         cur = tz.get();
         if(cur.tok != TokenType::name_define)
-            throw SyntaxException("Unclosed definition!");
+            throw SyntaxException("Unclosed definition");
 
         cur = tz.get();
         if(cur.tok != TokenType::assignment)
-            throw SyntaxException("defined symbol must be assigned to!");
+            throw SyntaxException("defined symbol must be assigned to");
 
         cur = tz.get();
         Command e = rvalue();
-        res[name] = e;
+        program[name] = e;
         return e;
     }
     Command rvalue() {
@@ -85,7 +86,7 @@ class Parser {
             bound[cur.str] = head;
             cur = tz.get();
             if(cur.tok != TokenType::body_start)
-                throw SyntaxException("Malformed lambda!");
+                throw SyntaxException("Malformed lambda");
             cur = tz.get();
             Expression_ptr body = expression();
             bound = backup_bound;
@@ -96,7 +97,7 @@ class Parser {
             Expression_ptr fst;
             fst = expression();
             if(cur.tok != TokenType::bracket_close)
-                throw SyntaxException("unmatched bracket!");
+                throw SyntaxException("unmatched bracket");
             cur = tz.get();
             auto snd = expression();
             return std::make_shared<Application>(fst, snd);
@@ -126,9 +127,9 @@ class Parser {
         else if(cur.tok == TokenType::name) {
             auto name = cur.str;
             cur = tz.get();
-            if(!res.contains(name))
-                throw SyntaxException("Undefined symbol: " + name + "!");
-            return res[name].execute();
+            if(!program.contains(name))
+                throw SyntaxException("Undefined symbol: " + name);
+            return program[name].execute();
         }
         else throw SyntaxException();
     }
@@ -158,7 +159,7 @@ class Parser {
                 unsigned int iters = std::stol(cur.str);
                 cur = tz.get();
                 if(cur.tok != TokenType::conv_end)
-                    throw SyntaxException("Malformed beta reduction!");
+                    throw SyntaxException("Malformed beta reduction");
                 cur = tz.get();
                 return std::make_shared<BetaReduction>(
                         iters > max_iter && max_iter != 0 ? max_iter : iters,
@@ -166,7 +167,8 @@ class Parser {
                         );
             }
             catch (std::invalid_argument&) {
-                throw SyntaxException("Beta Reduction can only be specified with numbers!");
+                throw SyntaxException("Beta Reduction can only be specified "
+                                      "with numbers");
             }
 
         }
@@ -179,6 +181,5 @@ class Parser {
     Token cur;
     Tokenizer<Container> tz;
     unsigned long max_iter;
-    Program res;
     std::unordered_map<std::string, Variable_ptr> bound;
 };

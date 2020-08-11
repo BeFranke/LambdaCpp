@@ -139,7 +139,7 @@ class Lambda final : public Expression {
          * if head matches the new name, calls subsitute
          * else passes conversion to body
          */
-        if(head->get_name().compare(old_name) == 0) {
+        if(head->get_name() == old_name) {
             if(this->check_for_name_clash(new_name)) throw NameClash();
             auto new_head = std::make_shared<Variable>(new_name, true);
             auto new_body = body->substitute(head, new_head);
@@ -184,8 +184,8 @@ class Application final : public Expression {
      * e.g. x y or (\ x . x) y
      */
   public:
-    Application(Expression_ptr fst, Expression_ptr snd) : Expression(),
-                                                          function(fst), argument(snd) {}
+    Application(Expression_ptr fst, Expression_ptr snd) :
+        Expression(), function(fst), argument(snd) {}
 
     Expression_ptr substitute(Variable_ptr e_old, Expression_ptr e_new)
         const override {
