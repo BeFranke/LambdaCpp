@@ -28,6 +28,7 @@
 // I built a LL(1) grammar for this, hence we only need one lookahead
 // (here, this is cur)
 template <typename Container = std::set<std::string>>
+typename std::enable_if<has_const_iterator<Container>
 class Parser {
   public:
     Parser(std::istream& in, Container& reserved, unsigned long max_iter=0)

@@ -84,7 +84,8 @@ class Variable final : public Expression {
          */
         return shared_from_this();
     }
-    Expression_ptr substitute(Variable_ptr e1, Expression_ptr e2) const override {
+    Expression_ptr substitute(Variable_ptr e1, Expression_ptr e2) const
+        override {
         /**
          * returns e2 if e1 matches itself, else returns copy of itself
          */
@@ -201,8 +202,8 @@ class Application final : public Expression {
     Expression_ptr beta_reduce() const override {
         /**
          * invokes a beta reduction:
-         * if function is a lambda, binds second to the bound variable in function
-         * otherwise, passes beta-reduction on to function and argument
+         * if function is a lambda, binds second to the bound variable in
+         * function otherwise, passes beta-reduction on to function and argument
          */
         if(Lambda_ptr lbd = std::dynamic_pointer_cast<const Lambda>(function);
             lbd)
@@ -213,7 +214,8 @@ class Application final : public Expression {
             // no changes, i.e. function is in normal form
             auto res2 = argument->beta_reduce();
             if(res2 == argument) return shared_from_this();
-            return std::make_shared<Application>(function, argument->beta_reduce());
+            return std::make_shared<Application>(function,
+                                                 argument->beta_reduce());
         }
         return std::make_shared<Application>(res1, argument);
     }
