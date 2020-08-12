@@ -66,29 +66,34 @@ class Token {
     TokenType tok;
 };
 
+template <typename SymbolClass = Symbol>
 inline bool reserved_symbol_start(char c) noexcept {
     switch(c) {
-        case static_cast<int>(Symbol::lambda):
-        case static_cast<int>(Symbol::body_start):
-        case static_cast<int>(Symbol::bracket_open):
-        case static_cast<int>(Symbol::bracket_close):
-        case static_cast<int>(Symbol::separator):
-        case static_cast<int>(Symbol::comment):
-        case static_cast<int>(Symbol::assignment):
-        case static_cast<int>(Symbol::conversion_end):
-        case static_cast<int>(Symbol::name_definition):
+        case static_cast<int>(SymbolClass::lambda):
+        case static_cast<int>(SymbolClass::body_start):
+        case static_cast<int>(SymbolClass::bracket_open):
+        case static_cast<int>(SymbolClass::bracket_close):
+        case static_cast<int>(SymbolClass::separator):
+        case static_cast<int>(SymbolClass::comment):
+        case static_cast<int>(SymbolClass::assignment):
+        case static_cast<int>(SymbolClass::conversion_end):
+        case static_cast<int>(SymbolClass::name_definition):
             return true;
         default:
             return false;
     }
 }
 
-template <class Container=std::set<std::string>, typename SymbolClass = Symbol>
+// template to allow arbitrary containers around std::string,
+// source:
+// https://stackoverflow.com/questions/46485084/declare-template-function-to-accept-any-container-but-only-one-contained-type/46485265
+template < template < typename ...> typename Container,
+typename SymbolClass = Symbol, typename ... Args>
 class Tokenizer {
   public:
     /** @param is std::istream to read from */
-    Tokenizer(std::istream& is, Container reserved) : is(is),
-        reserved(reserved) {
+    Tokenizer(std::istream& is, Container<std::string, Args...> reserved) :
+        is(is), reserved(reserved) {
         for(auto r: reserved) {
             if(!(r.size() == 1 || islower(r[0]))) {
                 throw InvalidReservedSymbol("Only lower-case words or single "
@@ -98,7 +103,7 @@ class Tokenizer {
         }
     }
 
-    Tokenizer(std::istream& is) : is(is), reserved() {}
+    Tokenizer(std::istream& is) : is(is), reserved(std::set<std::string>()) {}
     /**
      * gets the next token from the input stream by parsing one or more
      * characters from the stream
@@ -183,7 +188,7 @@ class Tokenizer {
                     || (isdigit(c) && result.tok == TokenType::literal)) {
                     update_token();
                 }
-                else if(reserved_symbol_start(c)) {
+                else if(reserved_symbol_start<SymbolClass>(c)) {
                     is.unget();
                     break;
                 }
@@ -212,5 +217,5 @@ class Tokenizer {
                 );
     }
     std::istream& is;
-    Container reserved;
+    Container<std::string, Args...> reserved;
 };

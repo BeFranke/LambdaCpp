@@ -27,12 +27,16 @@
 // adapted to build a syntax tree while parsing
 // I built a LL(1) grammar for this, hence we only need one lookahead
 // (here, this is cur)
-template <typename Container = std::set<std::string>>
-typename std::enable_if<has_const_iterator<Container>
+
+// template to allow arbitrary containers around std::string,
+// source:
+// https://stackoverflow.com/questions/46485084/declare-template-function-to-accept-any-container-but-only-one-contained-type/46485265
+template < template < typename ...> typename Container, typename ... Args>
 class Parser {
   public:
-    Parser(std::istream& in, Container& reserved, unsigned long max_iter=0)
-        : program(), tz(in, reserved), bound(), max_iter(max_iter) {}
+    Parser(std::istream& in, Container<std::string, Args...>& reserved,
+           unsigned long max_iter=0) : program(), tz(in, reserved), bound(),
+           max_iter(max_iter) {}
     Parser(std::istream& in, unsigned long max_iter=0)
             : program(), tz(in), bound(), max_iter(max_iter) {}
     Program statement() {
