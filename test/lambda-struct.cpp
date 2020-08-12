@@ -188,6 +188,20 @@ TEST(ALPHA, name_clash) {
     ASSERT_THROW(lx->alpha_convert("x", "y"), NameClash);
 }
 
+TEST(ALPHA, name_clash_exception) {
+    // trying to rename x to y in \ x. (x) y
+    auto bound = make_vars({"x"}, true);
+    auto unbound = make_vars({"y"}, false);
+    auto xy = make_shared<Application>(bound[0], unbound[0]);
+    auto lx = make_shared<Lambda>(bound[0], xy);
+    try{
+        lx->alpha_convert("x", "y");
+        ASSERT_TRUE(false);
+    } catch(NameClash& e) {
+        ASSERT_EQ(std::string(e.what()), "Requested name already exists");
+    }
+}
+
 TEST(ALPHA, identity) {
     // trying to rename u to v in (x) y
     auto bound = make_vars({"x"}, true);

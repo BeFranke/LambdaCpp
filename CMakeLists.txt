@@ -16,6 +16,8 @@ add_library(lambda_lib
         src/lib/church-encoding.hpp
         src/lib/church-encoding.cpp
         )
+
+message("build type: ${CMAKE_BUILD_TYPE}")
 set_target_properties(lambda_lib PROPERTIES LINKER_LANGUAGE CXX)
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 	enable_testing()

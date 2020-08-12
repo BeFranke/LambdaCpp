@@ -1,4 +1,5 @@
 #include <iostream>
+#include <set>
 #include "gtest/gtest.h"
 #include "../src/lib/tokenizer.hpp"
 
@@ -10,7 +11,7 @@ void std_test(std::string input, TokenType expected[]) {
     stringstream ss;
     ss << input;
     //Tokenizer tz(ss);
-    auto tz = Tokenizer{ss};
+    auto tz = Tokenizer<set>{ss};
     unsigned short i = 0;
     for(Token t = tz.get(); t; t = tz.get(), ++i) {
         ASSERT_EQ(t.tok, expected[i]);
@@ -83,32 +84,32 @@ TEST(TOKENIZER, T8) {
 TEST(TOKENIZER, T9) {
     stringstream ss;
     ss << "\\ ? . ?";
-    Tokenizer tz(ss);
+    Tokenizer<set> tz{ss, {}};
     tz.get();
     ASSERT_THROW(tz.get(), SyntaxException);
 }
 TEST(TOKENIZER, T10) {
     stringstream ss;
     ss << "/ x . x y";
-    Tokenizer tz(ss);
+    Tokenizer<set> tz{ss, {"?"}};
     ASSERT_THROW(tz.get(), SyntaxException);
 }
 TEST(TOKENIZER, T11) {
     stringstream ss;
     ss << "xy?";
-    Tokenizer tz(ss);
+    Tokenizer<set> tz{ss, {"?"}};
     ASSERT_THROW(tz.get(), SyntaxException);
 }
 TEST(TOKENIZER, T12) {
     stringstream ss;
     ss << "?xyz";
-    Tokenizer tz(ss, {"?"});
+    Tokenizer<set> tz{ss, {"?"}};
     ASSERT_THROW(tz.get(), ReservedSymbol);
 }
 TEST(TOKENIZER, T13) {
     stringstream ss;
     ss << "exit;";
-    Tokenizer tz(ss, {"exit"});
+    Tokenizer<set> tz{ss, {"exit"}};
     ASSERT_THROW(tz.get(), ReservedSymbol);
 }
 
@@ -120,13 +121,20 @@ TEST(TOKENIZER, T14) {
 TEST(TOKENIZER, EOF_exit) {
     stringstream ss;
     ss.str("");
-    Tokenizer tz(ss);
+    Tokenizer<set> tz{ss, {"?"}};
     ASSERT_EQ(tz.get().tok, TokenType::undefined);
 }
 
 TEST(TOKENIZER, invalid_reserved1) {
     stringstream ss;
-    ASSERT_THROW(Tokenizer tz(ss, {"?hallo"}), InvalidReservedSymbol);
+    try {
+        Tokenizer<set> tz(ss, {"?hallo"});
+        ASSERT_FALSE(true);
+    } catch(InvalidReservedSymbol& e) {
+        ASSERT_EQ(std::string(e.what()), "Only lower-case words or single "
+            "non-alphanumeric characters are "
+            "supported as reserved symbols");
+    }
 }
 
 TEST(TOKENIZER, overwriteSymbol) {
@@ -143,7 +151,7 @@ TEST(TOKENIZER, overwriteSymbol) {
         name_definition = '\''
     };
     stringstream ss;
-    Tokenizer<set<string>, MySymbol> tz(ss);
+    Tokenizer<set, MySymbol> tz{ss};
     TokenType expected[] = {TokenType::lambda, TokenType::identifier,
                             TokenType::body_start, TokenType::identifier,
                             TokenType::separator};

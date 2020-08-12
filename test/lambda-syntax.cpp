@@ -199,6 +199,17 @@ TEST_F(SyntaxTest, MaxIter) {
                  MaxIterationsExceeded);
 }
 
+TEST_F(SyntaxTest, MaxIterException) {
+    Parser<> p1 = Parser(is, 10);
+    is << "(\\x . (x) x) \\y . (y) y >;";
+    try{
+        p1.statement().last_command().execute();
+        ASSERT_TRUE(false);
+    } catch(MaxIterationsExceeded& e) {
+        ASSERT_EQ(std::string(e.what()), "Maximum iterations exceeded");
+    }
+}
+
 TEST_F(SyntaxTest, lowercaseAssign) {
     is << "'a' = 5;";
     ASSERT_THROW(p.statement(),SyntaxException);

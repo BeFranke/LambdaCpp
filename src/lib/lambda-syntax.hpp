@@ -31,7 +31,8 @@
 // template to allow arbitrary containers around std::string,
 // source:
 // https://stackoverflow.com/questions/46485084/declare-template-function-to-accept-any-container-but-only-one-contained-type/46485265
-template < template < typename ...> typename Container, typename ... Args>
+template < template < typename ...> typename Container = std::set,
+typename ... Args>
 class Parser {
   public:
     Parser(std::istream& in, Container<std::string, Args...>& reserved,
