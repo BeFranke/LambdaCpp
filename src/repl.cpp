@@ -16,14 +16,14 @@ void flush() {
 
 void help() {
     std::cout << std::endl << "USAGE:" << std::endl;
-    std::cout << R"(Input any lambda-expression, e.g. "\x . (y) x")"
+    std::cout << R"(Input any lambda-expression, e.g. "\x . (y) x;")"
               << std::endl;
     std::cout << R"(You can beta reduce an expression by "1>"
                     (1 step) or ">" (until convergence))" << std::endl;
-    std::cout << R"(Assignments are possible if the assigned symbol
-                            begins with uppercase and is enclosed in
-                            single quotes.)" << std::endl;
-    std::cout << "Examples (try them out):" << std::endl;
+    std::cout << "Assignments are possible if the assigned symbol begins with "
+                 "uppercase and is enclosed in"
+                 "single quotes." << std::endl;
+    std::cout << "Examples:" << std::endl;
     std::cout << "  \\ x . x;" << std::endl;
     std::cout << "  (\\ x . x) y >;" << std::endl;
     std::cout << "  'ID' = \\x . x;" << std::endl;
