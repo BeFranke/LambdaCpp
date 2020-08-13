@@ -51,5 +51,5 @@ This project uses the C++14 standard and was built with:
 
 + coverage: test-coverage report, to view open "index.html"
 + src: all source files
-..+ src/lib: all library files, i.e. everything except the example application
+  + src/lib: all library files, i.e. everything except the example application
 + test: unit tests
