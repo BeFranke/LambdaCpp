@@ -1,5 +1,4 @@
 #include <iostream>
-#include <set>
 #include "gtest/gtest.h"
 #include "../src/lib/tokenizer.hpp"
 
@@ -11,7 +10,7 @@ void std_test(std::string input, TokenType expected[]) {
     stringstream ss;
     ss << input;
     //Tokenizer tz(ss);
-    auto tz = Tokenizer<set>{ss};
+    auto tz = Tokenizer<>{ss};
     unsigned short i = 0;
     for(Token t = tz.get(); t; t = tz.get(), ++i) {
         ASSERT_EQ(t.tok, expected[i]);
@@ -82,35 +81,44 @@ TEST(TOKENIZER, T8) {
     std_test("'ID' = \\ x. x;", expcted);
 }
 TEST(TOKENIZER, T9) {
+    bool called = false;
     stringstream ss;
     ss << "\\ ? . ?";
-    Tokenizer<set> tz{ss, {}};
-    tz.get();
-    ASSERT_THROW(tz.get(), SyntaxException);
+    Tokenizer<> tz{ss};
+    auto func = [&called](){called = true;};
+    tz.register_symbol("?", func);
+    tz.get(), tz.get();
+    ASSERT_TRUE(called);
 }
 TEST(TOKENIZER, T10) {
     stringstream ss;
     ss << "/ x . x y";
-    Tokenizer<set> tz{ss, {"?"}};
+    Tokenizer<> tz{ss};
     ASSERT_THROW(tz.get(), SyntaxException);
 }
 TEST(TOKENIZER, T11) {
     stringstream ss;
     ss << "xy?";
-    Tokenizer<set> tz{ss, {"?"}};
+    Tokenizer<> tz{ss};
     ASSERT_THROW(tz.get(), SyntaxException);
 }
 TEST(TOKENIZER, T12) {
+    bool called = false;
     stringstream ss;
     ss << "?xyz";
-    Tokenizer<set> tz{ss, {"?"}};
-    ASSERT_THROW(tz.get(), ReservedSymbol);
+    Tokenizer<> tz{ss};
+    tz.register_symbol("?", [&called](){called = true;});
+    tz.get();
+    ASSERT_TRUE(called);
 }
 TEST(TOKENIZER, T13) {
+    bool called = false;
     stringstream ss;
-    ss << "exit;";
-    Tokenizer<set> tz{ss, {"exit"}};
-    ASSERT_THROW(tz.get(), ReservedSymbol);
+    ss << "exit";
+    Tokenizer<> tz{ss};
+    tz.register_symbol("exit", [&called](){called = true;});
+    tz.get();
+    ASSERT_TRUE(called);
 }
 
 TEST(TOKENIZER, T14) {
@@ -121,20 +129,15 @@ TEST(TOKENIZER, T14) {
 TEST(TOKENIZER, EOF_exit) {
     stringstream ss;
     ss.str("");
-    Tokenizer<set> tz{ss, {"?"}};
+    Tokenizer<> tz{ss};
     ASSERT_EQ(tz.get().tok, TokenType::undefined);
 }
 
 TEST(TOKENIZER, invalid_reserved1) {
     stringstream ss;
-    try {
-        Tokenizer<set> tz(ss, {"?hallo"});
-        ASSERT_FALSE(true);
-    } catch(InvalidReservedSymbol& e) {
-        ASSERT_EQ(std::string(e.what()), "Only lower-case words or single "
-            "non-alphanumeric characters are "
-            "supported as reserved symbols");
-    }
+    Tokenizer<> tz(ss);
+    ASSERT_THROW(tz.register_symbol("?hallo", []() {return;}),
+                 InvalidReservedSymbol);
 }
 
 TEST(TOKENIZER, overwriteSymbol) {
@@ -151,7 +154,7 @@ TEST(TOKENIZER, overwriteSymbol) {
         name_definition = '\''
     };
     stringstream ss;
-    Tokenizer<set, MySymbol> tz{ss};
+    Tokenizer<MySymbol> tz{ss};
     TokenType expected[] = {TokenType::lambda, TokenType::identifier,
                             TokenType::body_start, TokenType::identifier,
                             TokenType::separator};
@@ -162,6 +165,17 @@ TEST(TOKENIZER, overwriteSymbol) {
     }
     ASSERT_GE(i, 1);
 }
+TEST(TOKENIZER, unregister) {
+    bool called = false;
+    stringstream ss;
+    ss << "xyz";
+    Tokenizer<> tz{ss};
+    tz.register_symbol("xyz", [&called](){called = true;});
+    tz.unregister_symbol("xyz");
+    tz.get();
+    ASSERT_FALSE(called);
+}
+
 
 /* This test does intentionally not compile, it is there to assert that
  * trying to specify a replacement for the Symbol class that does not define

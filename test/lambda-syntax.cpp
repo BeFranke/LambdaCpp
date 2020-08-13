@@ -7,7 +7,7 @@ class SyntaxTest : public ::testing::Test {
     SyntaxTest() : is(), os(), p(is) {}
     std::stringstream is;
     std::stringstream os;
-    Parser<> p;
+    Parser p;
 };
 
 // positive tests
@@ -152,11 +152,6 @@ TEST_F(SyntaxTest, WrongVariableCase2) {
     ASSERT_THROW(p.statement(), SyntaxException);
 }
 
-TEST_F(SyntaxTest, WrongBeta) {
-    is << "(\\ x . x) a true>;";
-    ASSERT_THROW(p.statement(), SyntaxException);
-}
-
 TEST_F(SyntaxTest, WrongAssign) {
     is << "'?' = x;";
     ASSERT_THROW(p.statement(), SyntaxException);
@@ -193,14 +188,14 @@ TEST_F(SyntaxTest, BetaUnclosed) {
 }
 
 TEST_F(SyntaxTest, MaxIter) {
-    Parser<> p1 = Parser(is, 10);
+    Parser p1 = Parser(is, 10);
     is << "(\\x . (x) x) \\y . (y) y >;";
     ASSERT_THROW(p1.statement().last_command().execute(),
                  MaxIterationsExceeded);
 }
 
 TEST_F(SyntaxTest, MaxIterException) {
-    Parser<> p1 = Parser(is, 10);
+    Parser p1 = Parser(is, 10);
     is << "(\\x . (x) x) \\y . (y) y >;";
     try{
         p1.statement().last_command().execute();
@@ -213,4 +208,38 @@ TEST_F(SyntaxTest, MaxIterException) {
 TEST_F(SyntaxTest, lowercaseAssign) {
     is << "'a' = 5;";
     ASSERT_THROW(p.statement(),SyntaxException);
+}
+
+TEST_F(SyntaxTest, register_symb) {
+    bool called = false;
+    p.register_symbol("?", [&called](){called = true;});
+    is << "?xyz";
+    p.statement();
+    ASSERT_TRUE(called);
+}
+
+TEST_F(SyntaxTest, unregister_symb) {
+    bool called = false;
+    p.register_symbol("?", [&called](){called = true;});
+    p.unregister_symbol("?");
+    is << "?xyz";
+    ASSERT_FALSE(called);
+}
+
+TEST_F(SyntaxTest, beta_reduction_true) {
+    // true expands to 1 if used as argument to beta-operator
+    is << "(\\x.x)y true>;";
+    auto res = p.statement().last_command().execute();
+    os << *res;
+    ASSERT_EQ("y", os.str());
+}
+
+TEST_F(SyntaxTest, beta_reduction_false) {
+    // true expands to 0 if used as argument to beta-operator
+    // reminder: 0> is equal to >, and means
+    // "reduce until convergence"
+    is << "(\\x.x)y false>;";
+    auto res = p.statement().last_command().execute();
+    os << *res;
+    ASSERT_EQ("y", os.str());
 }

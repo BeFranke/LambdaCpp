@@ -19,7 +19,7 @@ add_library(lambda_lib
 
 message("build type: ${CMAKE_BUILD_TYPE}")
 set_target_properties(lambda_lib PROPERTIES LINKER_LANGUAGE CXX)
-IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+#IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 	enable_testing()
 	### START UNIT TEST INSERTION
 	# testing setup from https://github.com/google/googletest/tree/master/googletest#incorporating-into-an-existing-cmake-project
@@ -72,7 +72,7 @@ IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 	add_test(NAME all-tests COMMAND all-tests)
 	set_tests_properties(all-tests PROPERTIES FIXTURES_REQUIRED test_fixture)
 	### END UNIT TEST INSERTION
-ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+#ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 # repl
 add_executable(REPL src/repl.cpp)
 target_link_libraries(REPL lambda_lib)

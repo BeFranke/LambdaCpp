@@ -27,21 +27,13 @@
 // adapted to build a syntax tree while parsing
 // I built a LL(1) grammar for this, hence we only need one lookahead
 // (here, this is cur)
-
-// template to allow arbitrary containers around std::string,
-// source:
-// https://stackoverflow.com/questions/46485084/declare-template-function-to-accept-any-container-but-only-one-contained-type/46485265
-template < template < typename ...> typename Container = std::set,
-typename ... Args>
 class Parser {
   public:
-    Parser(std::istream& in, Container<std::string, Args...>& reserved,
-           unsigned long max_iter=0) : program(), tz(in, reserved), bound(),
-           max_iter(max_iter) {}
     Parser(std::istream& in, unsigned long max_iter=0)
             : program(), tz(in), bound(), max_iter(max_iter) {}
     Program statement() {
         cur = tz.get();
+        if(!cur) return program;
         if(cur.tok == TokenType::name_define) {
             program[Program::last_key] = assignment();
         }
@@ -52,6 +44,13 @@ class Parser {
             throw SyntaxException("Missing semicolon");
         //next_token();
         return program;
+    }
+    void register_symbol(const std::string& symbol,
+                         const std::function<void()>& func) {
+        tz.register_symbol(symbol, func);
+    }
+    void unregister_symbol(const std::string& symbol) {
+        tz.unregister_symbol(symbol);
     }
     Program program;
   private:
@@ -162,7 +161,13 @@ class Parser {
         assert(cur.tok == TokenType::literal || cur.tok == TokenType::conv_end);
         if(cur.tok == TokenType::literal) {
             try {
-                unsigned int iters = std::stol(cur.str);
+                // as "true" and "false" are also literals, we need to handle
+                // them somehow. Here, true = 1, false = 0 like we are all used
+                // to
+                unsigned int iters;
+                if(cur.str == "true") iters = 1;
+                else if(cur.str == "false") iters = 0;
+                else iters = std::stol(cur.str);
                 cur = tz.get();
                 if(cur.tok != TokenType::conv_end)
                     throw SyntaxException("Malformed beta reduction");
@@ -185,7 +190,7 @@ class Parser {
     }
     //lookahead
     Token cur;
-    Tokenizer<Container> tz;
+    Tokenizer<> tz;
     std::unordered_map<std::string, Variable_ptr> bound;
     unsigned long max_iter;
 };

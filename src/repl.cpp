@@ -14,38 +14,40 @@ void flush() {
     );
 }
 
+void help() {
+    std::cout << std::endl << "USAGE:" << std::endl;
+    std::cout << R"(Input any lambda-expression, e.g. "\x . (y) x")"
+              << std::endl;
+    std::cout << R"(You can beta reduce an expression by "1>"
+                    (1 step) or ">" (until convergence))" << std::endl;
+    std::cout << R"(Assignments are possible if the assigned symbol
+                            begins with uppercase and is enclosed in
+                            single quotes.)" << std::endl;
+    std::cout << "Examples (try them out):" << std::endl;
+    std::cout << "  \\ x . x;" << std::endl;
+    std::cout << "  (\\ x . x) y >;" << std::endl;
+    std::cout << "  'ID' = \\x . x;" << std::endl;
+}
+
 int main() {
-    std::set<std::string> reserved = {"exit", "?"};
-    Parser parser(std::cin, reserved, MAX_ITER);
+    Parser parser(std::cin, MAX_ITER);
     std::cout << "This is a REPL for lambda expressions." << std::endl;
     std::cout << "To exit, type \"exit\"." << std::endl;
     std::cout << "For help, type \"?\"." << std::endl;
+    parser.register_symbol("?", help);
+    parser.register_symbol("exit", []() {exit(0);});
     while(true) {
         std::cout << ">> ";
         try {
             Program p = parser.statement();
+            if(!bool(p)) {
+                flush();
+                continue;
+            }
             auto com = p.last_command();
             auto ex = com.execute();
             parser.program["Ans"] = com;
             std::cout << *ex << std::endl;
-        }
-        catch(ReservedSymbol& r) {
-            if(r.symbol == "exit") break;
-            else if(r.symbol == "?") {
-                std::cout << std::endl << "USAGE:" << std::endl;
-                std::cout << R"(Input any lambda-expression, e.g. "\x . (y) x")"
-                        << std::endl;
-                std::cout << R"(You can beta reduce an expression by "1>"
-                    (1 step) or ">" (until convergence))" << std::endl;
-                std::cout << R"(Assignments are possible if the assigned symbol
-                            begins with uppercase and is enclosed in
-                            single quotes.)" << std::endl;
-                std::cout << "Examples (try them out):" << std::endl;
-                std::cout << "  \\ x . x;" << std::endl;
-                std::cout << "  (\\ x . x) y >;" << std::endl;
-                std::cout << "  'ID' = \\x . x;" << std::endl;
-                continue;
-            }
         }
         catch (SyntaxException& e) {
             std::cout << e.what() << std::endl;

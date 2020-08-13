@@ -67,7 +67,7 @@ class Token {
 };
 
 template <typename SymbolClass = Symbol>
-inline bool reserved_symbol_start(char c) noexcept {
+inline bool is_special_character(char c) noexcept {
     switch(c) {
         case static_cast<int>(SymbolClass::lambda):
         case static_cast<int>(SymbolClass::body_start):
@@ -84,26 +84,11 @@ inline bool reserved_symbol_start(char c) noexcept {
     }
 }
 
-// template to allow arbitrary containers around std::string,
-// source:
-// https://stackoverflow.com/questions/46485084/declare-template-function-to-accept-any-container-but-only-one-contained-type/46485265
-template < template < typename ...> typename Container,
-typename SymbolClass = Symbol, typename ... Args>
+template < typename SymbolClass = Symbol>
 class Tokenizer {
   public:
     /** @param is std::istream to read from */
-    Tokenizer(std::istream& is, Container<std::string, Args...> reserved) :
-        is(is), reserved(reserved) {
-        for(auto r: reserved) {
-            if(!(r.size() == 1 || islower(r[0]))) {
-                throw InvalidReservedSymbol("Only lower-case words or single "
-                                     "non-alphanumeric characters are "
-                                     "supported as reserved symbols");
-            }
-        }
-    }
-
-    Tokenizer(std::istream& is) : is(is), reserved(std::set<std::string>()) {}
+    Tokenizer(std::istream& is) : is(is) {}
     /**
      * gets the next token from the input stream by parsing one or more
      * characters from the stream
@@ -121,6 +106,10 @@ class Tokenizer {
         while(is.get(c)) {
             if(count == 0) {
                 if(isspace(c)) continue;
+                else if(std::string s(1, c); is_reserved(s)) {
+                    reserved_symbols[s]();
+                    return Token();
+                }
                 else if(islower(c)) {
                     // variable name
                     init_token(TokenType::identifier);
@@ -163,9 +152,6 @@ class Tokenizer {
                 else if(isdigit(c)) {
                     init_token(TokenType::literal);
                 }
-                else if(std::string s(1, c); is_reserved(s)) {
-                    throw ReservedSymbol(s);
-                }
                 else if(c == static_cast<char>(SymbolClass::name_definition)) {
                     init_token(TokenType::name_define);
                     break;
@@ -188,7 +174,7 @@ class Tokenizer {
                     || (isdigit(c) && result.tok == TokenType::literal)) {
                     update_token();
                 }
-                else if(reserved_symbol_start<SymbolClass>(c)) {
+                else if(is_special_character<SymbolClass>(c)) {
                     is.unget();
                     break;
                 }
@@ -199,7 +185,8 @@ class Tokenizer {
             ++count;
         }
         if(result.tok == TokenType::identifier && is_reserved(result.str)) {
-            throw ReservedSymbol(result.str);
+            reserved_symbols[result.str]();
+            return Token();
         }
         else if(result.tok == TokenType::identifier && (result.str == "true"
                                              || result.str == "false")) {
@@ -208,14 +195,22 @@ class Tokenizer {
         }
         return result;
     }
+    void register_symbol(std::string symbol,
+                         std::function<void()> func) {
+        if(!(islower(symbol[0]) || symbol.size() == 1))
+            throw InvalidReservedSymbol(
+                    "Only lowercase words or single characters may be reserved"
+                    );
+        reserved_symbols[symbol] = func;
+    }
+    void unregister_symbol(std::string symbol) {
+        reserved_symbols.erase(symbol);
+    }
   private:
     inline bool is_reserved(const std::string& str) {
-        return std::any_of(
-                reserved.begin(), reserved.end(), [str](const std::string& e) {
-                    return e == str;
-                }
-                );
+        return reserved_symbols.find(str) != reserved_symbols.end();
     }
     std::istream& is;
-    Container<std::string, Args...> reserved;
+    std::unordered_map<std::string, std::function<void()>>
+        reserved_symbols;
 };

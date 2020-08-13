@@ -109,6 +109,9 @@ class Program {
     inline bool contains(const std::string key) const {
         return known_symbols.find(key) != known_symbols.end();
     }
+    inline explicit operator bool() {
+        return !known_symbols.empty();
+    }
     static const std::string last_key;
   private:
     std::unordered_map<std::string, Command> known_symbols;

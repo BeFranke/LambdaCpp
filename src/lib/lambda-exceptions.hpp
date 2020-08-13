@@ -37,12 +37,6 @@ class NameClash : public LambdaException {
     }
 };
 
-class ReservedSymbol : public LambdaException {
-  public:
-    ReservedSymbol(std::string symbol) : symbol(std::move(symbol)) {}
-    std::string symbol;
-};
-
 class InvalidReservedSymbol : public std::exception {
   public:
     InvalidReservedSymbol(std::string txt) : txt(txt) {}
