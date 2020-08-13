@@ -139,7 +139,20 @@ TEST(TOKENIZER, invalid_reserved1) {
     ASSERT_THROW(tz.register_symbol("?hallo", []() {return;}),
                  InvalidReservedSymbol);
 }
-
+TEST(TOKENIZER, invalid_reserved_text) {
+    stringstream ss;
+    Tokenizer<> tz(ss);
+    try {
+        tz.register_symbol("?hallo", []() {});
+        FAIL();
+    }
+    catch (InvalidReservedSymbol& e) {
+        ASSERT_EQ(
+                "Only lowercase words or single characters may be reserved",
+                std::string(e.what())
+                );
+    }
+}
 TEST(TOKENIZER, overwriteSymbol) {
     enum class MySymbol {
         lambda = '\\',
@@ -182,7 +195,7 @@ TEST(TOKENIZER, unregister) {
  * every needed symbol leads to a compilation error.
 TEST(TOKENIZER, overwriteSymbolError) {
     enum class MySymbol {
-        body_start = '.',
+        //body_start = '.',
         bracket_open = '(',
         bracket_close = ')',
         // this one has changed
@@ -193,5 +206,6 @@ TEST(TOKENIZER, overwriteSymbolError) {
         name_definition = '\''
     };
     stringstream ss;
-    Tokenizer<set<string>, MySymbol> tz(ss);
+    Tokenizer<MySymbol> tz(ss);
+    tz.get();
 }*/

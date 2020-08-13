@@ -182,6 +182,17 @@ TEST_F(SyntaxTest, ExpressionWrongToken) {
     ASSERT_THROW(p.statement(), SyntaxException);
 }
 
+TEST_F(SyntaxTest, SyntaxExceptionTest) {
+    is << "'A' = =;";
+    try {
+        p.statement();
+        FAIL();
+    }
+    catch (SyntaxException& e) {
+        ASSERT_EQ("SyntaxError: unexpected token: =", std::string(e.what()));
+    }
+}
+
 TEST_F(SyntaxTest, BetaUnclosed) {
     is << "(\\x . x) a 1;";
     ASSERT_THROW(p.statement(), SyntaxException);
@@ -199,7 +210,7 @@ TEST_F(SyntaxTest, MaxIterException) {
     is << "(\\x . (x) x) \\y . (y) y >;";
     try{
         p1.statement().last_command().execute();
-        ASSERT_TRUE(false);
+        FAIL();
     } catch(MaxIterationsExceeded& e) {
         ASSERT_EQ(std::string(e.what()), "Maximum iterations exceeded");
     }

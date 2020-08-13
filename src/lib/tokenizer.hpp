@@ -84,7 +84,7 @@ inline bool is_special_character(char c) noexcept {
     }
 }
 
-template < typename SymbolClass = Symbol>
+template <typename SymbolClass = Symbol>
 class Tokenizer {
   public:
     /** @param is std::istream to read from */

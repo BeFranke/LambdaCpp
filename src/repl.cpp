@@ -54,7 +54,7 @@ int main() {
             flush();
         }
         catch (MaxIterationsExceeded&) {
-            std::cout << "Error: Maximum iterations exceeded! "
+            std::cout << "Error: Maximum iterations exceeded. "
                          "Expression does not seem to have a normal form."
                          << std::endl;
             flush();

@@ -196,7 +196,7 @@ TEST(ALPHA, name_clash_exception) {
     auto lx = make_shared<Lambda>(bound[0], xy);
     try{
         lx->alpha_convert("x", "y");
-        ASSERT_TRUE(false);
+        FAIL();
     } catch(NameClash& e) {
         ASSERT_EQ(std::string(e.what()), "Requested name already exists");
     }

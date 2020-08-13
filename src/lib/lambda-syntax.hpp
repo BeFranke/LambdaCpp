@@ -136,7 +136,7 @@ class Parser {
                 throw SyntaxException("Undefined symbol: " + name);
             return program[name].execute();
         }
-        else throw SyntaxException();
+        else throw SyntaxException("unexpected token: " + cur.str);
     }
     std::shared_ptr<Conversion> conversion() {
         if(cur.tok == TokenType::literal || cur.tok == TokenType::conv_end)
@@ -160,28 +160,27 @@ class Parser {
     std::shared_ptr<BetaReduction> beta() {
         assert(cur.tok == TokenType::literal || cur.tok == TokenType::conv_end);
         if(cur.tok == TokenType::literal) {
-            try {
-                // as "true" and "false" are also literals, we need to handle
-                // them somehow. Here, true = 1, false = 0 like we are all used
-                // to
-                unsigned int iters;
-                if(cur.str == "true") iters = 1;
-                else if(cur.str == "false") iters = 0;
-                else iters = std::stol(cur.str);
-                cur = tz.get();
-                if(cur.tok != TokenType::conv_end)
-                    throw SyntaxException("Malformed beta reduction");
-                cur = tz.get();
-                return std::make_shared<BetaReduction>(
-                        iters > max_iter && max_iter != 0 ? max_iter : iters,
-                        max_iter
-                        );
+            // as "true" and "false" are also literals, we need to handle
+            // them somehow. Here, true = 1, false = 0 like we are all used
+            // to
+            unsigned int iters;
+            if(cur.str == "true") iters = 1;
+            else if(cur.str == "false") iters = 0;
+            else {
+                // as the tokenizer only assigns numbers, true and false
+                // as "literal", this should never fail.
+                // However, for unexpected use cases this assertion is here
+                assert(std::all_of(cur.str.begin(), cur.str.end(), ::isdigit));
+                iters = std::stol(cur.str);
             }
-            catch (std::invalid_argument&) {
-                throw SyntaxException("Beta Reduction can only be specified "
-                                      "with numbers");
-            }
-
+            cur = tz.get();
+            if(cur.tok != TokenType::conv_end)
+                throw SyntaxException("Malformed beta reduction");
+            cur = tz.get();
+            return std::make_shared<BetaReduction>(
+                    iters > max_iter && max_iter != 0 ? max_iter : iters,
+                    max_iter
+                    );
         }
         else {
             cur = tz.get();
