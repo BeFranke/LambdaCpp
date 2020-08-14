@@ -55,22 +55,27 @@ set_target_properties(lambda_lib PROPERTIES LINKER_LANGUAGE CXX)
     		include_directories("${gtest_SOURCE_DIR}/include")
 	endif()
 
-	# Now simply link against gtest or gtest_main as needed.
-	# lambda-struct.hpp test
-	add_executable(all-tests test/tokenizer.cpp test/lambda-syntax.cpp test/lambda-struct.cpp test/church-encoding.cpp src/lib/lambda-struct.cpp)
-	# build tests before running
-	# source https://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests/56448477#56448477
-	add_test(test_build
-  		"${CMAKE_COMMAND}"
-  		--build "${CMAKE_BINARY_DIR}"
-  		--config "$<CONFIG>"
-  		--target all-tests
-		)
-	target_link_libraries(all-tests gtest_main)
-	target_link_libraries(all-tests lambda_lib)
-	set_tests_properties(test_build PROPERTIES FIXTURES_SETUP    test_fixture)
-	add_test(NAME all-tests COMMAND all-tests)
-	set_tests_properties(all-tests PROPERTIES FIXTURES_REQUIRED test_fixture)
+	# Now simply link against gtest or gtest_main as needed.	
+	add_executable(lambda-struct-test test/lambda-struct.cpp)
+ 	target_link_libraries(lambda-struct-test gtest_main)
+	target_link_libraries(lambda-struct-test lambda_lib)
+	add_test(NAME lambda-struct-test COMMAND lambda-struct-test)
+
+	add_executable(tokenizer-test test/tokenizer.cpp)
+ 	target_link_libraries(tokenizer-test gtest_main)
+	target_link_libraries(tokenizer-test lambda_lib)
+	add_test(NAME tokenizer-test COMMAND tokenizer-test) 
+
+	add_executable(church-encoding-test test/church-encoding.cpp)
+	target_link_libraries(church-encoding-test gtest_main)
+	target_link_libraries(church-encoding-test lambda_lib)
+	add_test(NAME church-encoding-test COMMAND church-encoding-test)	
+	
+	add_executable(lambda-syntax-test test/lambda-syntax.cpp)
+ 	target_link_libraries(lambda-syntax-test gtest_main)
+	target_link_libraries(lambda-syntax-test lambda_lib)
+	add_test(NAME lambda-syntax-test COMMAND lambda-syntax-test)
+
 	### END UNIT TEST INSERTION
 #ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 # repl

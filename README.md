@@ -6,10 +6,8 @@
 
 Note: If the project is built with test-support, [googletest](https://github.com/google/googletest) is automatically cloned by the CMake-script.
 
-clone this repository, cd into it and run
-
 ```bash
-mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=DEBUG ..
+mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=DEBUG .. && make
 ```
 
 To run the tests after this, use
@@ -23,7 +21,7 @@ make test
 clone this repository, cd into it and run
 
 ```bash
-mkdir build && cd build && cmake ..
+mkdir build && cd build && cmake .. && make
 ```
 
 ### Run the example application
@@ -32,7 +30,7 @@ mkdir build && cd build && cmake ..
 In both cases, you can build and run the REPL with:
 
 ```bash
-make && ./REPL
+./REPL
 ```
 
 from the build-folder

@@ -1,0 +1,1480 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - build/googletest-src/googletest/src/gtest-port.cc</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">build/googletest-src/googletest/src</a> - gtest-port.cc<span style="font-size: 80%;"> (source / <a href="gtest-port.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">25</td>
+            <td class="headerCovTableEntry">195</td>
+            <td class="headerCovTableEntryLo">12.8 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-08-14 10:58:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntry">31</td>
+            <td class="headerCovTableEntryLo">16.1 %</td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // Copyright 2008, Google Inc.</a>
+<a name="2"><span class="lineNum">       2 </span>            : // All rights reserved.</a>
+<a name="3"><span class="lineNum">       3 </span>            : //</a>
+<a name="4"><span class="lineNum">       4 </span>            : // Redistribution and use in source and binary forms, with or without</a>
+<a name="5"><span class="lineNum">       5 </span>            : // modification, are permitted provided that the following conditions are</a>
+<a name="6"><span class="lineNum">       6 </span>            : // met:</a>
+<a name="7"><span class="lineNum">       7 </span>            : //</a>
+<a name="8"><span class="lineNum">       8 </span>            : //     * Redistributions of source code must retain the above copyright</a>
+<a name="9"><span class="lineNum">       9 </span>            : // notice, this list of conditions and the following disclaimer.</a>
+<a name="10"><span class="lineNum">      10 </span>            : //     * Redistributions in binary form must reproduce the above</a>
+<a name="11"><span class="lineNum">      11 </span>            : // copyright notice, this list of conditions and the following disclaimer</a>
+<a name="12"><span class="lineNum">      12 </span>            : // in the documentation and/or other materials provided with the</a>
+<a name="13"><span class="lineNum">      13 </span>            : // distribution.</a>
+<a name="14"><span class="lineNum">      14 </span>            : //     * Neither the name of Google Inc. nor the names of its</a>
+<a name="15"><span class="lineNum">      15 </span>            : // contributors may be used to endorse or promote products derived from</a>
+<a name="16"><span class="lineNum">      16 </span>            : // this software without specific prior written permission.</a>
+<a name="17"><span class="lineNum">      17 </span>            : //</a>
+<a name="18"><span class="lineNum">      18 </span>            : // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS</a>
+<a name="19"><span class="lineNum">      19 </span>            : // &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT</a>
+<a name="20"><span class="lineNum">      20 </span>            : // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR</a>
+<a name="21"><span class="lineNum">      21 </span>            : // A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT</a>
+<a name="22"><span class="lineNum">      22 </span>            : // OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,</a>
+<a name="23"><span class="lineNum">      23 </span>            : // SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT</a>
+<a name="24"><span class="lineNum">      24 </span>            : // LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,</a>
+<a name="25"><span class="lineNum">      25 </span>            : // DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY</a>
+<a name="26"><span class="lineNum">      26 </span>            : // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT</a>
+<a name="27"><span class="lineNum">      27 </span>            : // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</a>
+<a name="28"><span class="lineNum">      28 </span>            : // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</a>
+<a name="29"><span class="lineNum">      29 </span>            : </a>
+<a name="30"><span class="lineNum">      30 </span>            : </a>
+<a name="31"><span class="lineNum">      31 </span>            : #include &quot;gtest/internal/gtest-port.h&quot;</a>
+<a name="32"><span class="lineNum">      32 </span>            : </a>
+<a name="33"><span class="lineNum">      33 </span>            : #include &lt;limits.h&gt;</a>
+<a name="34"><span class="lineNum">      34 </span>            : #include &lt;stdio.h&gt;</a>
+<a name="35"><span class="lineNum">      35 </span>            : #include &lt;stdlib.h&gt;</a>
+<a name="36"><span class="lineNum">      36 </span>            : #include &lt;string.h&gt;</a>
+<a name="37"><span class="lineNum">      37 </span>            : #include &lt;cstdint&gt;</a>
+<a name="38"><span class="lineNum">      38 </span>            : #include &lt;fstream&gt;</a>
+<a name="39"><span class="lineNum">      39 </span>            : #include &lt;memory&gt;</a>
+<a name="40"><span class="lineNum">      40 </span>            : </a>
+<a name="41"><span class="lineNum">      41 </span>            : #if GTEST_OS_WINDOWS</a>
+<a name="42"><span class="lineNum">      42 </span>            : # include &lt;windows.h&gt;</a>
+<a name="43"><span class="lineNum">      43 </span>            : # include &lt;io.h&gt;</a>
+<a name="44"><span class="lineNum">      44 </span>            : # include &lt;sys/stat.h&gt;</a>
+<a name="45"><span class="lineNum">      45 </span>            : # include &lt;map&gt;  // Used in ThreadLocal.</a>
+<a name="46"><span class="lineNum">      46 </span>            : # ifdef _MSC_VER</a>
+<a name="47"><span class="lineNum">      47 </span>            : #  include &lt;crtdbg.h&gt;</a>
+<a name="48"><span class="lineNum">      48 </span>            : # endif  // _MSC_VER</a>
+<a name="49"><span class="lineNum">      49 </span>            : #else</a>
+<a name="50"><span class="lineNum">      50 </span>            : # include &lt;unistd.h&gt;</a>
+<a name="51"><span class="lineNum">      51 </span>            : #endif  // GTEST_OS_WINDOWS</a>
+<a name="52"><span class="lineNum">      52 </span>            : </a>
+<a name="53"><span class="lineNum">      53 </span>            : #if GTEST_OS_MAC</a>
+<a name="54"><span class="lineNum">      54 </span>            : # include &lt;mach/mach_init.h&gt;</a>
+<a name="55"><span class="lineNum">      55 </span>            : # include &lt;mach/task.h&gt;</a>
+<a name="56"><span class="lineNum">      56 </span>            : # include &lt;mach/vm_map.h&gt;</a>
+<a name="57"><span class="lineNum">      57 </span>            : #endif  // GTEST_OS_MAC</a>
+<a name="58"><span class="lineNum">      58 </span>            : </a>
+<a name="59"><span class="lineNum">      59 </span>            : #if GTEST_OS_DRAGONFLY || GTEST_OS_FREEBSD || GTEST_OS_GNU_KFREEBSD || \</a>
+<a name="60"><span class="lineNum">      60 </span>            :     GTEST_OS_NETBSD || GTEST_OS_OPENBSD</a>
+<a name="61"><span class="lineNum">      61 </span>            : # include &lt;sys/sysctl.h&gt;</a>
+<a name="62"><span class="lineNum">      62 </span>            : # if GTEST_OS_DRAGONFLY || GTEST_OS_FREEBSD || GTEST_OS_GNU_KFREEBSD</a>
+<a name="63"><span class="lineNum">      63 </span>            : #  include &lt;sys/user.h&gt;</a>
+<a name="64"><span class="lineNum">      64 </span>            : # endif</a>
+<a name="65"><span class="lineNum">      65 </span>            : #endif</a>
+<a name="66"><span class="lineNum">      66 </span>            : </a>
+<a name="67"><span class="lineNum">      67 </span>            : #if GTEST_OS_QNX</a>
+<a name="68"><span class="lineNum">      68 </span>            : # include &lt;devctl.h&gt;</a>
+<a name="69"><span class="lineNum">      69 </span>            : # include &lt;fcntl.h&gt;</a>
+<a name="70"><span class="lineNum">      70 </span>            : # include &lt;sys/procfs.h&gt;</a>
+<a name="71"><span class="lineNum">      71 </span>            : #endif  // GTEST_OS_QNX</a>
+<a name="72"><span class="lineNum">      72 </span>            : </a>
+<a name="73"><span class="lineNum">      73 </span>            : #if GTEST_OS_AIX</a>
+<a name="74"><span class="lineNum">      74 </span>            : # include &lt;procinfo.h&gt;</a>
+<a name="75"><span class="lineNum">      75 </span>            : # include &lt;sys/types.h&gt;</a>
+<a name="76"><span class="lineNum">      76 </span>            : #endif  // GTEST_OS_AIX</a>
+<a name="77"><span class="lineNum">      77 </span>            : </a>
+<a name="78"><span class="lineNum">      78 </span>            : #if GTEST_OS_FUCHSIA</a>
+<a name="79"><span class="lineNum">      79 </span>            : # include &lt;zircon/process.h&gt;</a>
+<a name="80"><span class="lineNum">      80 </span>            : # include &lt;zircon/syscalls.h&gt;</a>
+<a name="81"><span class="lineNum">      81 </span>            : #endif  // GTEST_OS_FUCHSIA</a>
+<a name="82"><span class="lineNum">      82 </span>            : </a>
+<a name="83"><span class="lineNum">      83 </span>            : #include &quot;gtest/gtest-spi.h&quot;</a>
+<a name="84"><span class="lineNum">      84 </span>            : #include &quot;gtest/gtest-message.h&quot;</a>
+<a name="85"><span class="lineNum">      85 </span>            : #include &quot;gtest/internal/gtest-internal.h&quot;</a>
+<a name="86"><span class="lineNum">      86 </span>            : #include &quot;gtest/internal/gtest-string.h&quot;</a>
+<a name="87"><span class="lineNum">      87 </span>            : #include &quot;src/gtest-internal-inl.h&quot;</a>
+<a name="88"><span class="lineNum">      88 </span>            : </a>
+<a name="89"><span class="lineNum">      89 </span>            : namespace testing {</a>
+<a name="90"><span class="lineNum">      90 </span>            : namespace internal {</a>
+<a name="91"><span class="lineNum">      91 </span>            : </a>
+<a name="92"><span class="lineNum">      92 </span>            : #if defined(_MSC_VER) || defined(__BORLANDC__)</a>
+<a name="93"><span class="lineNum">      93 </span>            : // MSVC and C++Builder do not provide a definition of STDERR_FILENO.</a>
+<a name="94"><span class="lineNum">      94 </span>            : const int kStdOutFileno = 1;</a>
+<a name="95"><span class="lineNum">      95 </span>            : const int kStdErrFileno = 2;</a>
+<a name="96"><span class="lineNum">      96 </span>            : #else</a>
+<a name="97"><span class="lineNum">      97 </span>            : const int kStdOutFileno = STDOUT_FILENO;</a>
+<a name="98"><span class="lineNum">      98 </span>            : const int kStdErrFileno = STDERR_FILENO;</a>
+<a name="99"><span class="lineNum">      99 </span>            : #endif  // _MSC_VER</a>
+<a name="100"><span class="lineNum">     100 </span>            : </a>
+<a name="101"><span class="lineNum">     101 </span>            : #if GTEST_OS_LINUX</a>
+<a name="102"><span class="lineNum">     102 </span>            : </a>
+<a name="103"><span class="lineNum">     103 </span>            : namespace {</a>
+<a name="104"><span class="lineNum">     104 </span>            : template &lt;typename T&gt;</a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineNoCov">          0 : T ReadProcFileField(const std::string&amp; filename, int field) {</span></a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineNoCov">          0 :   std::string dummy;</span></a>
+<a name="107"><span class="lineNum">     107 </span><span class="lineNoCov">          0 :   std::ifstream file(filename.c_str());</span></a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineNoCov">          0 :   while (field-- &gt; 0) {</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineNoCov">          0 :     file &gt;&gt; dummy;</span></a>
+<a name="110"><span class="lineNum">     110 </span>            :   }</a>
+<a name="111"><span class="lineNum">     111 </span><span class="lineNoCov">          0 :   T output = 0;</span></a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineNoCov">          0 :   file &gt;&gt; output;</span></a>
+<a name="113"><span class="lineNum">     113 </span><span class="lineNoCov">          0 :   return output;</span></a>
+<a name="114"><span class="lineNum">     114 </span>            : }</a>
+<a name="115"><span class="lineNum">     115 </span>            : }  // namespace</a>
+<a name="116"><span class="lineNum">     116 </span>            : </a>
+<a name="117"><span class="lineNum">     117 </span>            : // Returns the number of active threads, or 0 when there is an error.</a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineNoCov">          0 : size_t GetThreadCount() {</span></a>
+<a name="119"><span class="lineNum">     119 </span>            :   const std::string filename =</a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineNoCov">          0 :       (Message() &lt;&lt; &quot;/proc/&quot; &lt;&lt; getpid() &lt;&lt; &quot;/stat&quot;).GetString();</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineNoCov">          0 :   return ReadProcFileField&lt;size_t&gt;(filename, 19);</span></a>
+<a name="122"><span class="lineNum">     122 </span>            : }</a>
+<a name="123"><span class="lineNum">     123 </span>            : </a>
+<a name="124"><span class="lineNum">     124 </span>            : #elif GTEST_OS_MAC</a>
+<a name="125"><span class="lineNum">     125 </span>            : </a>
+<a name="126"><span class="lineNum">     126 </span>            : size_t GetThreadCount() {</a>
+<a name="127"><span class="lineNum">     127 </span>            :   const task_t task = mach_task_self();</a>
+<a name="128"><span class="lineNum">     128 </span>            :   mach_msg_type_number_t thread_count;</a>
+<a name="129"><span class="lineNum">     129 </span>            :   thread_act_array_t thread_list;</a>
+<a name="130"><span class="lineNum">     130 </span>            :   const kern_return_t status = task_threads(task, &amp;thread_list, &amp;thread_count);</a>
+<a name="131"><span class="lineNum">     131 </span>            :   if (status == KERN_SUCCESS) {</a>
+<a name="132"><span class="lineNum">     132 </span>            :     // task_threads allocates resources in thread_list and we need to free them</a>
+<a name="133"><span class="lineNum">     133 </span>            :     // to avoid leaks.</a>
+<a name="134"><span class="lineNum">     134 </span>            :     vm_deallocate(task,</a>
+<a name="135"><span class="lineNum">     135 </span>            :                   reinterpret_cast&lt;vm_address_t&gt;(thread_list),</a>
+<a name="136"><span class="lineNum">     136 </span>            :                   sizeof(thread_t) * thread_count);</a>
+<a name="137"><span class="lineNum">     137 </span>            :     return static_cast&lt;size_t&gt;(thread_count);</a>
+<a name="138"><span class="lineNum">     138 </span>            :   } else {</a>
+<a name="139"><span class="lineNum">     139 </span>            :     return 0;</a>
+<a name="140"><span class="lineNum">     140 </span>            :   }</a>
+<a name="141"><span class="lineNum">     141 </span>            : }</a>
+<a name="142"><span class="lineNum">     142 </span>            : </a>
+<a name="143"><span class="lineNum">     143 </span>            : #elif GTEST_OS_DRAGONFLY || GTEST_OS_FREEBSD || GTEST_OS_GNU_KFREEBSD || \</a>
+<a name="144"><span class="lineNum">     144 </span>            :       GTEST_OS_NETBSD</a>
+<a name="145"><span class="lineNum">     145 </span>            : </a>
+<a name="146"><span class="lineNum">     146 </span>            : #if GTEST_OS_NETBSD</a>
+<a name="147"><span class="lineNum">     147 </span>            : #undef KERN_PROC</a>
+<a name="148"><span class="lineNum">     148 </span>            : #define KERN_PROC KERN_PROC2</a>
+<a name="149"><span class="lineNum">     149 </span>            : #define kinfo_proc kinfo_proc2</a>
+<a name="150"><span class="lineNum">     150 </span>            : #endif</a>
+<a name="151"><span class="lineNum">     151 </span>            : </a>
+<a name="152"><span class="lineNum">     152 </span>            : #if GTEST_OS_DRAGONFLY</a>
+<a name="153"><span class="lineNum">     153 </span>            : #define KP_NLWP(kp) (kp.kp_nthreads)</a>
+<a name="154"><span class="lineNum">     154 </span>            : #elif GTEST_OS_FREEBSD || GTEST_OS_GNU_KFREEBSD</a>
+<a name="155"><span class="lineNum">     155 </span>            : #define KP_NLWP(kp) (kp.ki_numthreads)</a>
+<a name="156"><span class="lineNum">     156 </span>            : #elif GTEST_OS_NETBSD</a>
+<a name="157"><span class="lineNum">     157 </span>            : #define KP_NLWP(kp) (kp.p_nlwps)</a>
+<a name="158"><span class="lineNum">     158 </span>            : #endif</a>
+<a name="159"><span class="lineNum">     159 </span>            : </a>
+<a name="160"><span class="lineNum">     160 </span>            : // Returns the number of threads running in the process, or 0 to indicate that</a>
+<a name="161"><span class="lineNum">     161 </span>            : // we cannot detect it.</a>
+<a name="162"><span class="lineNum">     162 </span>            : size_t GetThreadCount() {</a>
+<a name="163"><span class="lineNum">     163 </span>            :   int mib[] = {</a>
+<a name="164"><span class="lineNum">     164 </span>            :     CTL_KERN,</a>
+<a name="165"><span class="lineNum">     165 </span>            :     KERN_PROC,</a>
+<a name="166"><span class="lineNum">     166 </span>            :     KERN_PROC_PID,</a>
+<a name="167"><span class="lineNum">     167 </span>            :     getpid(),</a>
+<a name="168"><span class="lineNum">     168 </span>            : #if GTEST_OS_NETBSD</a>
+<a name="169"><span class="lineNum">     169 </span>            :     sizeof(struct kinfo_proc),</a>
+<a name="170"><span class="lineNum">     170 </span>            :     1,</a>
+<a name="171"><span class="lineNum">     171 </span>            : #endif</a>
+<a name="172"><span class="lineNum">     172 </span>            :   };</a>
+<a name="173"><span class="lineNum">     173 </span>            :   u_int miblen = sizeof(mib) / sizeof(mib[0]);</a>
+<a name="174"><span class="lineNum">     174 </span>            :   struct kinfo_proc info;</a>
+<a name="175"><span class="lineNum">     175 </span>            :   size_t size = sizeof(info);</a>
+<a name="176"><span class="lineNum">     176 </span>            :   if (sysctl(mib, miblen, &amp;info, &amp;size, NULL, 0)) {</a>
+<a name="177"><span class="lineNum">     177 </span>            :     return 0;</a>
+<a name="178"><span class="lineNum">     178 </span>            :   }</a>
+<a name="179"><span class="lineNum">     179 </span>            :   return static_cast&lt;size_t&gt;(KP_NLWP(info));</a>
+<a name="180"><span class="lineNum">     180 </span>            : }</a>
+<a name="181"><span class="lineNum">     181 </span>            : #elif GTEST_OS_OPENBSD</a>
+<a name="182"><span class="lineNum">     182 </span>            : </a>
+<a name="183"><span class="lineNum">     183 </span>            : // Returns the number of threads running in the process, or 0 to indicate that</a>
+<a name="184"><span class="lineNum">     184 </span>            : // we cannot detect it.</a>
+<a name="185"><span class="lineNum">     185 </span>            : size_t GetThreadCount() {</a>
+<a name="186"><span class="lineNum">     186 </span>            :   int mib[] = {</a>
+<a name="187"><span class="lineNum">     187 </span>            :     CTL_KERN,</a>
+<a name="188"><span class="lineNum">     188 </span>            :     KERN_PROC,</a>
+<a name="189"><span class="lineNum">     189 </span>            :     KERN_PROC_PID | KERN_PROC_SHOW_THREADS,</a>
+<a name="190"><span class="lineNum">     190 </span>            :     getpid(),</a>
+<a name="191"><span class="lineNum">     191 </span>            :     sizeof(struct kinfo_proc),</a>
+<a name="192"><span class="lineNum">     192 </span>            :     0,</a>
+<a name="193"><span class="lineNum">     193 </span>            :   };</a>
+<a name="194"><span class="lineNum">     194 </span>            :   u_int miblen = sizeof(mib) / sizeof(mib[0]);</a>
+<a name="195"><span class="lineNum">     195 </span>            : </a>
+<a name="196"><span class="lineNum">     196 </span>            :   // get number of structs</a>
+<a name="197"><span class="lineNum">     197 </span>            :   size_t size;</a>
+<a name="198"><span class="lineNum">     198 </span>            :   if (sysctl(mib, miblen, NULL, &amp;size, NULL, 0)) {</a>
+<a name="199"><span class="lineNum">     199 </span>            :     return 0;</a>
+<a name="200"><span class="lineNum">     200 </span>            :   }</a>
+<a name="201"><span class="lineNum">     201 </span>            : </a>
+<a name="202"><span class="lineNum">     202 </span>            :   mib[5] = static_cast&lt;int&gt;(size / static_cast&lt;size_t&gt;(mib[4]));</a>
+<a name="203"><span class="lineNum">     203 </span>            : </a>
+<a name="204"><span class="lineNum">     204 </span>            :   // populate array of structs</a>
+<a name="205"><span class="lineNum">     205 </span>            :   struct kinfo_proc info[mib[5]];</a>
+<a name="206"><span class="lineNum">     206 </span>            :   if (sysctl(mib, miblen, &amp;info, &amp;size, NULL, 0)) {</a>
+<a name="207"><span class="lineNum">     207 </span>            :     return 0;</a>
+<a name="208"><span class="lineNum">     208 </span>            :   }</a>
+<a name="209"><span class="lineNum">     209 </span>            : </a>
+<a name="210"><span class="lineNum">     210 </span>            :   // exclude empty members</a>
+<a name="211"><span class="lineNum">     211 </span>            :   size_t nthreads = 0;</a>
+<a name="212"><span class="lineNum">     212 </span>            :   for (size_t i = 0; i &lt; size / static_cast&lt;size_t&gt;(mib[4]); i++) {</a>
+<a name="213"><span class="lineNum">     213 </span>            :     if (info[i].p_tid != -1)</a>
+<a name="214"><span class="lineNum">     214 </span>            :       nthreads++;</a>
+<a name="215"><span class="lineNum">     215 </span>            :   }</a>
+<a name="216"><span class="lineNum">     216 </span>            :   return nthreads;</a>
+<a name="217"><span class="lineNum">     217 </span>            : }</a>
+<a name="218"><span class="lineNum">     218 </span>            : </a>
+<a name="219"><span class="lineNum">     219 </span>            : #elif GTEST_OS_QNX</a>
+<a name="220"><span class="lineNum">     220 </span>            : </a>
+<a name="221"><span class="lineNum">     221 </span>            : // Returns the number of threads running in the process, or 0 to indicate that</a>
+<a name="222"><span class="lineNum">     222 </span>            : // we cannot detect it.</a>
+<a name="223"><span class="lineNum">     223 </span>            : size_t GetThreadCount() {</a>
+<a name="224"><span class="lineNum">     224 </span>            :   const int fd = open(&quot;/proc/self/as&quot;, O_RDONLY);</a>
+<a name="225"><span class="lineNum">     225 </span>            :   if (fd &lt; 0) {</a>
+<a name="226"><span class="lineNum">     226 </span>            :     return 0;</a>
+<a name="227"><span class="lineNum">     227 </span>            :   }</a>
+<a name="228"><span class="lineNum">     228 </span>            :   procfs_info process_info;</a>
+<a name="229"><span class="lineNum">     229 </span>            :   const int status =</a>
+<a name="230"><span class="lineNum">     230 </span>            :       devctl(fd, DCMD_PROC_INFO, &amp;process_info, sizeof(process_info), nullptr);</a>
+<a name="231"><span class="lineNum">     231 </span>            :   close(fd);</a>
+<a name="232"><span class="lineNum">     232 </span>            :   if (status == EOK) {</a>
+<a name="233"><span class="lineNum">     233 </span>            :     return static_cast&lt;size_t&gt;(process_info.num_threads);</a>
+<a name="234"><span class="lineNum">     234 </span>            :   } else {</a>
+<a name="235"><span class="lineNum">     235 </span>            :     return 0;</a>
+<a name="236"><span class="lineNum">     236 </span>            :   }</a>
+<a name="237"><span class="lineNum">     237 </span>            : }</a>
+<a name="238"><span class="lineNum">     238 </span>            : </a>
+<a name="239"><span class="lineNum">     239 </span>            : #elif GTEST_OS_AIX</a>
+<a name="240"><span class="lineNum">     240 </span>            : </a>
+<a name="241"><span class="lineNum">     241 </span>            : size_t GetThreadCount() {</a>
+<a name="242"><span class="lineNum">     242 </span>            :   struct procentry64 entry;</a>
+<a name="243"><span class="lineNum">     243 </span>            :   pid_t pid = getpid();</a>
+<a name="244"><span class="lineNum">     244 </span>            :   int status = getprocs64(&amp;entry, sizeof(entry), nullptr, 0, &amp;pid, 1);</a>
+<a name="245"><span class="lineNum">     245 </span>            :   if (status == 1) {</a>
+<a name="246"><span class="lineNum">     246 </span>            :     return entry.pi_thcount;</a>
+<a name="247"><span class="lineNum">     247 </span>            :   } else {</a>
+<a name="248"><span class="lineNum">     248 </span>            :     return 0;</a>
+<a name="249"><span class="lineNum">     249 </span>            :   }</a>
+<a name="250"><span class="lineNum">     250 </span>            : }</a>
+<a name="251"><span class="lineNum">     251 </span>            : </a>
+<a name="252"><span class="lineNum">     252 </span>            : #elif GTEST_OS_FUCHSIA</a>
+<a name="253"><span class="lineNum">     253 </span>            : </a>
+<a name="254"><span class="lineNum">     254 </span>            : size_t GetThreadCount() {</a>
+<a name="255"><span class="lineNum">     255 </span>            :   int dummy_buffer;</a>
+<a name="256"><span class="lineNum">     256 </span>            :   size_t avail;</a>
+<a name="257"><span class="lineNum">     257 </span>            :   zx_status_t status = zx_object_get_info(</a>
+<a name="258"><span class="lineNum">     258 </span>            :       zx_process_self(),</a>
+<a name="259"><span class="lineNum">     259 </span>            :       ZX_INFO_PROCESS_THREADS,</a>
+<a name="260"><span class="lineNum">     260 </span>            :       &amp;dummy_buffer,</a>
+<a name="261"><span class="lineNum">     261 </span>            :       0,</a>
+<a name="262"><span class="lineNum">     262 </span>            :       nullptr,</a>
+<a name="263"><span class="lineNum">     263 </span>            :       &amp;avail);</a>
+<a name="264"><span class="lineNum">     264 </span>            :   if (status == ZX_OK) {</a>
+<a name="265"><span class="lineNum">     265 </span>            :     return avail;</a>
+<a name="266"><span class="lineNum">     266 </span>            :   } else {</a>
+<a name="267"><span class="lineNum">     267 </span>            :     return 0;</a>
+<a name="268"><span class="lineNum">     268 </span>            :   }</a>
+<a name="269"><span class="lineNum">     269 </span>            : }</a>
+<a name="270"><span class="lineNum">     270 </span>            : </a>
+<a name="271"><span class="lineNum">     271 </span>            : #else</a>
+<a name="272"><span class="lineNum">     272 </span>            : </a>
+<a name="273"><span class="lineNum">     273 </span>            : size_t GetThreadCount() {</a>
+<a name="274"><span class="lineNum">     274 </span>            :   // There's no portable way to detect the number of threads, so we just</a>
+<a name="275"><span class="lineNum">     275 </span>            :   // return 0 to indicate that we cannot detect it.</a>
+<a name="276"><span class="lineNum">     276 </span>            :   return 0;</a>
+<a name="277"><span class="lineNum">     277 </span>            : }</a>
+<a name="278"><span class="lineNum">     278 </span>            : </a>
+<a name="279"><span class="lineNum">     279 </span>            : #endif  // GTEST_OS_LINUX</a>
+<a name="280"><span class="lineNum">     280 </span>            : </a>
+<a name="281"><span class="lineNum">     281 </span>            : #if GTEST_IS_THREADSAFE &amp;&amp; GTEST_OS_WINDOWS</a>
+<a name="282"><span class="lineNum">     282 </span>            : </a>
+<a name="283"><span class="lineNum">     283 </span>            : void SleepMilliseconds(int n) {</a>
+<a name="284"><span class="lineNum">     284 </span>            :   ::Sleep(static_cast&lt;DWORD&gt;(n));</a>
+<a name="285"><span class="lineNum">     285 </span>            : }</a>
+<a name="286"><span class="lineNum">     286 </span>            : </a>
+<a name="287"><span class="lineNum">     287 </span>            : AutoHandle::AutoHandle()</a>
+<a name="288"><span class="lineNum">     288 </span>            :     : handle_(INVALID_HANDLE_VALUE) {}</a>
+<a name="289"><span class="lineNum">     289 </span>            : </a>
+<a name="290"><span class="lineNum">     290 </span>            : AutoHandle::AutoHandle(Handle handle)</a>
+<a name="291"><span class="lineNum">     291 </span>            :     : handle_(handle) {}</a>
+<a name="292"><span class="lineNum">     292 </span>            : </a>
+<a name="293"><span class="lineNum">     293 </span>            : AutoHandle::~AutoHandle() {</a>
+<a name="294"><span class="lineNum">     294 </span>            :   Reset();</a>
+<a name="295"><span class="lineNum">     295 </span>            : }</a>
+<a name="296"><span class="lineNum">     296 </span>            : </a>
+<a name="297"><span class="lineNum">     297 </span>            : AutoHandle::Handle AutoHandle::Get() const {</a>
+<a name="298"><span class="lineNum">     298 </span>            :   return handle_;</a>
+<a name="299"><span class="lineNum">     299 </span>            : }</a>
+<a name="300"><span class="lineNum">     300 </span>            : </a>
+<a name="301"><span class="lineNum">     301 </span>            : void AutoHandle::Reset() {</a>
+<a name="302"><span class="lineNum">     302 </span>            :   Reset(INVALID_HANDLE_VALUE);</a>
+<a name="303"><span class="lineNum">     303 </span>            : }</a>
+<a name="304"><span class="lineNum">     304 </span>            : </a>
+<a name="305"><span class="lineNum">     305 </span>            : void AutoHandle::Reset(HANDLE handle) {</a>
+<a name="306"><span class="lineNum">     306 </span>            :   // Resetting with the same handle we already own is invalid.</a>
+<a name="307"><span class="lineNum">     307 </span>            :   if (handle_ != handle) {</a>
+<a name="308"><span class="lineNum">     308 </span>            :     if (IsCloseable()) {</a>
+<a name="309"><span class="lineNum">     309 </span>            :       ::CloseHandle(handle_);</a>
+<a name="310"><span class="lineNum">     310 </span>            :     }</a>
+<a name="311"><span class="lineNum">     311 </span>            :     handle_ = handle;</a>
+<a name="312"><span class="lineNum">     312 </span>            :   } else {</a>
+<a name="313"><span class="lineNum">     313 </span>            :     GTEST_CHECK_(!IsCloseable())</a>
+<a name="314"><span class="lineNum">     314 </span>            :         &lt;&lt; &quot;Resetting a valid handle to itself is likely a programmer error &quot;</a>
+<a name="315"><span class="lineNum">     315 </span>            :             &quot;and thus not allowed.&quot;;</a>
+<a name="316"><span class="lineNum">     316 </span>            :   }</a>
+<a name="317"><span class="lineNum">     317 </span>            : }</a>
+<a name="318"><span class="lineNum">     318 </span>            : </a>
+<a name="319"><span class="lineNum">     319 </span>            : bool AutoHandle::IsCloseable() const {</a>
+<a name="320"><span class="lineNum">     320 </span>            :   // Different Windows APIs may use either of these values to represent an</a>
+<a name="321"><span class="lineNum">     321 </span>            :   // invalid handle.</a>
+<a name="322"><span class="lineNum">     322 </span>            :   return handle_ != nullptr &amp;&amp; handle_ != INVALID_HANDLE_VALUE;</a>
+<a name="323"><span class="lineNum">     323 </span>            : }</a>
+<a name="324"><span class="lineNum">     324 </span>            : </a>
+<a name="325"><span class="lineNum">     325 </span>            : Notification::Notification()</a>
+<a name="326"><span class="lineNum">     326 </span>            :     : event_(::CreateEvent(nullptr,     // Default security attributes.</a>
+<a name="327"><span class="lineNum">     327 </span>            :                            TRUE,        // Do not reset automatically.</a>
+<a name="328"><span class="lineNum">     328 </span>            :                            FALSE,       // Initially unset.</a>
+<a name="329"><span class="lineNum">     329 </span>            :                            nullptr)) {  // Anonymous event.</a>
+<a name="330"><span class="lineNum">     330 </span>            :   GTEST_CHECK_(event_.Get() != nullptr);</a>
+<a name="331"><span class="lineNum">     331 </span>            : }</a>
+<a name="332"><span class="lineNum">     332 </span>            : </a>
+<a name="333"><span class="lineNum">     333 </span>            : void Notification::Notify() {</a>
+<a name="334"><span class="lineNum">     334 </span>            :   GTEST_CHECK_(::SetEvent(event_.Get()) != FALSE);</a>
+<a name="335"><span class="lineNum">     335 </span>            : }</a>
+<a name="336"><span class="lineNum">     336 </span>            : </a>
+<a name="337"><span class="lineNum">     337 </span>            : void Notification::WaitForNotification() {</a>
+<a name="338"><span class="lineNum">     338 </span>            :   GTEST_CHECK_(</a>
+<a name="339"><span class="lineNum">     339 </span>            :       ::WaitForSingleObject(event_.Get(), INFINITE) == WAIT_OBJECT_0);</a>
+<a name="340"><span class="lineNum">     340 </span>            : }</a>
+<a name="341"><span class="lineNum">     341 </span>            : </a>
+<a name="342"><span class="lineNum">     342 </span>            : Mutex::Mutex()</a>
+<a name="343"><span class="lineNum">     343 </span>            :     : owner_thread_id_(0),</a>
+<a name="344"><span class="lineNum">     344 </span>            :       type_(kDynamic),</a>
+<a name="345"><span class="lineNum">     345 </span>            :       critical_section_init_phase_(0),</a>
+<a name="346"><span class="lineNum">     346 </span>            :       critical_section_(new CRITICAL_SECTION) {</a>
+<a name="347"><span class="lineNum">     347 </span>            :   ::InitializeCriticalSection(critical_section_);</a>
+<a name="348"><span class="lineNum">     348 </span>            : }</a>
+<a name="349"><span class="lineNum">     349 </span>            : </a>
+<a name="350"><span class="lineNum">     350 </span>            : Mutex::~Mutex() {</a>
+<a name="351"><span class="lineNum">     351 </span>            :   // Static mutexes are leaked intentionally. It is not thread-safe to try</a>
+<a name="352"><span class="lineNum">     352 </span>            :   // to clean them up.</a>
+<a name="353"><span class="lineNum">     353 </span>            :   if (type_ == kDynamic) {</a>
+<a name="354"><span class="lineNum">     354 </span>            :     ::DeleteCriticalSection(critical_section_);</a>
+<a name="355"><span class="lineNum">     355 </span>            :     delete critical_section_;</a>
+<a name="356"><span class="lineNum">     356 </span>            :     critical_section_ = nullptr;</a>
+<a name="357"><span class="lineNum">     357 </span>            :   }</a>
+<a name="358"><span class="lineNum">     358 </span>            : }</a>
+<a name="359"><span class="lineNum">     359 </span>            : </a>
+<a name="360"><span class="lineNum">     360 </span>            : void Mutex::Lock() {</a>
+<a name="361"><span class="lineNum">     361 </span>            :   ThreadSafeLazyInit();</a>
+<a name="362"><span class="lineNum">     362 </span>            :   ::EnterCriticalSection(critical_section_);</a>
+<a name="363"><span class="lineNum">     363 </span>            :   owner_thread_id_ = ::GetCurrentThreadId();</a>
+<a name="364"><span class="lineNum">     364 </span>            : }</a>
+<a name="365"><span class="lineNum">     365 </span>            : </a>
+<a name="366"><span class="lineNum">     366 </span>            : void Mutex::Unlock() {</a>
+<a name="367"><span class="lineNum">     367 </span>            :   ThreadSafeLazyInit();</a>
+<a name="368"><span class="lineNum">     368 </span>            :   // We don't protect writing to owner_thread_id_ here, as it's the</a>
+<a name="369"><span class="lineNum">     369 </span>            :   // caller's responsibility to ensure that the current thread holds the</a>
+<a name="370"><span class="lineNum">     370 </span>            :   // mutex when this is called.</a>
+<a name="371"><span class="lineNum">     371 </span>            :   owner_thread_id_ = 0;</a>
+<a name="372"><span class="lineNum">     372 </span>            :   ::LeaveCriticalSection(critical_section_);</a>
+<a name="373"><span class="lineNum">     373 </span>            : }</a>
+<a name="374"><span class="lineNum">     374 </span>            : </a>
+<a name="375"><span class="lineNum">     375 </span>            : // Does nothing if the current thread holds the mutex. Otherwise, crashes</a>
+<a name="376"><span class="lineNum">     376 </span>            : // with high probability.</a>
+<a name="377"><span class="lineNum">     377 </span>            : void Mutex::AssertHeld() {</a>
+<a name="378"><span class="lineNum">     378 </span>            :   ThreadSafeLazyInit();</a>
+<a name="379"><span class="lineNum">     379 </span>            :   GTEST_CHECK_(owner_thread_id_ == ::GetCurrentThreadId())</a>
+<a name="380"><span class="lineNum">     380 </span>            :       &lt;&lt; &quot;The current thread is not holding the mutex @&quot; &lt;&lt; this;</a>
+<a name="381"><span class="lineNum">     381 </span>            : }</a>
+<a name="382"><span class="lineNum">     382 </span>            : </a>
+<a name="383"><span class="lineNum">     383 </span>            : namespace {</a>
+<a name="384"><span class="lineNum">     384 </span>            : </a>
+<a name="385"><span class="lineNum">     385 </span>            : #ifdef _MSC_VER</a>
+<a name="386"><span class="lineNum">     386 </span>            : // Use the RAII idiom to flag mem allocs that are intentionally never</a>
+<a name="387"><span class="lineNum">     387 </span>            : // deallocated. The motivation is to silence the false positive mem leaks</a>
+<a name="388"><span class="lineNum">     388 </span>            : // that are reported by the debug version of MS's CRT which can only detect</a>
+<a name="389"><span class="lineNum">     389 </span>            : // if an alloc is missing a matching deallocation.</a>
+<a name="390"><span class="lineNum">     390 </span>            : // Example:</a>
+<a name="391"><span class="lineNum">     391 </span>            : //    MemoryIsNotDeallocated memory_is_not_deallocated;</a>
+<a name="392"><span class="lineNum">     392 </span>            : //    critical_section_ = new CRITICAL_SECTION;</a>
+<a name="393"><span class="lineNum">     393 </span>            : //</a>
+<a name="394"><span class="lineNum">     394 </span>            : class MemoryIsNotDeallocated</a>
+<a name="395"><span class="lineNum">     395 </span>            : {</a>
+<a name="396"><span class="lineNum">     396 </span>            :  public:</a>
+<a name="397"><span class="lineNum">     397 </span>            :   MemoryIsNotDeallocated() : old_crtdbg_flag_(0) {</a>
+<a name="398"><span class="lineNum">     398 </span>            :     old_crtdbg_flag_ = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);</a>
+<a name="399"><span class="lineNum">     399 </span>            :     // Set heap allocation block type to _IGNORE_BLOCK so that MS debug CRT</a>
+<a name="400"><span class="lineNum">     400 </span>            :     // doesn't report mem leak if there's no matching deallocation.</a>
+<a name="401"><span class="lineNum">     401 </span>            :     _CrtSetDbgFlag(old_crtdbg_flag_ &amp; ~_CRTDBG_ALLOC_MEM_DF);</a>
+<a name="402"><span class="lineNum">     402 </span>            :   }</a>
+<a name="403"><span class="lineNum">     403 </span>            : </a>
+<a name="404"><span class="lineNum">     404 </span>            :   ~MemoryIsNotDeallocated() {</a>
+<a name="405"><span class="lineNum">     405 </span>            :     // Restore the original _CRTDBG_ALLOC_MEM_DF flag</a>
+<a name="406"><span class="lineNum">     406 </span>            :     _CrtSetDbgFlag(old_crtdbg_flag_);</a>
+<a name="407"><span class="lineNum">     407 </span>            :   }</a>
+<a name="408"><span class="lineNum">     408 </span>            : </a>
+<a name="409"><span class="lineNum">     409 </span>            :  private:</a>
+<a name="410"><span class="lineNum">     410 </span>            :   int old_crtdbg_flag_;</a>
+<a name="411"><span class="lineNum">     411 </span>            : </a>
+<a name="412"><span class="lineNum">     412 </span>            :   GTEST_DISALLOW_COPY_AND_ASSIGN_(MemoryIsNotDeallocated);</a>
+<a name="413"><span class="lineNum">     413 </span>            : };</a>
+<a name="414"><span class="lineNum">     414 </span>            : #endif  // _MSC_VER</a>
+<a name="415"><span class="lineNum">     415 </span>            : </a>
+<a name="416"><span class="lineNum">     416 </span>            : }  // namespace</a>
+<a name="417"><span class="lineNum">     417 </span>            : </a>
+<a name="418"><span class="lineNum">     418 </span>            : // Initializes owner_thread_id_ and critical_section_ in static mutexes.</a>
+<a name="419"><span class="lineNum">     419 </span>            : void Mutex::ThreadSafeLazyInit() {</a>
+<a name="420"><span class="lineNum">     420 </span>            :   // Dynamic mutexes are initialized in the constructor.</a>
+<a name="421"><span class="lineNum">     421 </span>            :   if (type_ == kStatic) {</a>
+<a name="422"><span class="lineNum">     422 </span>            :     switch (</a>
+<a name="423"><span class="lineNum">     423 </span>            :         ::InterlockedCompareExchange(&amp;critical_section_init_phase_, 1L, 0L)) {</a>
+<a name="424"><span class="lineNum">     424 </span>            :       case 0:</a>
+<a name="425"><span class="lineNum">     425 </span>            :         // If critical_section_init_phase_ was 0 before the exchange, we</a>
+<a name="426"><span class="lineNum">     426 </span>            :         // are the first to test it and need to perform the initialization.</a>
+<a name="427"><span class="lineNum">     427 </span>            :         owner_thread_id_ = 0;</a>
+<a name="428"><span class="lineNum">     428 </span>            :         {</a>
+<a name="429"><span class="lineNum">     429 </span>            :           // Use RAII to flag that following mem alloc is never deallocated.</a>
+<a name="430"><span class="lineNum">     430 </span>            : #ifdef _MSC_VER</a>
+<a name="431"><span class="lineNum">     431 </span>            :           MemoryIsNotDeallocated memory_is_not_deallocated;</a>
+<a name="432"><span class="lineNum">     432 </span>            : #endif  // _MSC_VER</a>
+<a name="433"><span class="lineNum">     433 </span>            :           critical_section_ = new CRITICAL_SECTION;</a>
+<a name="434"><span class="lineNum">     434 </span>            :         }</a>
+<a name="435"><span class="lineNum">     435 </span>            :         ::InitializeCriticalSection(critical_section_);</a>
+<a name="436"><span class="lineNum">     436 </span>            :         // Updates the critical_section_init_phase_ to 2 to signal</a>
+<a name="437"><span class="lineNum">     437 </span>            :         // initialization complete.</a>
+<a name="438"><span class="lineNum">     438 </span>            :         GTEST_CHECK_(::InterlockedCompareExchange(</a>
+<a name="439"><span class="lineNum">     439 </span>            :                           &amp;critical_section_init_phase_, 2L, 1L) ==</a>
+<a name="440"><span class="lineNum">     440 </span>            :                       1L);</a>
+<a name="441"><span class="lineNum">     441 </span>            :         break;</a>
+<a name="442"><span class="lineNum">     442 </span>            :       case 1:</a>
+<a name="443"><span class="lineNum">     443 </span>            :         // Somebody else is already initializing the mutex; spin until they</a>
+<a name="444"><span class="lineNum">     444 </span>            :         // are done.</a>
+<a name="445"><span class="lineNum">     445 </span>            :         while (::InterlockedCompareExchange(&amp;critical_section_init_phase_,</a>
+<a name="446"><span class="lineNum">     446 </span>            :                                             2L,</a>
+<a name="447"><span class="lineNum">     447 </span>            :                                             2L) != 2L) {</a>
+<a name="448"><span class="lineNum">     448 </span>            :           // Possibly yields the rest of the thread's time slice to other</a>
+<a name="449"><span class="lineNum">     449 </span>            :           // threads.</a>
+<a name="450"><span class="lineNum">     450 </span>            :           ::Sleep(0);</a>
+<a name="451"><span class="lineNum">     451 </span>            :         }</a>
+<a name="452"><span class="lineNum">     452 </span>            :         break;</a>
+<a name="453"><span class="lineNum">     453 </span>            : </a>
+<a name="454"><span class="lineNum">     454 </span>            :       case 2:</a>
+<a name="455"><span class="lineNum">     455 </span>            :         break;  // The mutex is already initialized and ready for use.</a>
+<a name="456"><span class="lineNum">     456 </span>            : </a>
+<a name="457"><span class="lineNum">     457 </span>            :       default:</a>
+<a name="458"><span class="lineNum">     458 </span>            :         GTEST_CHECK_(false)</a>
+<a name="459"><span class="lineNum">     459 </span>            :             &lt;&lt; &quot;Unexpected value of critical_section_init_phase_ &quot;</a>
+<a name="460"><span class="lineNum">     460 </span>            :             &lt;&lt; &quot;while initializing a static mutex.&quot;;</a>
+<a name="461"><span class="lineNum">     461 </span>            :     }</a>
+<a name="462"><span class="lineNum">     462 </span>            :   }</a>
+<a name="463"><span class="lineNum">     463 </span>            : }</a>
+<a name="464"><span class="lineNum">     464 </span>            : </a>
+<a name="465"><span class="lineNum">     465 </span>            : namespace {</a>
+<a name="466"><span class="lineNum">     466 </span>            : </a>
+<a name="467"><span class="lineNum">     467 </span>            : class ThreadWithParamSupport : public ThreadWithParamBase {</a>
+<a name="468"><span class="lineNum">     468 </span>            :  public:</a>
+<a name="469"><span class="lineNum">     469 </span>            :   static HANDLE CreateThread(Runnable* runnable,</a>
+<a name="470"><span class="lineNum">     470 </span>            :                              Notification* thread_can_start) {</a>
+<a name="471"><span class="lineNum">     471 </span>            :     ThreadMainParam* param = new ThreadMainParam(runnable, thread_can_start);</a>
+<a name="472"><span class="lineNum">     472 </span>            :     DWORD thread_id;</a>
+<a name="473"><span class="lineNum">     473 </span>            :     HANDLE thread_handle = ::CreateThread(</a>
+<a name="474"><span class="lineNum">     474 </span>            :         nullptr,  // Default security.</a>
+<a name="475"><span class="lineNum">     475 </span>            :         0,        // Default stack size.</a>
+<a name="476"><span class="lineNum">     476 </span>            :         &amp;ThreadWithParamSupport::ThreadMain,</a>
+<a name="477"><span class="lineNum">     477 </span>            :         param,        // Parameter to ThreadMainStatic</a>
+<a name="478"><span class="lineNum">     478 </span>            :         0x0,          // Default creation flags.</a>
+<a name="479"><span class="lineNum">     479 </span>            :         &amp;thread_id);  // Need a valid pointer for the call to work under Win98.</a>
+<a name="480"><span class="lineNum">     480 </span>            :     GTEST_CHECK_(thread_handle != nullptr)</a>
+<a name="481"><span class="lineNum">     481 </span>            :         &lt;&lt; &quot;CreateThread failed with error &quot; &lt;&lt; ::GetLastError() &lt;&lt; &quot;.&quot;;</a>
+<a name="482"><span class="lineNum">     482 </span>            :     if (thread_handle == nullptr) {</a>
+<a name="483"><span class="lineNum">     483 </span>            :       delete param;</a>
+<a name="484"><span class="lineNum">     484 </span>            :     }</a>
+<a name="485"><span class="lineNum">     485 </span>            :     return thread_handle;</a>
+<a name="486"><span class="lineNum">     486 </span>            :   }</a>
+<a name="487"><span class="lineNum">     487 </span>            : </a>
+<a name="488"><span class="lineNum">     488 </span>            :  private:</a>
+<a name="489"><span class="lineNum">     489 </span>            :   struct ThreadMainParam {</a>
+<a name="490"><span class="lineNum">     490 </span>            :     ThreadMainParam(Runnable* runnable, Notification* thread_can_start)</a>
+<a name="491"><span class="lineNum">     491 </span>            :         : runnable_(runnable),</a>
+<a name="492"><span class="lineNum">     492 </span>            :           thread_can_start_(thread_can_start) {</a>
+<a name="493"><span class="lineNum">     493 </span>            :     }</a>
+<a name="494"><span class="lineNum">     494 </span>            :     std::unique_ptr&lt;Runnable&gt; runnable_;</a>
+<a name="495"><span class="lineNum">     495 </span>            :     // Does not own.</a>
+<a name="496"><span class="lineNum">     496 </span>            :     Notification* thread_can_start_;</a>
+<a name="497"><span class="lineNum">     497 </span>            :   };</a>
+<a name="498"><span class="lineNum">     498 </span>            : </a>
+<a name="499"><span class="lineNum">     499 </span>            :   static DWORD WINAPI ThreadMain(void* ptr) {</a>
+<a name="500"><span class="lineNum">     500 </span>            :     // Transfers ownership.</a>
+<a name="501"><span class="lineNum">     501 </span>            :     std::unique_ptr&lt;ThreadMainParam&gt; param(static_cast&lt;ThreadMainParam*&gt;(ptr));</a>
+<a name="502"><span class="lineNum">     502 </span>            :     if (param-&gt;thread_can_start_ != nullptr)</a>
+<a name="503"><span class="lineNum">     503 </span>            :       param-&gt;thread_can_start_-&gt;WaitForNotification();</a>
+<a name="504"><span class="lineNum">     504 </span>            :     param-&gt;runnable_-&gt;Run();</a>
+<a name="505"><span class="lineNum">     505 </span>            :     return 0;</a>
+<a name="506"><span class="lineNum">     506 </span>            :   }</a>
+<a name="507"><span class="lineNum">     507 </span>            : </a>
+<a name="508"><span class="lineNum">     508 </span>            :   // Prohibit instantiation.</a>
+<a name="509"><span class="lineNum">     509 </span>            :   ThreadWithParamSupport();</a>
+<a name="510"><span class="lineNum">     510 </span>            : </a>
+<a name="511"><span class="lineNum">     511 </span>            :   GTEST_DISALLOW_COPY_AND_ASSIGN_(ThreadWithParamSupport);</a>
+<a name="512"><span class="lineNum">     512 </span>            : };</a>
+<a name="513"><span class="lineNum">     513 </span>            : </a>
+<a name="514"><span class="lineNum">     514 </span>            : }  // namespace</a>
+<a name="515"><span class="lineNum">     515 </span>            : </a>
+<a name="516"><span class="lineNum">     516 </span>            : ThreadWithParamBase::ThreadWithParamBase(Runnable *runnable,</a>
+<a name="517"><span class="lineNum">     517 </span>            :                                          Notification* thread_can_start)</a>
+<a name="518"><span class="lineNum">     518 </span>            :       : thread_(ThreadWithParamSupport::CreateThread(runnable,</a>
+<a name="519"><span class="lineNum">     519 </span>            :                                                      thread_can_start)) {</a>
+<a name="520"><span class="lineNum">     520 </span>            : }</a>
+<a name="521"><span class="lineNum">     521 </span>            : </a>
+<a name="522"><span class="lineNum">     522 </span>            : ThreadWithParamBase::~ThreadWithParamBase() {</a>
+<a name="523"><span class="lineNum">     523 </span>            :   Join();</a>
+<a name="524"><span class="lineNum">     524 </span>            : }</a>
+<a name="525"><span class="lineNum">     525 </span>            : </a>
+<a name="526"><span class="lineNum">     526 </span>            : void ThreadWithParamBase::Join() {</a>
+<a name="527"><span class="lineNum">     527 </span>            :   GTEST_CHECK_(::WaitForSingleObject(thread_.Get(), INFINITE) == WAIT_OBJECT_0)</a>
+<a name="528"><span class="lineNum">     528 </span>            :       &lt;&lt; &quot;Failed to join the thread with error &quot; &lt;&lt; ::GetLastError() &lt;&lt; &quot;.&quot;;</a>
+<a name="529"><span class="lineNum">     529 </span>            : }</a>
+<a name="530"><span class="lineNum">     530 </span>            : </a>
+<a name="531"><span class="lineNum">     531 </span>            : // Maps a thread to a set of ThreadIdToThreadLocals that have values</a>
+<a name="532"><span class="lineNum">     532 </span>            : // instantiated on that thread and notifies them when the thread exits.  A</a>
+<a name="533"><span class="lineNum">     533 </span>            : // ThreadLocal instance is expected to persist until all threads it has</a>
+<a name="534"><span class="lineNum">     534 </span>            : // values on have terminated.</a>
+<a name="535"><span class="lineNum">     535 </span>            : class ThreadLocalRegistryImpl {</a>
+<a name="536"><span class="lineNum">     536 </span>            :  public:</a>
+<a name="537"><span class="lineNum">     537 </span>            :   // Registers thread_local_instance as having value on the current thread.</a>
+<a name="538"><span class="lineNum">     538 </span>            :   // Returns a value that can be used to identify the thread from other threads.</a>
+<a name="539"><span class="lineNum">     539 </span>            :   static ThreadLocalValueHolderBase* GetValueOnCurrentThread(</a>
+<a name="540"><span class="lineNum">     540 </span>            :       const ThreadLocalBase* thread_local_instance) {</a>
+<a name="541"><span class="lineNum">     541 </span>            : #ifdef _MSC_VER</a>
+<a name="542"><span class="lineNum">     542 </span>            :     MemoryIsNotDeallocated memory_is_not_deallocated;</a>
+<a name="543"><span class="lineNum">     543 </span>            : #endif  // _MSC_VER</a>
+<a name="544"><span class="lineNum">     544 </span>            :     DWORD current_thread = ::GetCurrentThreadId();</a>
+<a name="545"><span class="lineNum">     545 </span>            :     MutexLock lock(&amp;mutex_);</a>
+<a name="546"><span class="lineNum">     546 </span>            :     ThreadIdToThreadLocals* const thread_to_thread_locals =</a>
+<a name="547"><span class="lineNum">     547 </span>            :         GetThreadLocalsMapLocked();</a>
+<a name="548"><span class="lineNum">     548 </span>            :     ThreadIdToThreadLocals::iterator thread_local_pos =</a>
+<a name="549"><span class="lineNum">     549 </span>            :         thread_to_thread_locals-&gt;find(current_thread);</a>
+<a name="550"><span class="lineNum">     550 </span>            :     if (thread_local_pos == thread_to_thread_locals-&gt;end()) {</a>
+<a name="551"><span class="lineNum">     551 </span>            :       thread_local_pos = thread_to_thread_locals-&gt;insert(</a>
+<a name="552"><span class="lineNum">     552 </span>            :           std::make_pair(current_thread, ThreadLocalValues())).first;</a>
+<a name="553"><span class="lineNum">     553 </span>            :       StartWatcherThreadFor(current_thread);</a>
+<a name="554"><span class="lineNum">     554 </span>            :     }</a>
+<a name="555"><span class="lineNum">     555 </span>            :     ThreadLocalValues&amp; thread_local_values = thread_local_pos-&gt;second;</a>
+<a name="556"><span class="lineNum">     556 </span>            :     ThreadLocalValues::iterator value_pos =</a>
+<a name="557"><span class="lineNum">     557 </span>            :         thread_local_values.find(thread_local_instance);</a>
+<a name="558"><span class="lineNum">     558 </span>            :     if (value_pos == thread_local_values.end()) {</a>
+<a name="559"><span class="lineNum">     559 </span>            :       value_pos =</a>
+<a name="560"><span class="lineNum">     560 </span>            :           thread_local_values</a>
+<a name="561"><span class="lineNum">     561 </span>            :               .insert(std::make_pair(</a>
+<a name="562"><span class="lineNum">     562 </span>            :                   thread_local_instance,</a>
+<a name="563"><span class="lineNum">     563 </span>            :                   std::shared_ptr&lt;ThreadLocalValueHolderBase&gt;(</a>
+<a name="564"><span class="lineNum">     564 </span>            :                       thread_local_instance-&gt;NewValueForCurrentThread())))</a>
+<a name="565"><span class="lineNum">     565 </span>            :               .first;</a>
+<a name="566"><span class="lineNum">     566 </span>            :     }</a>
+<a name="567"><span class="lineNum">     567 </span>            :     return value_pos-&gt;second.get();</a>
+<a name="568"><span class="lineNum">     568 </span>            :   }</a>
+<a name="569"><span class="lineNum">     569 </span>            : </a>
+<a name="570"><span class="lineNum">     570 </span>            :   static void OnThreadLocalDestroyed(</a>
+<a name="571"><span class="lineNum">     571 </span>            :       const ThreadLocalBase* thread_local_instance) {</a>
+<a name="572"><span class="lineNum">     572 </span>            :     std::vector&lt;std::shared_ptr&lt;ThreadLocalValueHolderBase&gt; &gt; value_holders;</a>
+<a name="573"><span class="lineNum">     573 </span>            :     // Clean up the ThreadLocalValues data structure while holding the lock, but</a>
+<a name="574"><span class="lineNum">     574 </span>            :     // defer the destruction of the ThreadLocalValueHolderBases.</a>
+<a name="575"><span class="lineNum">     575 </span>            :     {</a>
+<a name="576"><span class="lineNum">     576 </span>            :       MutexLock lock(&amp;mutex_);</a>
+<a name="577"><span class="lineNum">     577 </span>            :       ThreadIdToThreadLocals* const thread_to_thread_locals =</a>
+<a name="578"><span class="lineNum">     578 </span>            :           GetThreadLocalsMapLocked();</a>
+<a name="579"><span class="lineNum">     579 </span>            :       for (ThreadIdToThreadLocals::iterator it =</a>
+<a name="580"><span class="lineNum">     580 </span>            :           thread_to_thread_locals-&gt;begin();</a>
+<a name="581"><span class="lineNum">     581 </span>            :           it != thread_to_thread_locals-&gt;end();</a>
+<a name="582"><span class="lineNum">     582 </span>            :           ++it) {</a>
+<a name="583"><span class="lineNum">     583 </span>            :         ThreadLocalValues&amp; thread_local_values = it-&gt;second;</a>
+<a name="584"><span class="lineNum">     584 </span>            :         ThreadLocalValues::iterator value_pos =</a>
+<a name="585"><span class="lineNum">     585 </span>            :             thread_local_values.find(thread_local_instance);</a>
+<a name="586"><span class="lineNum">     586 </span>            :         if (value_pos != thread_local_values.end()) {</a>
+<a name="587"><span class="lineNum">     587 </span>            :           value_holders.push_back(value_pos-&gt;second);</a>
+<a name="588"><span class="lineNum">     588 </span>            :           thread_local_values.erase(value_pos);</a>
+<a name="589"><span class="lineNum">     589 </span>            :           // This 'if' can only be successful at most once, so theoretically we</a>
+<a name="590"><span class="lineNum">     590 </span>            :           // could break out of the loop here, but we don't bother doing so.</a>
+<a name="591"><span class="lineNum">     591 </span>            :         }</a>
+<a name="592"><span class="lineNum">     592 </span>            :       }</a>
+<a name="593"><span class="lineNum">     593 </span>            :     }</a>
+<a name="594"><span class="lineNum">     594 </span>            :     // Outside the lock, let the destructor for 'value_holders' deallocate the</a>
+<a name="595"><span class="lineNum">     595 </span>            :     // ThreadLocalValueHolderBases.</a>
+<a name="596"><span class="lineNum">     596 </span>            :   }</a>
+<a name="597"><span class="lineNum">     597 </span>            : </a>
+<a name="598"><span class="lineNum">     598 </span>            :   static void OnThreadExit(DWORD thread_id) {</a>
+<a name="599"><span class="lineNum">     599 </span>            :     GTEST_CHECK_(thread_id != 0) &lt;&lt; ::GetLastError();</a>
+<a name="600"><span class="lineNum">     600 </span>            :     std::vector&lt;std::shared_ptr&lt;ThreadLocalValueHolderBase&gt; &gt; value_holders;</a>
+<a name="601"><span class="lineNum">     601 </span>            :     // Clean up the ThreadIdToThreadLocals data structure while holding the</a>
+<a name="602"><span class="lineNum">     602 </span>            :     // lock, but defer the destruction of the ThreadLocalValueHolderBases.</a>
+<a name="603"><span class="lineNum">     603 </span>            :     {</a>
+<a name="604"><span class="lineNum">     604 </span>            :       MutexLock lock(&amp;mutex_);</a>
+<a name="605"><span class="lineNum">     605 </span>            :       ThreadIdToThreadLocals* const thread_to_thread_locals =</a>
+<a name="606"><span class="lineNum">     606 </span>            :           GetThreadLocalsMapLocked();</a>
+<a name="607"><span class="lineNum">     607 </span>            :       ThreadIdToThreadLocals::iterator thread_local_pos =</a>
+<a name="608"><span class="lineNum">     608 </span>            :           thread_to_thread_locals-&gt;find(thread_id);</a>
+<a name="609"><span class="lineNum">     609 </span>            :       if (thread_local_pos != thread_to_thread_locals-&gt;end()) {</a>
+<a name="610"><span class="lineNum">     610 </span>            :         ThreadLocalValues&amp; thread_local_values = thread_local_pos-&gt;second;</a>
+<a name="611"><span class="lineNum">     611 </span>            :         for (ThreadLocalValues::iterator value_pos =</a>
+<a name="612"><span class="lineNum">     612 </span>            :             thread_local_values.begin();</a>
+<a name="613"><span class="lineNum">     613 </span>            :             value_pos != thread_local_values.end();</a>
+<a name="614"><span class="lineNum">     614 </span>            :             ++value_pos) {</a>
+<a name="615"><span class="lineNum">     615 </span>            :           value_holders.push_back(value_pos-&gt;second);</a>
+<a name="616"><span class="lineNum">     616 </span>            :         }</a>
+<a name="617"><span class="lineNum">     617 </span>            :         thread_to_thread_locals-&gt;erase(thread_local_pos);</a>
+<a name="618"><span class="lineNum">     618 </span>            :       }</a>
+<a name="619"><span class="lineNum">     619 </span>            :     }</a>
+<a name="620"><span class="lineNum">     620 </span>            :     // Outside the lock, let the destructor for 'value_holders' deallocate the</a>
+<a name="621"><span class="lineNum">     621 </span>            :     // ThreadLocalValueHolderBases.</a>
+<a name="622"><span class="lineNum">     622 </span>            :   }</a>
+<a name="623"><span class="lineNum">     623 </span>            : </a>
+<a name="624"><span class="lineNum">     624 </span>            :  private:</a>
+<a name="625"><span class="lineNum">     625 </span>            :   // In a particular thread, maps a ThreadLocal object to its value.</a>
+<a name="626"><span class="lineNum">     626 </span>            :   typedef std::map&lt;const ThreadLocalBase*,</a>
+<a name="627"><span class="lineNum">     627 </span>            :                    std::shared_ptr&lt;ThreadLocalValueHolderBase&gt; &gt;</a>
+<a name="628"><span class="lineNum">     628 </span>            :       ThreadLocalValues;</a>
+<a name="629"><span class="lineNum">     629 </span>            :   // Stores all ThreadIdToThreadLocals having values in a thread, indexed by</a>
+<a name="630"><span class="lineNum">     630 </span>            :   // thread's ID.</a>
+<a name="631"><span class="lineNum">     631 </span>            :   typedef std::map&lt;DWORD, ThreadLocalValues&gt; ThreadIdToThreadLocals;</a>
+<a name="632"><span class="lineNum">     632 </span>            : </a>
+<a name="633"><span class="lineNum">     633 </span>            :   // Holds the thread id and thread handle that we pass from</a>
+<a name="634"><span class="lineNum">     634 </span>            :   // StartWatcherThreadFor to WatcherThreadFunc.</a>
+<a name="635"><span class="lineNum">     635 </span>            :   typedef std::pair&lt;DWORD, HANDLE&gt; ThreadIdAndHandle;</a>
+<a name="636"><span class="lineNum">     636 </span>            : </a>
+<a name="637"><span class="lineNum">     637 </span>            :   static void StartWatcherThreadFor(DWORD thread_id) {</a>
+<a name="638"><span class="lineNum">     638 </span>            :     // The returned handle will be kept in thread_map and closed by</a>
+<a name="639"><span class="lineNum">     639 </span>            :     // watcher_thread in WatcherThreadFunc.</a>
+<a name="640"><span class="lineNum">     640 </span>            :     HANDLE thread = ::OpenThread(SYNCHRONIZE | THREAD_QUERY_INFORMATION,</a>
+<a name="641"><span class="lineNum">     641 </span>            :                                  FALSE,</a>
+<a name="642"><span class="lineNum">     642 </span>            :                                  thread_id);</a>
+<a name="643"><span class="lineNum">     643 </span>            :     GTEST_CHECK_(thread != nullptr);</a>
+<a name="644"><span class="lineNum">     644 </span>            :     // We need to pass a valid thread ID pointer into CreateThread for it</a>
+<a name="645"><span class="lineNum">     645 </span>            :     // to work correctly under Win98.</a>
+<a name="646"><span class="lineNum">     646 </span>            :     DWORD watcher_thread_id;</a>
+<a name="647"><span class="lineNum">     647 </span>            :     HANDLE watcher_thread = ::CreateThread(</a>
+<a name="648"><span class="lineNum">     648 </span>            :         nullptr,  // Default security.</a>
+<a name="649"><span class="lineNum">     649 </span>            :         0,        // Default stack size</a>
+<a name="650"><span class="lineNum">     650 </span>            :         &amp;ThreadLocalRegistryImpl::WatcherThreadFunc,</a>
+<a name="651"><span class="lineNum">     651 </span>            :         reinterpret_cast&lt;LPVOID&gt;(new ThreadIdAndHandle(thread_id, thread)),</a>
+<a name="652"><span class="lineNum">     652 </span>            :         CREATE_SUSPENDED, &amp;watcher_thread_id);</a>
+<a name="653"><span class="lineNum">     653 </span>            :     GTEST_CHECK_(watcher_thread != nullptr);</a>
+<a name="654"><span class="lineNum">     654 </span>            :     // Give the watcher thread the same priority as ours to avoid being</a>
+<a name="655"><span class="lineNum">     655 </span>            :     // blocked by it.</a>
+<a name="656"><span class="lineNum">     656 </span>            :     ::SetThreadPriority(watcher_thread,</a>
+<a name="657"><span class="lineNum">     657 </span>            :                         ::GetThreadPriority(::GetCurrentThread()));</a>
+<a name="658"><span class="lineNum">     658 </span>            :     ::ResumeThread(watcher_thread);</a>
+<a name="659"><span class="lineNum">     659 </span>            :     ::CloseHandle(watcher_thread);</a>
+<a name="660"><span class="lineNum">     660 </span>            :   }</a>
+<a name="661"><span class="lineNum">     661 </span>            : </a>
+<a name="662"><span class="lineNum">     662 </span>            :   // Monitors exit from a given thread and notifies those</a>
+<a name="663"><span class="lineNum">     663 </span>            :   // ThreadIdToThreadLocals about thread termination.</a>
+<a name="664"><span class="lineNum">     664 </span>            :   static DWORD WINAPI WatcherThreadFunc(LPVOID param) {</a>
+<a name="665"><span class="lineNum">     665 </span>            :     const ThreadIdAndHandle* tah =</a>
+<a name="666"><span class="lineNum">     666 </span>            :         reinterpret_cast&lt;const ThreadIdAndHandle*&gt;(param);</a>
+<a name="667"><span class="lineNum">     667 </span>            :     GTEST_CHECK_(</a>
+<a name="668"><span class="lineNum">     668 </span>            :         ::WaitForSingleObject(tah-&gt;second, INFINITE) == WAIT_OBJECT_0);</a>
+<a name="669"><span class="lineNum">     669 </span>            :     OnThreadExit(tah-&gt;first);</a>
+<a name="670"><span class="lineNum">     670 </span>            :     ::CloseHandle(tah-&gt;second);</a>
+<a name="671"><span class="lineNum">     671 </span>            :     delete tah;</a>
+<a name="672"><span class="lineNum">     672 </span>            :     return 0;</a>
+<a name="673"><span class="lineNum">     673 </span>            :   }</a>
+<a name="674"><span class="lineNum">     674 </span>            : </a>
+<a name="675"><span class="lineNum">     675 </span>            :   // Returns map of thread local instances.</a>
+<a name="676"><span class="lineNum">     676 </span>            :   static ThreadIdToThreadLocals* GetThreadLocalsMapLocked() {</a>
+<a name="677"><span class="lineNum">     677 </span>            :     mutex_.AssertHeld();</a>
+<a name="678"><span class="lineNum">     678 </span>            : #ifdef _MSC_VER</a>
+<a name="679"><span class="lineNum">     679 </span>            :     MemoryIsNotDeallocated memory_is_not_deallocated;</a>
+<a name="680"><span class="lineNum">     680 </span>            : #endif  // _MSC_VER</a>
+<a name="681"><span class="lineNum">     681 </span>            :     static ThreadIdToThreadLocals* map = new ThreadIdToThreadLocals();</a>
+<a name="682"><span class="lineNum">     682 </span>            :     return map;</a>
+<a name="683"><span class="lineNum">     683 </span>            :   }</a>
+<a name="684"><span class="lineNum">     684 </span>            : </a>
+<a name="685"><span class="lineNum">     685 </span>            :   // Protects access to GetThreadLocalsMapLocked() and its return value.</a>
+<a name="686"><span class="lineNum">     686 </span>            :   static Mutex mutex_;</a>
+<a name="687"><span class="lineNum">     687 </span>            :   // Protects access to GetThreadMapLocked() and its return value.</a>
+<a name="688"><span class="lineNum">     688 </span>            :   static Mutex thread_map_mutex_;</a>
+<a name="689"><span class="lineNum">     689 </span>            : };</a>
+<a name="690"><span class="lineNum">     690 </span>            : </a>
+<a name="691"><span class="lineNum">     691 </span>            : Mutex ThreadLocalRegistryImpl::mutex_(Mutex::kStaticMutex);</a>
+<a name="692"><span class="lineNum">     692 </span>            : Mutex ThreadLocalRegistryImpl::thread_map_mutex_(Mutex::kStaticMutex);</a>
+<a name="693"><span class="lineNum">     693 </span>            : </a>
+<a name="694"><span class="lineNum">     694 </span>            : ThreadLocalValueHolderBase* ThreadLocalRegistry::GetValueOnCurrentThread(</a>
+<a name="695"><span class="lineNum">     695 </span>            :       const ThreadLocalBase* thread_local_instance) {</a>
+<a name="696"><span class="lineNum">     696 </span>            :   return ThreadLocalRegistryImpl::GetValueOnCurrentThread(</a>
+<a name="697"><span class="lineNum">     697 </span>            :       thread_local_instance);</a>
+<a name="698"><span class="lineNum">     698 </span>            : }</a>
+<a name="699"><span class="lineNum">     699 </span>            : </a>
+<a name="700"><span class="lineNum">     700 </span>            : void ThreadLocalRegistry::OnThreadLocalDestroyed(</a>
+<a name="701"><span class="lineNum">     701 </span>            :       const ThreadLocalBase* thread_local_instance) {</a>
+<a name="702"><span class="lineNum">     702 </span>            :   ThreadLocalRegistryImpl::OnThreadLocalDestroyed(thread_local_instance);</a>
+<a name="703"><span class="lineNum">     703 </span>            : }</a>
+<a name="704"><span class="lineNum">     704 </span>            : </a>
+<a name="705"><span class="lineNum">     705 </span>            : #endif  // GTEST_IS_THREADSAFE &amp;&amp; GTEST_OS_WINDOWS</a>
+<a name="706"><span class="lineNum">     706 </span>            : </a>
+<a name="707"><span class="lineNum">     707 </span>            : #if GTEST_USES_POSIX_RE</a>
+<a name="708"><span class="lineNum">     708 </span>            : </a>
+<a name="709"><span class="lineNum">     709 </span>            : // Implements RE.  Currently only needed for death tests.</a>
+<a name="710"><span class="lineNum">     710 </span>            : </a>
+<a name="711"><span class="lineNum">     711 </span><span class="lineNoCov">          0 : RE::~RE() {</span></a>
+<a name="712"><span class="lineNum">     712 </span><span class="lineNoCov">          0 :   if (is_valid_) {</span></a>
+<a name="713"><span class="lineNum">     713 </span>            :     // regfree'ing an invalid regex might crash because the content</a>
+<a name="714"><span class="lineNum">     714 </span>            :     // of the regex is undefined. Since the regex's are essentially</a>
+<a name="715"><span class="lineNum">     715 </span>            :     // the same, one cannot be valid (or invalid) without the other</a>
+<a name="716"><span class="lineNum">     716 </span>            :     // being so too.</a>
+<a name="717"><span class="lineNum">     717 </span><span class="lineNoCov">          0 :     regfree(&amp;partial_regex_);</span></a>
+<a name="718"><span class="lineNum">     718 </span><span class="lineNoCov">          0 :     regfree(&amp;full_regex_);</span></a>
+<a name="719"><span class="lineNum">     719 </span>            :   }</a>
+<a name="720"><span class="lineNum">     720 </span><span class="lineNoCov">          0 :   free(const_cast&lt;char*&gt;(pattern_));</span></a>
+<a name="721"><span class="lineNum">     721 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="722"><span class="lineNum">     722 </span>            : </a>
+<a name="723"><span class="lineNum">     723 </span>            : // Returns true if and only if regular expression re matches the entire str.</a>
+<a name="724"><span class="lineNum">     724 </span><span class="lineNoCov">          0 : bool RE::FullMatch(const char* str, const RE&amp; re) {</span></a>
+<a name="725"><span class="lineNum">     725 </span><span class="lineNoCov">          0 :   if (!re.is_valid_) return false;</span></a>
+<a name="726"><span class="lineNum">     726 </span>            : </a>
+<a name="727"><span class="lineNum">     727 </span>            :   regmatch_t match;</a>
+<a name="728"><span class="lineNum">     728 </span><span class="lineNoCov">          0 :   return regexec(&amp;re.full_regex_, str, 1, &amp;match, 0) == 0;</span></a>
+<a name="729"><span class="lineNum">     729 </span>            : }</a>
+<a name="730"><span class="lineNum">     730 </span>            : </a>
+<a name="731"><span class="lineNum">     731 </span>            : // Returns true if and only if regular expression re matches a substring of</a>
+<a name="732"><span class="lineNum">     732 </span>            : // str (including str itself).</a>
+<a name="733"><span class="lineNum">     733 </span><span class="lineNoCov">          0 : bool RE::PartialMatch(const char* str, const RE&amp; re) {</span></a>
+<a name="734"><span class="lineNum">     734 </span><span class="lineNoCov">          0 :   if (!re.is_valid_) return false;</span></a>
+<a name="735"><span class="lineNum">     735 </span>            : </a>
+<a name="736"><span class="lineNum">     736 </span>            :   regmatch_t match;</a>
+<a name="737"><span class="lineNum">     737 </span><span class="lineNoCov">          0 :   return regexec(&amp;re.partial_regex_, str, 1, &amp;match, 0) == 0;</span></a>
+<a name="738"><span class="lineNum">     738 </span>            : }</a>
+<a name="739"><span class="lineNum">     739 </span>            : </a>
+<a name="740"><span class="lineNum">     740 </span>            : // Initializes an RE from its string representation.</a>
+<a name="741"><span class="lineNum">     741 </span><span class="lineNoCov">          0 : void RE::Init(const char* regex) {</span></a>
+<a name="742"><span class="lineNum">     742 </span><span class="lineNoCov">          0 :   pattern_ = posix::StrDup(regex);</span></a>
+<a name="743"><span class="lineNum">     743 </span>            : </a>
+<a name="744"><span class="lineNum">     744 </span>            :   // Reserves enough bytes to hold the regular expression used for a</a>
+<a name="745"><span class="lineNum">     745 </span>            :   // full match.</a>
+<a name="746"><span class="lineNum">     746 </span><span class="lineNoCov">          0 :   const size_t full_regex_len = strlen(regex) + 10;</span></a>
+<a name="747"><span class="lineNum">     747 </span><span class="lineNoCov">          0 :   char* const full_pattern = new char[full_regex_len];</span></a>
+<a name="748"><span class="lineNum">     748 </span>            : </a>
+<a name="749"><span class="lineNum">     749 </span><span class="lineNoCov">          0 :   snprintf(full_pattern, full_regex_len, &quot;^(%s)$&quot;, regex);</span></a>
+<a name="750"><span class="lineNum">     750 </span><span class="lineNoCov">          0 :   is_valid_ = regcomp(&amp;full_regex_, full_pattern, REG_EXTENDED) == 0;</span></a>
+<a name="751"><span class="lineNum">     751 </span>            :   // We want to call regcomp(&amp;partial_regex_, ...) even if the</a>
+<a name="752"><span class="lineNum">     752 </span>            :   // previous expression returns false.  Otherwise partial_regex_ may</a>
+<a name="753"><span class="lineNum">     753 </span>            :   // not be properly initialized can may cause trouble when it's</a>
+<a name="754"><span class="lineNum">     754 </span>            :   // freed.</a>
+<a name="755"><span class="lineNum">     755 </span>            :   //</a>
+<a name="756"><span class="lineNum">     756 </span>            :   // Some implementation of POSIX regex (e.g. on at least some</a>
+<a name="757"><span class="lineNum">     757 </span>            :   // versions of Cygwin) doesn't accept the empty string as a valid</a>
+<a name="758"><span class="lineNum">     758 </span>            :   // regex.  We change it to an equivalent form &quot;()&quot; to be safe.</a>
+<a name="759"><span class="lineNum">     759 </span><span class="lineNoCov">          0 :   if (is_valid_) {</span></a>
+<a name="760"><span class="lineNum">     760 </span><span class="lineNoCov">          0 :     const char* const partial_regex = (*regex == '\0') ? &quot;()&quot; : regex;</span></a>
+<a name="761"><span class="lineNum">     761 </span><span class="lineNoCov">          0 :     is_valid_ = regcomp(&amp;partial_regex_, partial_regex, REG_EXTENDED) == 0;</span></a>
+<a name="762"><span class="lineNum">     762 </span>            :   }</a>
+<a name="763"><span class="lineNum">     763 </span><span class="lineNoCov">          0 :   EXPECT_TRUE(is_valid_)</span></a>
+<a name="764"><span class="lineNum">     764 </span><span class="lineNoCov">          0 :       &lt;&lt; &quot;Regular expression \&quot;&quot; &lt;&lt; regex</span></a>
+<a name="765"><span class="lineNum">     765 </span><span class="lineNoCov">          0 :       &lt;&lt; &quot;\&quot; is not a valid POSIX Extended regular expression.&quot;;</span></a>
+<a name="766"><span class="lineNum">     766 </span>            : </a>
+<a name="767"><span class="lineNum">     767 </span><span class="lineNoCov">          0 :   delete[] full_pattern;</span></a>
+<a name="768"><span class="lineNum">     768 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="769"><span class="lineNum">     769 </span>            : </a>
+<a name="770"><span class="lineNum">     770 </span>            : #elif GTEST_USES_SIMPLE_RE</a>
+<a name="771"><span class="lineNum">     771 </span>            : </a>
+<a name="772"><span class="lineNum">     772 </span>            : // Returns true if and only if ch appears anywhere in str (excluding the</a>
+<a name="773"><span class="lineNum">     773 </span>            : // terminating '\0' character).</a>
+<a name="774"><span class="lineNum">     774 </span>            : bool IsInSet(char ch, const char* str) {</a>
+<a name="775"><span class="lineNum">     775 </span>            :   return ch != '\0' &amp;&amp; strchr(str, ch) != nullptr;</a>
+<a name="776"><span class="lineNum">     776 </span>            : }</a>
+<a name="777"><span class="lineNum">     777 </span>            : </a>
+<a name="778"><span class="lineNum">     778 </span>            : // Returns true if and only if ch belongs to the given classification.</a>
+<a name="779"><span class="lineNum">     779 </span>            : // Unlike similar functions in &lt;ctype.h&gt;, these aren't affected by the</a>
+<a name="780"><span class="lineNum">     780 </span>            : // current locale.</a>
+<a name="781"><span class="lineNum">     781 </span>            : bool IsAsciiDigit(char ch) { return '0' &lt;= ch &amp;&amp; ch &lt;= '9'; }</a>
+<a name="782"><span class="lineNum">     782 </span>            : bool IsAsciiPunct(char ch) {</a>
+<a name="783"><span class="lineNum">     783 </span>            :   return IsInSet(ch, &quot;^-!\&quot;#$%&amp;'()*+,./:;&lt;=&gt;?@[\\]_`{|}~&quot;);</a>
+<a name="784"><span class="lineNum">     784 </span>            : }</a>
+<a name="785"><span class="lineNum">     785 </span>            : bool IsRepeat(char ch) { return IsInSet(ch, &quot;?*+&quot;); }</a>
+<a name="786"><span class="lineNum">     786 </span>            : bool IsAsciiWhiteSpace(char ch) { return IsInSet(ch, &quot; \f\n\r\t\v&quot;); }</a>
+<a name="787"><span class="lineNum">     787 </span>            : bool IsAsciiWordChar(char ch) {</a>
+<a name="788"><span class="lineNum">     788 </span>            :   return ('a' &lt;= ch &amp;&amp; ch &lt;= 'z') || ('A' &lt;= ch &amp;&amp; ch &lt;= 'Z') ||</a>
+<a name="789"><span class="lineNum">     789 </span>            :       ('0' &lt;= ch &amp;&amp; ch &lt;= '9') || ch == '_';</a>
+<a name="790"><span class="lineNum">     790 </span>            : }</a>
+<a name="791"><span class="lineNum">     791 </span>            : </a>
+<a name="792"><span class="lineNum">     792 </span>            : // Returns true if and only if &quot;\\c&quot; is a supported escape sequence.</a>
+<a name="793"><span class="lineNum">     793 </span>            : bool IsValidEscape(char c) {</a>
+<a name="794"><span class="lineNum">     794 </span>            :   return (IsAsciiPunct(c) || IsInSet(c, &quot;dDfnrsStvwW&quot;));</a>
+<a name="795"><span class="lineNum">     795 </span>            : }</a>
+<a name="796"><span class="lineNum">     796 </span>            : </a>
+<a name="797"><span class="lineNum">     797 </span>            : // Returns true if and only if the given atom (specified by escaped and</a>
+<a name="798"><span class="lineNum">     798 </span>            : // pattern) matches ch.  The result is undefined if the atom is invalid.</a>
+<a name="799"><span class="lineNum">     799 </span>            : bool AtomMatchesChar(bool escaped, char pattern_char, char ch) {</a>
+<a name="800"><span class="lineNum">     800 </span>            :   if (escaped) {  // &quot;\\p&quot; where p is pattern_char.</a>
+<a name="801"><span class="lineNum">     801 </span>            :     switch (pattern_char) {</a>
+<a name="802"><span class="lineNum">     802 </span>            :       case 'd': return IsAsciiDigit(ch);</a>
+<a name="803"><span class="lineNum">     803 </span>            :       case 'D': return !IsAsciiDigit(ch);</a>
+<a name="804"><span class="lineNum">     804 </span>            :       case 'f': return ch == '\f';</a>
+<a name="805"><span class="lineNum">     805 </span>            :       case 'n': return ch == '\n';</a>
+<a name="806"><span class="lineNum">     806 </span>            :       case 'r': return ch == '\r';</a>
+<a name="807"><span class="lineNum">     807 </span>            :       case 's': return IsAsciiWhiteSpace(ch);</a>
+<a name="808"><span class="lineNum">     808 </span>            :       case 'S': return !IsAsciiWhiteSpace(ch);</a>
+<a name="809"><span class="lineNum">     809 </span>            :       case 't': return ch == '\t';</a>
+<a name="810"><span class="lineNum">     810 </span>            :       case 'v': return ch == '\v';</a>
+<a name="811"><span class="lineNum">     811 </span>            :       case 'w': return IsAsciiWordChar(ch);</a>
+<a name="812"><span class="lineNum">     812 </span>            :       case 'W': return !IsAsciiWordChar(ch);</a>
+<a name="813"><span class="lineNum">     813 </span>            :     }</a>
+<a name="814"><span class="lineNum">     814 </span>            :     return IsAsciiPunct(pattern_char) &amp;&amp; pattern_char == ch;</a>
+<a name="815"><span class="lineNum">     815 </span>            :   }</a>
+<a name="816"><span class="lineNum">     816 </span>            : </a>
+<a name="817"><span class="lineNum">     817 </span>            :   return (pattern_char == '.' &amp;&amp; ch != '\n') || pattern_char == ch;</a>
+<a name="818"><span class="lineNum">     818 </span>            : }</a>
+<a name="819"><span class="lineNum">     819 </span>            : </a>
+<a name="820"><span class="lineNum">     820 </span>            : // Helper function used by ValidateRegex() to format error messages.</a>
+<a name="821"><span class="lineNum">     821 </span>            : static std::string FormatRegexSyntaxError(const char* regex, int index) {</a>
+<a name="822"><span class="lineNum">     822 </span>            :   return (Message() &lt;&lt; &quot;Syntax error at index &quot; &lt;&lt; index</a>
+<a name="823"><span class="lineNum">     823 </span>            :           &lt;&lt; &quot; in simple regular expression \&quot;&quot; &lt;&lt; regex &lt;&lt; &quot;\&quot;: &quot;).GetString();</a>
+<a name="824"><span class="lineNum">     824 </span>            : }</a>
+<a name="825"><span class="lineNum">     825 </span>            : </a>
+<a name="826"><span class="lineNum">     826 </span>            : // Generates non-fatal failures and returns false if regex is invalid;</a>
+<a name="827"><span class="lineNum">     827 </span>            : // otherwise returns true.</a>
+<a name="828"><span class="lineNum">     828 </span>            : bool ValidateRegex(const char* regex) {</a>
+<a name="829"><span class="lineNum">     829 </span>            :   if (regex == nullptr) {</a>
+<a name="830"><span class="lineNum">     830 </span>            :     ADD_FAILURE() &lt;&lt; &quot;NULL is not a valid simple regular expression.&quot;;</a>
+<a name="831"><span class="lineNum">     831 </span>            :     return false;</a>
+<a name="832"><span class="lineNum">     832 </span>            :   }</a>
+<a name="833"><span class="lineNum">     833 </span>            : </a>
+<a name="834"><span class="lineNum">     834 </span>            :   bool is_valid = true;</a>
+<a name="835"><span class="lineNum">     835 </span>            : </a>
+<a name="836"><span class="lineNum">     836 </span>            :   // True if and only if ?, *, or + can follow the previous atom.</a>
+<a name="837"><span class="lineNum">     837 </span>            :   bool prev_repeatable = false;</a>
+<a name="838"><span class="lineNum">     838 </span>            :   for (int i = 0; regex[i]; i++) {</a>
+<a name="839"><span class="lineNum">     839 </span>            :     if (regex[i] == '\\') {  // An escape sequence</a>
+<a name="840"><span class="lineNum">     840 </span>            :       i++;</a>
+<a name="841"><span class="lineNum">     841 </span>            :       if (regex[i] == '\0') {</a>
+<a name="842"><span class="lineNum">     842 </span>            :         ADD_FAILURE() &lt;&lt; FormatRegexSyntaxError(regex, i - 1)</a>
+<a name="843"><span class="lineNum">     843 </span>            :                       &lt;&lt; &quot;'\\' cannot appear at the end.&quot;;</a>
+<a name="844"><span class="lineNum">     844 </span>            :         return false;</a>
+<a name="845"><span class="lineNum">     845 </span>            :       }</a>
+<a name="846"><span class="lineNum">     846 </span>            : </a>
+<a name="847"><span class="lineNum">     847 </span>            :       if (!IsValidEscape(regex[i])) {</a>
+<a name="848"><span class="lineNum">     848 </span>            :         ADD_FAILURE() &lt;&lt; FormatRegexSyntaxError(regex, i - 1)</a>
+<a name="849"><span class="lineNum">     849 </span>            :                       &lt;&lt; &quot;invalid escape sequence \&quot;\\&quot; &lt;&lt; regex[i] &lt;&lt; &quot;\&quot;.&quot;;</a>
+<a name="850"><span class="lineNum">     850 </span>            :         is_valid = false;</a>
+<a name="851"><span class="lineNum">     851 </span>            :       }</a>
+<a name="852"><span class="lineNum">     852 </span>            :       prev_repeatable = true;</a>
+<a name="853"><span class="lineNum">     853 </span>            :     } else {  // Not an escape sequence.</a>
+<a name="854"><span class="lineNum">     854 </span>            :       const char ch = regex[i];</a>
+<a name="855"><span class="lineNum">     855 </span>            : </a>
+<a name="856"><span class="lineNum">     856 </span>            :       if (ch == '^' &amp;&amp; i &gt; 0) {</a>
+<a name="857"><span class="lineNum">     857 </span>            :         ADD_FAILURE() &lt;&lt; FormatRegexSyntaxError(regex, i)</a>
+<a name="858"><span class="lineNum">     858 </span>            :                       &lt;&lt; &quot;'^' can only appear at the beginning.&quot;;</a>
+<a name="859"><span class="lineNum">     859 </span>            :         is_valid = false;</a>
+<a name="860"><span class="lineNum">     860 </span>            :       } else if (ch == '$' &amp;&amp; regex[i + 1] != '\0') {</a>
+<a name="861"><span class="lineNum">     861 </span>            :         ADD_FAILURE() &lt;&lt; FormatRegexSyntaxError(regex, i)</a>
+<a name="862"><span class="lineNum">     862 </span>            :                       &lt;&lt; &quot;'$' can only appear at the end.&quot;;</a>
+<a name="863"><span class="lineNum">     863 </span>            :         is_valid = false;</a>
+<a name="864"><span class="lineNum">     864 </span>            :       } else if (IsInSet(ch, &quot;()[]{}|&quot;)) {</a>
+<a name="865"><span class="lineNum">     865 </span>            :         ADD_FAILURE() &lt;&lt; FormatRegexSyntaxError(regex, i)</a>
+<a name="866"><span class="lineNum">     866 </span>            :                       &lt;&lt; &quot;'&quot; &lt;&lt; ch &lt;&lt; &quot;' is unsupported.&quot;;</a>
+<a name="867"><span class="lineNum">     867 </span>            :         is_valid = false;</a>
+<a name="868"><span class="lineNum">     868 </span>            :       } else if (IsRepeat(ch) &amp;&amp; !prev_repeatable) {</a>
+<a name="869"><span class="lineNum">     869 </span>            :         ADD_FAILURE() &lt;&lt; FormatRegexSyntaxError(regex, i)</a>
+<a name="870"><span class="lineNum">     870 </span>            :                       &lt;&lt; &quot;'&quot; &lt;&lt; ch &lt;&lt; &quot;' can only follow a repeatable token.&quot;;</a>
+<a name="871"><span class="lineNum">     871 </span>            :         is_valid = false;</a>
+<a name="872"><span class="lineNum">     872 </span>            :       }</a>
+<a name="873"><span class="lineNum">     873 </span>            : </a>
+<a name="874"><span class="lineNum">     874 </span>            :       prev_repeatable = !IsInSet(ch, &quot;^$?*+&quot;);</a>
+<a name="875"><span class="lineNum">     875 </span>            :     }</a>
+<a name="876"><span class="lineNum">     876 </span>            :   }</a>
+<a name="877"><span class="lineNum">     877 </span>            : </a>
+<a name="878"><span class="lineNum">     878 </span>            :   return is_valid;</a>
+<a name="879"><span class="lineNum">     879 </span>            : }</a>
+<a name="880"><span class="lineNum">     880 </span>            : </a>
+<a name="881"><span class="lineNum">     881 </span>            : // Matches a repeated regex atom followed by a valid simple regular</a>
+<a name="882"><span class="lineNum">     882 </span>            : // expression.  The regex atom is defined as c if escaped is false,</a>
+<a name="883"><span class="lineNum">     883 </span>            : // or \c otherwise.  repeat is the repetition meta character (?, *,</a>
+<a name="884"><span class="lineNum">     884 </span>            : // or +).  The behavior is undefined if str contains too many</a>
+<a name="885"><span class="lineNum">     885 </span>            : // characters to be indexable by size_t, in which case the test will</a>
+<a name="886"><span class="lineNum">     886 </span>            : // probably time out anyway.  We are fine with this limitation as</a>
+<a name="887"><span class="lineNum">     887 </span>            : // std::string has it too.</a>
+<a name="888"><span class="lineNum">     888 </span>            : bool MatchRepetitionAndRegexAtHead(</a>
+<a name="889"><span class="lineNum">     889 </span>            :     bool escaped, char c, char repeat, const char* regex,</a>
+<a name="890"><span class="lineNum">     890 </span>            :     const char* str) {</a>
+<a name="891"><span class="lineNum">     891 </span>            :   const size_t min_count = (repeat == '+') ? 1 : 0;</a>
+<a name="892"><span class="lineNum">     892 </span>            :   const size_t max_count = (repeat == '?') ? 1 :</a>
+<a name="893"><span class="lineNum">     893 </span>            :       static_cast&lt;size_t&gt;(-1) - 1;</a>
+<a name="894"><span class="lineNum">     894 </span>            :   // We cannot call numeric_limits::max() as it conflicts with the</a>
+<a name="895"><span class="lineNum">     895 </span>            :   // max() macro on Windows.</a>
+<a name="896"><span class="lineNum">     896 </span>            : </a>
+<a name="897"><span class="lineNum">     897 </span>            :   for (size_t i = 0; i &lt;= max_count; ++i) {</a>
+<a name="898"><span class="lineNum">     898 </span>            :     // We know that the atom matches each of the first i characters in str.</a>
+<a name="899"><span class="lineNum">     899 </span>            :     if (i &gt;= min_count &amp;&amp; MatchRegexAtHead(regex, str + i)) {</a>
+<a name="900"><span class="lineNum">     900 </span>            :       // We have enough matches at the head, and the tail matches too.</a>
+<a name="901"><span class="lineNum">     901 </span>            :       // Since we only care about *whether* the pattern matches str</a>
+<a name="902"><span class="lineNum">     902 </span>            :       // (as opposed to *how* it matches), there is no need to find a</a>
+<a name="903"><span class="lineNum">     903 </span>            :       // greedy match.</a>
+<a name="904"><span class="lineNum">     904 </span>            :       return true;</a>
+<a name="905"><span class="lineNum">     905 </span>            :     }</a>
+<a name="906"><span class="lineNum">     906 </span>            :     if (str[i] == '\0' || !AtomMatchesChar(escaped, c, str[i]))</a>
+<a name="907"><span class="lineNum">     907 </span>            :       return false;</a>
+<a name="908"><span class="lineNum">     908 </span>            :   }</a>
+<a name="909"><span class="lineNum">     909 </span>            :   return false;</a>
+<a name="910"><span class="lineNum">     910 </span>            : }</a>
+<a name="911"><span class="lineNum">     911 </span>            : </a>
+<a name="912"><span class="lineNum">     912 </span>            : // Returns true if and only if regex matches a prefix of str. regex must</a>
+<a name="913"><span class="lineNum">     913 </span>            : // be a valid simple regular expression and not start with &quot;^&quot;, or the</a>
+<a name="914"><span class="lineNum">     914 </span>            : // result is undefined.</a>
+<a name="915"><span class="lineNum">     915 </span>            : bool MatchRegexAtHead(const char* regex, const char* str) {</a>
+<a name="916"><span class="lineNum">     916 </span>            :   if (*regex == '\0')  // An empty regex matches a prefix of anything.</a>
+<a name="917"><span class="lineNum">     917 </span>            :     return true;</a>
+<a name="918"><span class="lineNum">     918 </span>            : </a>
+<a name="919"><span class="lineNum">     919 </span>            :   // &quot;$&quot; only matches the end of a string.  Note that regex being</a>
+<a name="920"><span class="lineNum">     920 </span>            :   // valid guarantees that there's nothing after &quot;$&quot; in it.</a>
+<a name="921"><span class="lineNum">     921 </span>            :   if (*regex == '$')</a>
+<a name="922"><span class="lineNum">     922 </span>            :     return *str == '\0';</a>
+<a name="923"><span class="lineNum">     923 </span>            : </a>
+<a name="924"><span class="lineNum">     924 </span>            :   // Is the first thing in regex an escape sequence?</a>
+<a name="925"><span class="lineNum">     925 </span>            :   const bool escaped = *regex == '\\';</a>
+<a name="926"><span class="lineNum">     926 </span>            :   if (escaped)</a>
+<a name="927"><span class="lineNum">     927 </span>            :     ++regex;</a>
+<a name="928"><span class="lineNum">     928 </span>            :   if (IsRepeat(regex[1])) {</a>
+<a name="929"><span class="lineNum">     929 </span>            :     // MatchRepetitionAndRegexAtHead() calls MatchRegexAtHead(), so</a>
+<a name="930"><span class="lineNum">     930 </span>            :     // here's an indirect recursion.  It terminates as the regex gets</a>
+<a name="931"><span class="lineNum">     931 </span>            :     // shorter in each recursion.</a>
+<a name="932"><span class="lineNum">     932 </span>            :     return MatchRepetitionAndRegexAtHead(</a>
+<a name="933"><span class="lineNum">     933 </span>            :         escaped, regex[0], regex[1], regex + 2, str);</a>
+<a name="934"><span class="lineNum">     934 </span>            :   } else {</a>
+<a name="935"><span class="lineNum">     935 </span>            :     // regex isn't empty, isn't &quot;$&quot;, and doesn't start with a</a>
+<a name="936"><span class="lineNum">     936 </span>            :     // repetition.  We match the first atom of regex with the first</a>
+<a name="937"><span class="lineNum">     937 </span>            :     // character of str and recurse.</a>
+<a name="938"><span class="lineNum">     938 </span>            :     return (*str != '\0') &amp;&amp; AtomMatchesChar(escaped, *regex, *str) &amp;&amp;</a>
+<a name="939"><span class="lineNum">     939 </span>            :         MatchRegexAtHead(regex + 1, str + 1);</a>
+<a name="940"><span class="lineNum">     940 </span>            :   }</a>
+<a name="941"><span class="lineNum">     941 </span>            : }</a>
+<a name="942"><span class="lineNum">     942 </span>            : </a>
+<a name="943"><span class="lineNum">     943 </span>            : // Returns true if and only if regex matches any substring of str.  regex must</a>
+<a name="944"><span class="lineNum">     944 </span>            : // be a valid simple regular expression, or the result is undefined.</a>
+<a name="945"><span class="lineNum">     945 </span>            : //</a>
+<a name="946"><span class="lineNum">     946 </span>            : // The algorithm is recursive, but the recursion depth doesn't exceed</a>
+<a name="947"><span class="lineNum">     947 </span>            : // the regex length, so we won't need to worry about running out of</a>
+<a name="948"><span class="lineNum">     948 </span>            : // stack space normally.  In rare cases the time complexity can be</a>
+<a name="949"><span class="lineNum">     949 </span>            : // exponential with respect to the regex length + the string length,</a>
+<a name="950"><span class="lineNum">     950 </span>            : // but usually it's must faster (often close to linear).</a>
+<a name="951"><span class="lineNum">     951 </span>            : bool MatchRegexAnywhere(const char* regex, const char* str) {</a>
+<a name="952"><span class="lineNum">     952 </span>            :   if (regex == nullptr || str == nullptr) return false;</a>
+<a name="953"><span class="lineNum">     953 </span>            : </a>
+<a name="954"><span class="lineNum">     954 </span>            :   if (*regex == '^')</a>
+<a name="955"><span class="lineNum">     955 </span>            :     return MatchRegexAtHead(regex + 1, str);</a>
+<a name="956"><span class="lineNum">     956 </span>            : </a>
+<a name="957"><span class="lineNum">     957 </span>            :   // A successful match can be anywhere in str.</a>
+<a name="958"><span class="lineNum">     958 </span>            :   do {</a>
+<a name="959"><span class="lineNum">     959 </span>            :     if (MatchRegexAtHead(regex, str))</a>
+<a name="960"><span class="lineNum">     960 </span>            :       return true;</a>
+<a name="961"><span class="lineNum">     961 </span>            :   } while (*str++ != '\0');</a>
+<a name="962"><span class="lineNum">     962 </span>            :   return false;</a>
+<a name="963"><span class="lineNum">     963 </span>            : }</a>
+<a name="964"><span class="lineNum">     964 </span>            : </a>
+<a name="965"><span class="lineNum">     965 </span>            : // Implements the RE class.</a>
+<a name="966"><span class="lineNum">     966 </span>            : </a>
+<a name="967"><span class="lineNum">     967 </span>            : RE::~RE() {</a>
+<a name="968"><span class="lineNum">     968 </span>            :   free(const_cast&lt;char*&gt;(pattern_));</a>
+<a name="969"><span class="lineNum">     969 </span>            :   free(const_cast&lt;char*&gt;(full_pattern_));</a>
+<a name="970"><span class="lineNum">     970 </span>            : }</a>
+<a name="971"><span class="lineNum">     971 </span>            : </a>
+<a name="972"><span class="lineNum">     972 </span>            : // Returns true if and only if regular expression re matches the entire str.</a>
+<a name="973"><span class="lineNum">     973 </span>            : bool RE::FullMatch(const char* str, const RE&amp; re) {</a>
+<a name="974"><span class="lineNum">     974 </span>            :   return re.is_valid_ &amp;&amp; MatchRegexAnywhere(re.full_pattern_, str);</a>
+<a name="975"><span class="lineNum">     975 </span>            : }</a>
+<a name="976"><span class="lineNum">     976 </span>            : </a>
+<a name="977"><span class="lineNum">     977 </span>            : // Returns true if and only if regular expression re matches a substring of</a>
+<a name="978"><span class="lineNum">     978 </span>            : // str (including str itself).</a>
+<a name="979"><span class="lineNum">     979 </span>            : bool RE::PartialMatch(const char* str, const RE&amp; re) {</a>
+<a name="980"><span class="lineNum">     980 </span>            :   return re.is_valid_ &amp;&amp; MatchRegexAnywhere(re.pattern_, str);</a>
+<a name="981"><span class="lineNum">     981 </span>            : }</a>
+<a name="982"><span class="lineNum">     982 </span>            : </a>
+<a name="983"><span class="lineNum">     983 </span>            : // Initializes an RE from its string representation.</a>
+<a name="984"><span class="lineNum">     984 </span>            : void RE::Init(const char* regex) {</a>
+<a name="985"><span class="lineNum">     985 </span>            :   pattern_ = full_pattern_ = nullptr;</a>
+<a name="986"><span class="lineNum">     986 </span>            :   if (regex != nullptr) {</a>
+<a name="987"><span class="lineNum">     987 </span>            :     pattern_ = posix::StrDup(regex);</a>
+<a name="988"><span class="lineNum">     988 </span>            :   }</a>
+<a name="989"><span class="lineNum">     989 </span>            : </a>
+<a name="990"><span class="lineNum">     990 </span>            :   is_valid_ = ValidateRegex(regex);</a>
+<a name="991"><span class="lineNum">     991 </span>            :   if (!is_valid_) {</a>
+<a name="992"><span class="lineNum">     992 </span>            :     // No need to calculate the full pattern when the regex is invalid.</a>
+<a name="993"><span class="lineNum">     993 </span>            :     return;</a>
+<a name="994"><span class="lineNum">     994 </span>            :   }</a>
+<a name="995"><span class="lineNum">     995 </span>            : </a>
+<a name="996"><span class="lineNum">     996 </span>            :   const size_t len = strlen(regex);</a>
+<a name="997"><span class="lineNum">     997 </span>            :   // Reserves enough bytes to hold the regular expression used for a</a>
+<a name="998"><span class="lineNum">     998 </span>            :   // full match: we need space to prepend a '^', append a '$', and</a>
+<a name="999"><span class="lineNum">     999 </span>            :   // terminate the string with '\0'.</a>
+<a name="1000"><span class="lineNum">    1000 </span>            :   char* buffer = static_cast&lt;char*&gt;(malloc(len + 3));</a>
+<a name="1001"><span class="lineNum">    1001 </span>            :   full_pattern_ = buffer;</a>
+<a name="1002"><span class="lineNum">    1002 </span>            : </a>
+<a name="1003"><span class="lineNum">    1003 </span>            :   if (*regex != '^')</a>
+<a name="1004"><span class="lineNum">    1004 </span>            :     *buffer++ = '^';  // Makes sure full_pattern_ starts with '^'.</a>
+<a name="1005"><span class="lineNum">    1005 </span>            : </a>
+<a name="1006"><span class="lineNum">    1006 </span>            :   // We don't use snprintf or strncpy, as they trigger a warning when</a>
+<a name="1007"><span class="lineNum">    1007 </span>            :   // compiled with VC++ 8.0.</a>
+<a name="1008"><span class="lineNum">    1008 </span>            :   memcpy(buffer, regex, len);</a>
+<a name="1009"><span class="lineNum">    1009 </span>            :   buffer += len;</a>
+<a name="1010"><span class="lineNum">    1010 </span>            : </a>
+<a name="1011"><span class="lineNum">    1011 </span>            :   if (len == 0 || regex[len - 1] != '$')</a>
+<a name="1012"><span class="lineNum">    1012 </span>            :     *buffer++ = '$';  // Makes sure full_pattern_ ends with '$'.</a>
+<a name="1013"><span class="lineNum">    1013 </span>            : </a>
+<a name="1014"><span class="lineNum">    1014 </span>            :   *buffer = '\0';</a>
+<a name="1015"><span class="lineNum">    1015 </span>            : }</a>
+<a name="1016"><span class="lineNum">    1016 </span>            : </a>
+<a name="1017"><span class="lineNum">    1017 </span>            : #endif  // GTEST_USES_POSIX_RE</a>
+<a name="1018"><span class="lineNum">    1018 </span>            : </a>
+<a name="1019"><span class="lineNum">    1019 </span>            : const char kUnknownFile[] = &quot;unknown file&quot;;</a>
+<a name="1020"><span class="lineNum">    1020 </span>            : </a>
+<a name="1021"><span class="lineNum">    1021 </span>            : // Formats a source file path and a line number as they would appear</a>
+<a name="1022"><span class="lineNum">    1022 </span>            : // in an error message from the compiler used to compile this code.</a>
+<a name="1023"><span class="lineNum">    1023 </span><span class="lineNoCov">          0 : GTEST_API_ ::std::string FormatFileLocation(const char* file, int line) {</span></a>
+<a name="1024"><span class="lineNum">    1024 </span><span class="lineNoCov">          0 :   const std::string file_name(file == nullptr ? kUnknownFile : file);</span></a>
+<a name="1025"><span class="lineNum">    1025 </span>            : </a>
+<a name="1026"><span class="lineNum">    1026 </span><span class="lineNoCov">          0 :   if (line &lt; 0) {</span></a>
+<a name="1027"><span class="lineNum">    1027 </span><span class="lineNoCov">          0 :     return file_name + &quot;:&quot;;</span></a>
+<a name="1028"><span class="lineNum">    1028 </span>            :   }</a>
+<a name="1029"><span class="lineNum">    1029 </span>            : #ifdef _MSC_VER</a>
+<a name="1030"><span class="lineNum">    1030 </span>            :   return file_name + &quot;(&quot; + StreamableToString(line) + &quot;):&quot;;</a>
+<a name="1031"><span class="lineNum">    1031 </span>            : #else</a>
+<a name="1032"><span class="lineNum">    1032 </span><span class="lineNoCov">          0 :   return file_name + &quot;:&quot; + StreamableToString(line) + &quot;:&quot;;</span></a>
+<a name="1033"><span class="lineNum">    1033 </span>            : #endif  // _MSC_VER</a>
+<a name="1034"><span class="lineNum">    1034 </span>            : }</a>
+<a name="1035"><span class="lineNum">    1035 </span>            : </a>
+<a name="1036"><span class="lineNum">    1036 </span>            : // Formats a file location for compiler-independent XML output.</a>
+<a name="1037"><span class="lineNum">    1037 </span>            : // Although this function is not platform dependent, we put it next to</a>
+<a name="1038"><span class="lineNum">    1038 </span>            : // FormatFileLocation in order to contrast the two functions.</a>
+<a name="1039"><span class="lineNum">    1039 </span>            : // Note that FormatCompilerIndependentFileLocation() does NOT append colon</a>
+<a name="1040"><span class="lineNum">    1040 </span>            : // to the file location it produces, unlike FormatFileLocation().</a>
+<a name="1041"><span class="lineNum">    1041 </span><span class="lineNoCov">          0 : GTEST_API_ ::std::string FormatCompilerIndependentFileLocation(</span></a>
+<a name="1042"><span class="lineNum">    1042 </span>            :     const char* file, int line) {</a>
+<a name="1043"><span class="lineNum">    1043 </span><span class="lineNoCov">          0 :   const std::string file_name(file == nullptr ? kUnknownFile : file);</span></a>
+<a name="1044"><span class="lineNum">    1044 </span>            : </a>
+<a name="1045"><span class="lineNum">    1045 </span><span class="lineNoCov">          0 :   if (line &lt; 0)</span></a>
+<a name="1046"><span class="lineNum">    1046 </span><span class="lineNoCov">          0 :     return file_name;</span></a>
+<a name="1047"><span class="lineNum">    1047 </span>            :   else</a>
+<a name="1048"><span class="lineNum">    1048 </span><span class="lineNoCov">          0 :     return file_name + &quot;:&quot; + StreamableToString(line);</span></a>
+<a name="1049"><span class="lineNum">    1049 </span>            : }</a>
+<a name="1050"><span class="lineNum">    1050 </span>            : </a>
+<a name="1051"><span class="lineNum">    1051 </span><span class="lineNoCov">          0 : GTestLog::GTestLog(GTestLogSeverity severity, const char* file, int line)</span></a>
+<a name="1052"><span class="lineNum">    1052 </span><span class="lineNoCov">          0 :     : severity_(severity) {</span></a>
+<a name="1053"><span class="lineNum">    1053 </span><span class="lineNoCov">          0 :   const char* const marker =</span></a>
+<a name="1054"><span class="lineNum">    1054 </span>            :       severity == GTEST_INFO ?    &quot;[  INFO ]&quot; :</a>
+<a name="1055"><span class="lineNum">    1055 </span>            :       severity == GTEST_WARNING ? &quot;[WARNING]&quot; :</a>
+<a name="1056"><span class="lineNum">    1056 </span>            :       severity == GTEST_ERROR ?   &quot;[ ERROR ]&quot; : &quot;[ FATAL ]&quot;;</a>
+<a name="1057"><span class="lineNum">    1057 </span><span class="lineNoCov">          0 :   GetStream() &lt;&lt; ::std::endl &lt;&lt; marker &lt;&lt; &quot; &quot;</span></a>
+<a name="1058"><span class="lineNum">    1058 </span><span class="lineNoCov">          0 :               &lt;&lt; FormatFileLocation(file, line).c_str() &lt;&lt; &quot;: &quot;;</span></a>
+<a name="1059"><span class="lineNum">    1059 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="1060"><span class="lineNum">    1060 </span>            : </a>
+<a name="1061"><span class="lineNum">    1061 </span>            : // Flushes the buffers and, if severity is GTEST_FATAL, aborts the program.</a>
+<a name="1062"><span class="lineNum">    1062 </span><span class="lineNoCov">          0 : GTestLog::~GTestLog() {</span></a>
+<a name="1063"><span class="lineNum">    1063 </span><span class="lineNoCov">          0 :   GetStream() &lt;&lt; ::std::endl;</span></a>
+<a name="1064"><span class="lineNum">    1064 </span><span class="lineNoCov">          0 :   if (severity_ == GTEST_FATAL) {</span></a>
+<a name="1065"><span class="lineNum">    1065 </span><span class="lineNoCov">          0 :     fflush(stderr);</span></a>
+<a name="1066"><span class="lineNum">    1066 </span><span class="lineNoCov">          0 :     posix::Abort();</span></a>
+<a name="1067"><span class="lineNum">    1067 </span>            :   }</a>
+<a name="1068"><span class="lineNum">    1068 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="1069"><span class="lineNum">    1069 </span>            : </a>
+<a name="1070"><span class="lineNum">    1070 </span>            : // Disable Microsoft deprecation warnings for POSIX functions called from</a>
+<a name="1071"><span class="lineNum">    1071 </span>            : // this class (creat, dup, dup2, and close)</a>
+<a name="1072"><span class="lineNum">    1072 </span>            : GTEST_DISABLE_MSC_DEPRECATED_PUSH_()</a>
+<a name="1073"><span class="lineNum">    1073 </span>            : </a>
+<a name="1074"><span class="lineNum">    1074 </span>            : #if GTEST_HAS_STREAM_REDIRECTION</a>
+<a name="1075"><span class="lineNum">    1075 </span>            : </a>
+<a name="1076"><span class="lineNum">    1076 </span>            : // Object that captures an output stream (stdout/stderr).</a>
+<a name="1077"><span class="lineNum">    1077 </span>            : class CapturedStream {</a>
+<a name="1078"><span class="lineNum">    1078 </span>            :  public:</a>
+<a name="1079"><span class="lineNum">    1079 </span>            :   // The ctor redirects the stream to a temporary file.</a>
+<a name="1080"><span class="lineNum">    1080 </span><span class="lineNoCov">          0 :   explicit CapturedStream(int fd) : fd_(fd), uncaptured_fd_(dup(fd)) {</span></a>
+<a name="1081"><span class="lineNum">    1081 </span>            : # if GTEST_OS_WINDOWS</a>
+<a name="1082"><span class="lineNum">    1082 </span>            :     char temp_dir_path[MAX_PATH + 1] = { '\0' };  // NOLINT</a>
+<a name="1083"><span class="lineNum">    1083 </span>            :     char temp_file_path[MAX_PATH + 1] = { '\0' };  // NOLINT</a>
+<a name="1084"><span class="lineNum">    1084 </span>            : </a>
+<a name="1085"><span class="lineNum">    1085 </span>            :     ::GetTempPathA(sizeof(temp_dir_path), temp_dir_path);</a>
+<a name="1086"><span class="lineNum">    1086 </span>            :     const UINT success = ::GetTempFileNameA(temp_dir_path,</a>
+<a name="1087"><span class="lineNum">    1087 </span>            :                                             &quot;gtest_redir&quot;,</a>
+<a name="1088"><span class="lineNum">    1088 </span>            :                                             0,  // Generate unique file name.</a>
+<a name="1089"><span class="lineNum">    1089 </span>            :                                             temp_file_path);</a>
+<a name="1090"><span class="lineNum">    1090 </span>            :     GTEST_CHECK_(success != 0)</a>
+<a name="1091"><span class="lineNum">    1091 </span>            :         &lt;&lt; &quot;Unable to create a temporary file in &quot; &lt;&lt; temp_dir_path;</a>
+<a name="1092"><span class="lineNum">    1092 </span>            :     const int captured_fd = creat(temp_file_path, _S_IREAD | _S_IWRITE);</a>
+<a name="1093"><span class="lineNum">    1093 </span>            :     GTEST_CHECK_(captured_fd != -1) &lt;&lt; &quot;Unable to open temporary file &quot;</a>
+<a name="1094"><span class="lineNum">    1094 </span>            :                                     &lt;&lt; temp_file_path;</a>
+<a name="1095"><span class="lineNum">    1095 </span>            :     filename_ = temp_file_path;</a>
+<a name="1096"><span class="lineNum">    1096 </span>            : # else</a>
+<a name="1097"><span class="lineNum">    1097 </span>            :     // There's no guarantee that a test has write access to the current</a>
+<a name="1098"><span class="lineNum">    1098 </span>            :     // directory, so we create the temporary file in the /tmp directory</a>
+<a name="1099"><span class="lineNum">    1099 </span>            :     // instead. We use /tmp on most systems, and /sdcard on Android.</a>
+<a name="1100"><span class="lineNum">    1100 </span>            :     // That's because Android doesn't have /tmp.</a>
+<a name="1101"><span class="lineNum">    1101 </span>            : #  if GTEST_OS_LINUX_ANDROID</a>
+<a name="1102"><span class="lineNum">    1102 </span>            :     // Note: Android applications are expected to call the framework's</a>
+<a name="1103"><span class="lineNum">    1103 </span>            :     // Context.getExternalStorageDirectory() method through JNI to get</a>
+<a name="1104"><span class="lineNum">    1104 </span>            :     // the location of the world-writable SD Card directory. However,</a>
+<a name="1105"><span class="lineNum">    1105 </span>            :     // this requires a Context handle, which cannot be retrieved</a>
+<a name="1106"><span class="lineNum">    1106 </span>            :     // globally from native code. Doing so also precludes running the</a>
+<a name="1107"><span class="lineNum">    1107 </span>            :     // code as part of a regular standalone executable, which doesn't</a>
+<a name="1108"><span class="lineNum">    1108 </span>            :     // run in a Dalvik process (e.g. when running it through 'adb shell').</a>
+<a name="1109"><span class="lineNum">    1109 </span>            :     //</a>
+<a name="1110"><span class="lineNum">    1110 </span>            :     // The location /data/local/tmp is directly accessible from native code.</a>
+<a name="1111"><span class="lineNum">    1111 </span>            :     // '/sdcard' and other variants cannot be relied on, as they are not</a>
+<a name="1112"><span class="lineNum">    1112 </span>            :     // guaranteed to be mounted, or may have a delay in mounting.</a>
+<a name="1113"><span class="lineNum">    1113 </span>            :     char name_template[] = &quot;/data/local/tmp/gtest_captured_stream.XXXXXX&quot;;</a>
+<a name="1114"><span class="lineNum">    1114 </span>            : #  else</a>
+<a name="1115"><span class="lineNum">    1115 </span><span class="lineNoCov">          0 :     char name_template[] = &quot;/tmp/captured_stream.XXXXXX&quot;;</span></a>
+<a name="1116"><span class="lineNum">    1116 </span>            : #  endif  // GTEST_OS_LINUX_ANDROID</a>
+<a name="1117"><span class="lineNum">    1117 </span><span class="lineNoCov">          0 :     const int captured_fd = mkstemp(name_template);</span></a>
+<a name="1118"><span class="lineNum">    1118 </span><span class="lineNoCov">          0 :     if (captured_fd == -1) {</span></a>
+<a name="1119"><span class="lineNum">    1119 </span><span class="lineNoCov">          0 :       GTEST_LOG_(WARNING)</span></a>
+<a name="1120"><span class="lineNum">    1120 </span>            :           &lt;&lt; &quot;Failed to create tmp file &quot; &lt;&lt; name_template</a>
+<a name="1121"><span class="lineNum">    1121 </span><span class="lineNoCov">          0 :           &lt;&lt; &quot; for test; does the test have access to the /tmp directory?&quot;;</span></a>
+<a name="1122"><span class="lineNum">    1122 </span>            :     }</a>
+<a name="1123"><span class="lineNum">    1123 </span><span class="lineNoCov">          0 :     filename_ = name_template;</span></a>
+<a name="1124"><span class="lineNum">    1124 </span>            : # endif  // GTEST_OS_WINDOWS</a>
+<a name="1125"><span class="lineNum">    1125 </span><span class="lineNoCov">          0 :     fflush(nullptr);</span></a>
+<a name="1126"><span class="lineNum">    1126 </span><span class="lineNoCov">          0 :     dup2(captured_fd, fd_);</span></a>
+<a name="1127"><span class="lineNum">    1127 </span><span class="lineNoCov">          0 :     close(captured_fd);</span></a>
+<a name="1128"><span class="lineNum">    1128 </span><span class="lineNoCov">          0 :   }</span></a>
+<a name="1129"><span class="lineNum">    1129 </span>            : </a>
+<a name="1130"><span class="lineNum">    1130 </span><span class="lineNoCov">          0 :   ~CapturedStream() {</span></a>
+<a name="1131"><span class="lineNum">    1131 </span><span class="lineNoCov">          0 :     remove(filename_.c_str());</span></a>
+<a name="1132"><span class="lineNum">    1132 </span><span class="lineNoCov">          0 :   }</span></a>
+<a name="1133"><span class="lineNum">    1133 </span>            : </a>
+<a name="1134"><span class="lineNum">    1134 </span><span class="lineNoCov">          0 :   std::string GetCapturedString() {</span></a>
+<a name="1135"><span class="lineNum">    1135 </span><span class="lineNoCov">          0 :     if (uncaptured_fd_ != -1) {</span></a>
+<a name="1136"><span class="lineNum">    1136 </span>            :       // Restores the original stream.</a>
+<a name="1137"><span class="lineNum">    1137 </span><span class="lineNoCov">          0 :       fflush(nullptr);</span></a>
+<a name="1138"><span class="lineNum">    1138 </span><span class="lineNoCov">          0 :       dup2(uncaptured_fd_, fd_);</span></a>
+<a name="1139"><span class="lineNum">    1139 </span><span class="lineNoCov">          0 :       close(uncaptured_fd_);</span></a>
+<a name="1140"><span class="lineNum">    1140 </span><span class="lineNoCov">          0 :       uncaptured_fd_ = -1;</span></a>
+<a name="1141"><span class="lineNum">    1141 </span>            :     }</a>
+<a name="1142"><span class="lineNum">    1142 </span>            : </a>
+<a name="1143"><span class="lineNum">    1143 </span><span class="lineNoCov">          0 :     FILE* const file = posix::FOpen(filename_.c_str(), &quot;r&quot;);</span></a>
+<a name="1144"><span class="lineNum">    1144 </span><span class="lineNoCov">          0 :     if (file == nullptr) {</span></a>
+<a name="1145"><span class="lineNum">    1145 </span><span class="lineNoCov">          0 :       GTEST_LOG_(FATAL) &lt;&lt; &quot;Failed to open tmp file &quot; &lt;&lt; filename_</span></a>
+<a name="1146"><span class="lineNum">    1146 </span><span class="lineNoCov">          0 :                         &lt;&lt; &quot; for capturing stream.&quot;;</span></a>
+<a name="1147"><span class="lineNum">    1147 </span>            :     }</a>
+<a name="1148"><span class="lineNum">    1148 </span><span class="lineNoCov">          0 :     const std::string content = ReadEntireFile(file);</span></a>
+<a name="1149"><span class="lineNum">    1149 </span><span class="lineNoCov">          0 :     posix::FClose(file);</span></a>
+<a name="1150"><span class="lineNum">    1150 </span><span class="lineNoCov">          0 :     return content;</span></a>
+<a name="1151"><span class="lineNum">    1151 </span>            :   }</a>
+<a name="1152"><span class="lineNum">    1152 </span>            : </a>
+<a name="1153"><span class="lineNum">    1153 </span>            :  private:</a>
+<a name="1154"><span class="lineNum">    1154 </span>            :   const int fd_;  // A stream to capture.</a>
+<a name="1155"><span class="lineNum">    1155 </span>            :   int uncaptured_fd_;</a>
+<a name="1156"><span class="lineNum">    1156 </span>            :   // Name of the temporary file holding the stderr output.</a>
+<a name="1157"><span class="lineNum">    1157 </span>            :   ::std::string filename_;</a>
+<a name="1158"><span class="lineNum">    1158 </span>            : </a>
+<a name="1159"><span class="lineNum">    1159 </span>            :   GTEST_DISALLOW_COPY_AND_ASSIGN_(CapturedStream);</a>
+<a name="1160"><span class="lineNum">    1160 </span>            : };</a>
+<a name="1161"><span class="lineNum">    1161 </span>            : </a>
+<a name="1162"><span class="lineNum">    1162 </span>            : GTEST_DISABLE_MSC_DEPRECATED_POP_()</a>
+<a name="1163"><span class="lineNum">    1163 </span>            : </a>
+<a name="1164"><span class="lineNum">    1164 </span>            : static CapturedStream* g_captured_stderr = nullptr;</a>
+<a name="1165"><span class="lineNum">    1165 </span>            : static CapturedStream* g_captured_stdout = nullptr;</a>
+<a name="1166"><span class="lineNum">    1166 </span>            : </a>
+<a name="1167"><span class="lineNum">    1167 </span>            : // Starts capturing an output stream (stdout/stderr).</a>
+<a name="1168"><span class="lineNum">    1168 </span><span class="lineNoCov">          0 : static void CaptureStream(int fd, const char* stream_name,</span></a>
+<a name="1169"><span class="lineNum">    1169 </span>            :                           CapturedStream** stream) {</a>
+<a name="1170"><span class="lineNum">    1170 </span><span class="lineNoCov">          0 :   if (*stream != nullptr) {</span></a>
+<a name="1171"><span class="lineNum">    1171 </span><span class="lineNoCov">          0 :     GTEST_LOG_(FATAL) &lt;&lt; &quot;Only one &quot; &lt;&lt; stream_name</span></a>
+<a name="1172"><span class="lineNum">    1172 </span><span class="lineNoCov">          0 :                       &lt;&lt; &quot; capturer can exist at a time.&quot;;</span></a>
+<a name="1173"><span class="lineNum">    1173 </span>            :   }</a>
+<a name="1174"><span class="lineNum">    1174 </span><span class="lineNoCov">          0 :   *stream = new CapturedStream(fd);</span></a>
+<a name="1175"><span class="lineNum">    1175 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="1176"><span class="lineNum">    1176 </span>            : </a>
+<a name="1177"><span class="lineNum">    1177 </span>            : // Stops capturing the output stream and returns the captured string.</a>
+<a name="1178"><span class="lineNum">    1178 </span><span class="lineNoCov">          0 : static std::string GetCapturedStream(CapturedStream** captured_stream) {</span></a>
+<a name="1179"><span class="lineNum">    1179 </span><span class="lineNoCov">          0 :   const std::string content = (*captured_stream)-&gt;GetCapturedString();</span></a>
+<a name="1180"><span class="lineNum">    1180 </span>            : </a>
+<a name="1181"><span class="lineNum">    1181 </span><span class="lineNoCov">          0 :   delete *captured_stream;</span></a>
+<a name="1182"><span class="lineNum">    1182 </span><span class="lineNoCov">          0 :   *captured_stream = nullptr;</span></a>
+<a name="1183"><span class="lineNum">    1183 </span>            : </a>
+<a name="1184"><span class="lineNum">    1184 </span><span class="lineNoCov">          0 :   return content;</span></a>
+<a name="1185"><span class="lineNum">    1185 </span>            : }</a>
+<a name="1186"><span class="lineNum">    1186 </span>            : </a>
+<a name="1187"><span class="lineNum">    1187 </span>            : // Starts capturing stdout.</a>
+<a name="1188"><span class="lineNum">    1188 </span><span class="lineNoCov">          0 : void CaptureStdout() {</span></a>
+<a name="1189"><span class="lineNum">    1189 </span><span class="lineNoCov">          0 :   CaptureStream(kStdOutFileno, &quot;stdout&quot;, &amp;g_captured_stdout);</span></a>
+<a name="1190"><span class="lineNum">    1190 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="1191"><span class="lineNum">    1191 </span>            : </a>
+<a name="1192"><span class="lineNum">    1192 </span>            : // Starts capturing stderr.</a>
+<a name="1193"><span class="lineNum">    1193 </span><span class="lineNoCov">          0 : void CaptureStderr() {</span></a>
+<a name="1194"><span class="lineNum">    1194 </span><span class="lineNoCov">          0 :   CaptureStream(kStdErrFileno, &quot;stderr&quot;, &amp;g_captured_stderr);</span></a>
+<a name="1195"><span class="lineNum">    1195 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="1196"><span class="lineNum">    1196 </span>            : </a>
+<a name="1197"><span class="lineNum">    1197 </span>            : // Stops capturing stdout and returns the captured string.</a>
+<a name="1198"><span class="lineNum">    1198 </span><span class="lineNoCov">          0 : std::string GetCapturedStdout() {</span></a>
+<a name="1199"><span class="lineNum">    1199 </span><span class="lineNoCov">          0 :   return GetCapturedStream(&amp;g_captured_stdout);</span></a>
+<a name="1200"><span class="lineNum">    1200 </span>            : }</a>
+<a name="1201"><span class="lineNum">    1201 </span>            : </a>
+<a name="1202"><span class="lineNum">    1202 </span>            : // Stops capturing stderr and returns the captured string.</a>
+<a name="1203"><span class="lineNum">    1203 </span><span class="lineNoCov">          0 : std::string GetCapturedStderr() {</span></a>
+<a name="1204"><span class="lineNum">    1204 </span><span class="lineNoCov">          0 :   return GetCapturedStream(&amp;g_captured_stderr);</span></a>
+<a name="1205"><span class="lineNum">    1205 </span>            : }</a>
+<a name="1206"><span class="lineNum">    1206 </span>            : </a>
+<a name="1207"><span class="lineNum">    1207 </span>            : #endif  // GTEST_HAS_STREAM_REDIRECTION</a>
+<a name="1208"><span class="lineNum">    1208 </span>            : </a>
+<a name="1209"><span class="lineNum">    1209 </span>            : </a>
+<a name="1210"><span class="lineNum">    1210 </span>            : </a>
+<a name="1211"><span class="lineNum">    1211 </span>            : </a>
+<a name="1212"><span class="lineNum">    1212 </span>            : </a>
+<a name="1213"><span class="lineNum">    1213 </span><span class="lineNoCov">          0 : size_t GetFileSize(FILE* file) {</span></a>
+<a name="1214"><span class="lineNum">    1214 </span><span class="lineNoCov">          0 :   fseek(file, 0, SEEK_END);</span></a>
+<a name="1215"><span class="lineNum">    1215 </span><span class="lineNoCov">          0 :   return static_cast&lt;size_t&gt;(ftell(file));</span></a>
+<a name="1216"><span class="lineNum">    1216 </span>            : }</a>
+<a name="1217"><span class="lineNum">    1217 </span>            : </a>
+<a name="1218"><span class="lineNum">    1218 </span><span class="lineNoCov">          0 : std::string ReadEntireFile(FILE* file) {</span></a>
+<a name="1219"><span class="lineNum">    1219 </span><span class="lineNoCov">          0 :   const size_t file_size = GetFileSize(file);</span></a>
+<a name="1220"><span class="lineNum">    1220 </span><span class="lineNoCov">          0 :   char* const buffer = new char[file_size];</span></a>
+<a name="1221"><span class="lineNum">    1221 </span>            : </a>
+<a name="1222"><span class="lineNum">    1222 </span><span class="lineNoCov">          0 :   size_t bytes_last_read = 0;  // # of bytes read in the last fread()</span></a>
+<a name="1223"><span class="lineNum">    1223 </span><span class="lineNoCov">          0 :   size_t bytes_read = 0;       // # of bytes read so far</span></a>
+<a name="1224"><span class="lineNum">    1224 </span>            : </a>
+<a name="1225"><span class="lineNum">    1225 </span><span class="lineNoCov">          0 :   fseek(file, 0, SEEK_SET);</span></a>
+<a name="1226"><span class="lineNum">    1226 </span>            : </a>
+<a name="1227"><span class="lineNum">    1227 </span>            :   // Keeps reading the file until we cannot read further or the</a>
+<a name="1228"><span class="lineNum">    1228 </span>            :   // pre-determined file size is reached.</a>
+<a name="1229"><span class="lineNum">    1229 </span><span class="lineNoCov">          0 :   do {</span></a>
+<a name="1230"><span class="lineNum">    1230 </span><span class="lineNoCov">          0 :     bytes_last_read = fread(buffer+bytes_read, 1, file_size-bytes_read, file);</span></a>
+<a name="1231"><span class="lineNum">    1231 </span><span class="lineNoCov">          0 :     bytes_read += bytes_last_read;</span></a>
+<a name="1232"><span class="lineNum">    1232 </span><span class="lineNoCov">          0 :   } while (bytes_last_read &gt; 0 &amp;&amp; bytes_read &lt; file_size);</span></a>
+<a name="1233"><span class="lineNum">    1233 </span>            : </a>
+<a name="1234"><span class="lineNum">    1234 </span><span class="lineNoCov">          0 :   const std::string content(buffer, bytes_read);</span></a>
+<a name="1235"><span class="lineNum">    1235 </span><span class="lineNoCov">          0 :   delete[] buffer;</span></a>
+<a name="1236"><span class="lineNum">    1236 </span>            : </a>
+<a name="1237"><span class="lineNum">    1237 </span><span class="lineNoCov">          0 :   return content;</span></a>
+<a name="1238"><span class="lineNum">    1238 </span>            : }</a>
+<a name="1239"><span class="lineNum">    1239 </span>            : </a>
+<a name="1240"><span class="lineNum">    1240 </span>            : #if GTEST_HAS_DEATH_TEST</a>
+<a name="1241"><span class="lineNum">    1241 </span>            : static const std::vector&lt;std::string&gt;* g_injected_test_argvs =</a>
+<a name="1242"><span class="lineNum">    1242 </span>            :     nullptr;  // Owned.</a>
+<a name="1243"><span class="lineNum">    1243 </span>            : </a>
+<a name="1244"><span class="lineNum">    1244 </span><span class="lineNoCov">          0 : std::vector&lt;std::string&gt; GetInjectableArgvs() {</span></a>
+<a name="1245"><span class="lineNum">    1245 </span><span class="lineNoCov">          0 :   if (g_injected_test_argvs != nullptr) {</span></a>
+<a name="1246"><span class="lineNum">    1246 </span><span class="lineNoCov">          0 :     return *g_injected_test_argvs;</span></a>
+<a name="1247"><span class="lineNum">    1247 </span>            :   }</a>
+<a name="1248"><span class="lineNum">    1248 </span><span class="lineNoCov">          0 :   return GetArgvs();</span></a>
+<a name="1249"><span class="lineNum">    1249 </span>            : }</a>
+<a name="1250"><span class="lineNum">    1250 </span>            : </a>
+<a name="1251"><span class="lineNum">    1251 </span><span class="lineNoCov">          0 : void SetInjectableArgvs(const std::vector&lt;std::string&gt;* new_argvs) {</span></a>
+<a name="1252"><span class="lineNum">    1252 </span><span class="lineNoCov">          0 :   if (g_injected_test_argvs != new_argvs) delete g_injected_test_argvs;</span></a>
+<a name="1253"><span class="lineNum">    1253 </span><span class="lineNoCov">          0 :   g_injected_test_argvs = new_argvs;</span></a>
+<a name="1254"><span class="lineNum">    1254 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="1255"><span class="lineNum">    1255 </span>            : </a>
+<a name="1256"><span class="lineNum">    1256 </span><span class="lineNoCov">          0 : void SetInjectableArgvs(const std::vector&lt;std::string&gt;&amp; new_argvs) {</span></a>
+<a name="1257"><span class="lineNum">    1257 </span><span class="lineNoCov">          0 :   SetInjectableArgvs(</span></a>
+<a name="1258"><span class="lineNum">    1258 </span><span class="lineNoCov">          0 :       new std::vector&lt;std::string&gt;(new_argvs.begin(), new_argvs.end()));</span></a>
+<a name="1259"><span class="lineNum">    1259 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="1260"><span class="lineNum">    1260 </span>            : </a>
+<a name="1261"><span class="lineNum">    1261 </span><span class="lineNoCov">          0 : void ClearInjectableArgvs() {</span></a>
+<a name="1262"><span class="lineNum">    1262 </span><span class="lineNoCov">          0 :   delete g_injected_test_argvs;</span></a>
+<a name="1263"><span class="lineNum">    1263 </span><span class="lineNoCov">          0 :   g_injected_test_argvs = nullptr;</span></a>
+<a name="1264"><span class="lineNum">    1264 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="1265"><span class="lineNum">    1265 </span>            : #endif  // GTEST_HAS_DEATH_TEST</a>
+<a name="1266"><span class="lineNum">    1266 </span>            : </a>
+<a name="1267"><span class="lineNum">    1267 </span>            : #if GTEST_OS_WINDOWS_MOBILE</a>
+<a name="1268"><span class="lineNum">    1268 </span>            : namespace posix {</a>
+<a name="1269"><span class="lineNum">    1269 </span>            : void Abort() {</a>
+<a name="1270"><span class="lineNum">    1270 </span>            :   DebugBreak();</a>
+<a name="1271"><span class="lineNum">    1271 </span>            :   TerminateProcess(GetCurrentProcess(), 1);</a>
+<a name="1272"><span class="lineNum">    1272 </span>            : }</a>
+<a name="1273"><span class="lineNum">    1273 </span>            : }  // namespace posix</a>
+<a name="1274"><span class="lineNum">    1274 </span>            : #endif  // GTEST_OS_WINDOWS_MOBILE</a>
+<a name="1275"><span class="lineNum">    1275 </span>            : </a>
+<a name="1276"><span class="lineNum">    1276 </span>            : // Returns the name of the environment variable corresponding to the</a>
+<a name="1277"><span class="lineNum">    1277 </span>            : // given flag.  For example, FlagToEnvVar(&quot;foo&quot;) will return</a>
+<a name="1278"><span class="lineNum">    1278 </span>            : // &quot;GTEST_FOO&quot; in the open-source version.</a>
+<a name="1279"><span class="lineNum">    1279 </span><span class="lineCov">         80 : static std::string FlagToEnvVar(const char* flag) {</span></a>
+<a name="1280"><span class="lineNum">    1280 </span>            :   const std::string full_flag =</a>
+<a name="1281"><span class="lineNum">    1281 </span><span class="lineCov">        160 :       (Message() &lt;&lt; GTEST_FLAG_PREFIX_ &lt;&lt; flag).GetString();</span></a>
+<a name="1282"><span class="lineNum">    1282 </span>            : </a>
+<a name="1283"><span class="lineNum">    1283 </span><span class="lineCov">        160 :   Message env_var;</span></a>
+<a name="1284"><span class="lineNum">    1284 </span><span class="lineCov">       1568 :   for (size_t i = 0; i != full_flag.length(); i++) {</span></a>
+<a name="1285"><span class="lineNum">    1285 </span><span class="lineCov">       1488 :     env_var &lt;&lt; ToUpper(full_flag.c_str()[i]);</span></a>
+<a name="1286"><span class="lineNum">    1286 </span>            :   }</a>
+<a name="1287"><span class="lineNum">    1287 </span>            : </a>
+<a name="1288"><span class="lineNum">    1288 </span><span class="lineCov">        160 :   return env_var.GetString();</span></a>
+<a name="1289"><span class="lineNum">    1289 </span>            : }</a>
+<a name="1290"><span class="lineNum">    1290 </span>            : </a>
+<a name="1291"><span class="lineNum">    1291 </span>            : // Parses 'str' for a 32-bit signed integer.  If successful, writes</a>
+<a name="1292"><span class="lineNum">    1292 </span>            : // the result to *value and returns true; otherwise leaves *value</a>
+<a name="1293"><span class="lineNum">    1293 </span>            : // unchanged and returns false.</a>
+<a name="1294"><span class="lineNum">    1294 </span><span class="lineNoCov">          0 : bool ParseInt32(const Message&amp; src_text, const char* str, int32_t* value) {</span></a>
+<a name="1295"><span class="lineNum">    1295 </span>            :   // Parses the environment variable as a decimal integer.</a>
+<a name="1296"><span class="lineNum">    1296 </span><span class="lineNoCov">          0 :   char* end = nullptr;</span></a>
+<a name="1297"><span class="lineNum">    1297 </span><span class="lineNoCov">          0 :   const long long_value = strtol(str, &amp;end, 10);  // NOLINT</span></a>
+<a name="1298"><span class="lineNum">    1298 </span>            : </a>
+<a name="1299"><span class="lineNum">    1299 </span>            :   // Has strtol() consumed all characters in the string?</a>
+<a name="1300"><span class="lineNum">    1300 </span><span class="lineNoCov">          0 :   if (*end != '\0') {</span></a>
+<a name="1301"><span class="lineNum">    1301 </span>            :     // No - an invalid character was encountered.</a>
+<a name="1302"><span class="lineNum">    1302 </span><span class="lineNoCov">          0 :     Message msg;</span></a>
+<a name="1303"><span class="lineNum">    1303 </span><span class="lineNoCov">          0 :     msg &lt;&lt; &quot;WARNING: &quot; &lt;&lt; src_text</span></a>
+<a name="1304"><span class="lineNum">    1304 </span><span class="lineNoCov">          0 :         &lt;&lt; &quot; is expected to be a 32-bit integer, but actually&quot;</span></a>
+<a name="1305"><span class="lineNum">    1305 </span><span class="lineNoCov">          0 :         &lt;&lt; &quot; has value \&quot;&quot; &lt;&lt; str &lt;&lt; &quot;\&quot;.\n&quot;;</span></a>
+<a name="1306"><span class="lineNum">    1306 </span><span class="lineNoCov">          0 :     printf(&quot;%s&quot;, msg.GetString().c_str());</span></a>
+<a name="1307"><span class="lineNum">    1307 </span><span class="lineNoCov">          0 :     fflush(stdout);</span></a>
+<a name="1308"><span class="lineNum">    1308 </span><span class="lineNoCov">          0 :     return false;</span></a>
+<a name="1309"><span class="lineNum">    1309 </span>            :   }</a>
+<a name="1310"><span class="lineNum">    1310 </span>            : </a>
+<a name="1311"><span class="lineNum">    1311 </span>            :   // Is the parsed value in the range of an int32_t?</a>
+<a name="1312"><span class="lineNum">    1312 </span><span class="lineNoCov">          0 :   const auto result = static_cast&lt;int32_t&gt;(long_value);</span></a>
+<a name="1313"><span class="lineNum">    1313 </span><span class="lineNoCov">          0 :   if (long_value == LONG_MAX || long_value == LONG_MIN ||</span></a>
+<a name="1314"><span class="lineNum">    1314 </span>            :       // The parsed value overflows as a long.  (strtol() returns</a>
+<a name="1315"><span class="lineNum">    1315 </span>            :       // LONG_MAX or LONG_MIN when the input overflows.)</a>
+<a name="1316"><span class="lineNum">    1316 </span><span class="lineNoCov">          0 :       result != long_value</span></a>
+<a name="1317"><span class="lineNum">    1317 </span>            :       // The parsed value overflows as an int32_t.</a>
+<a name="1318"><span class="lineNum">    1318 </span>            :       ) {</a>
+<a name="1319"><span class="lineNum">    1319 </span><span class="lineNoCov">          0 :     Message msg;</span></a>
+<a name="1320"><span class="lineNum">    1320 </span><span class="lineNoCov">          0 :     msg &lt;&lt; &quot;WARNING: &quot; &lt;&lt; src_text</span></a>
+<a name="1321"><span class="lineNum">    1321 </span><span class="lineNoCov">          0 :         &lt;&lt; &quot; is expected to be a 32-bit integer, but actually&quot;</span></a>
+<a name="1322"><span class="lineNum">    1322 </span><span class="lineNoCov">          0 :         &lt;&lt; &quot; has value &quot; &lt;&lt; str &lt;&lt; &quot;, which overflows.\n&quot;;</span></a>
+<a name="1323"><span class="lineNum">    1323 </span><span class="lineNoCov">          0 :     printf(&quot;%s&quot;, msg.GetString().c_str());</span></a>
+<a name="1324"><span class="lineNum">    1324 </span><span class="lineNoCov">          0 :     fflush(stdout);</span></a>
+<a name="1325"><span class="lineNum">    1325 </span><span class="lineNoCov">          0 :     return false;</span></a>
+<a name="1326"><span class="lineNum">    1326 </span>            :   }</a>
+<a name="1327"><span class="lineNum">    1327 </span>            : </a>
+<a name="1328"><span class="lineNum">    1328 </span><span class="lineNoCov">          0 :   *value = result;</span></a>
+<a name="1329"><span class="lineNum">    1329 </span><span class="lineNoCov">          0 :   return true;</span></a>
+<a name="1330"><span class="lineNum">    1330 </span>            : }</a>
+<a name="1331"><span class="lineNum">    1331 </span>            : </a>
+<a name="1332"><span class="lineNum">    1332 </span>            : // Reads and returns the Boolean environment variable corresponding to</a>
+<a name="1333"><span class="lineNum">    1333 </span>            : // the given flag; if it's not set, returns default_value.</a>
+<a name="1334"><span class="lineNum">    1334 </span>            : //</a>
+<a name="1335"><span class="lineNum">    1335 </span>            : // The value is considered true if and only if it's not &quot;0&quot;.</a>
+<a name="1336"><span class="lineNum">    1336 </span><span class="lineCov">         44 : bool BoolFromGTestEnv(const char* flag, bool default_value) {</span></a>
+<a name="1337"><span class="lineNum">    1337 </span>            : #if defined(GTEST_GET_BOOL_FROM_ENV_)</a>
+<a name="1338"><span class="lineNum">    1338 </span>            :   return GTEST_GET_BOOL_FROM_ENV_(flag, default_value);</a>
+<a name="1339"><span class="lineNum">    1339 </span>            : #else</a>
+<a name="1340"><span class="lineNum">    1340 </span><span class="lineCov">         44 :   const std::string env_var = FlagToEnvVar(flag);</span></a>
+<a name="1341"><span class="lineNum">    1341 </span><span class="lineCov">         44 :   const char* const string_value = posix::GetEnv(env_var.c_str());</span></a>
+<a name="1342"><span class="lineNum">    1342 </span><span class="lineCov">         44 :   return string_value == nullptr ? default_value</span></a>
+<a name="1343"><span class="lineNum">    1343 </span><span class="lineCov">         88 :                                  : strcmp(string_value, &quot;0&quot;) != 0;</span></a>
+<a name="1344"><span class="lineNum">    1344 </span>            : #endif  // defined(GTEST_GET_BOOL_FROM_ENV_)</a>
+<a name="1345"><span class="lineNum">    1345 </span>            : }</a>
+<a name="1346"><span class="lineNum">    1346 </span>            : </a>
+<a name="1347"><span class="lineNum">    1347 </span>            : // Reads and returns a 32-bit integer stored in the environment</a>
+<a name="1348"><span class="lineNum">    1348 </span>            : // variable corresponding to the given flag; if it isn't set or</a>
+<a name="1349"><span class="lineNum">    1349 </span>            : // doesn't represent a valid 32-bit integer, returns default_value.</a>
+<a name="1350"><span class="lineNum">    1350 </span><span class="lineCov">         12 : int32_t Int32FromGTestEnv(const char* flag, int32_t default_value) {</span></a>
+<a name="1351"><span class="lineNum">    1351 </span>            : #if defined(GTEST_GET_INT32_FROM_ENV_)</a>
+<a name="1352"><span class="lineNum">    1352 </span>            :   return GTEST_GET_INT32_FROM_ENV_(flag, default_value);</a>
+<a name="1353"><span class="lineNum">    1353 </span>            : #else</a>
+<a name="1354"><span class="lineNum">    1354 </span><span class="lineCov">         24 :   const std::string env_var = FlagToEnvVar(flag);</span></a>
+<a name="1355"><span class="lineNum">    1355 </span><span class="lineCov">         12 :   const char* const string_value = posix::GetEnv(env_var.c_str());</span></a>
+<a name="1356"><span class="lineNum">    1356 </span><span class="lineCov">         12 :   if (string_value == nullptr) {</span></a>
+<a name="1357"><span class="lineNum">    1357 </span>            :     // The environment variable is not set.</a>
+<a name="1358"><span class="lineNum">    1358 </span><span class="lineCov">         12 :     return default_value;</span></a>
+<a name="1359"><span class="lineNum">    1359 </span>            :   }</a>
+<a name="1360"><span class="lineNum">    1360 </span>            : </a>
+<a name="1361"><span class="lineNum">    1361 </span><span class="lineNoCov">          0 :   int32_t result = default_value;</span></a>
+<a name="1362"><span class="lineNum">    1362 </span><span class="lineNoCov">          0 :   if (!ParseInt32(Message() &lt;&lt; &quot;Environment variable &quot; &lt;&lt; env_var,</span></a>
+<a name="1363"><span class="lineNum">    1363 </span>            :                   string_value, &amp;result)) {</a>
+<a name="1364"><span class="lineNum">    1364 </span><span class="lineNoCov">          0 :     printf(&quot;The default value %s is used.\n&quot;,</span></a>
+<a name="1365"><span class="lineNum">    1365 </span><span class="lineNoCov">          0 :            (Message() &lt;&lt; default_value).GetString().c_str());</span></a>
+<a name="1366"><span class="lineNum">    1366 </span><span class="lineNoCov">          0 :     fflush(stdout);</span></a>
+<a name="1367"><span class="lineNum">    1367 </span><span class="lineNoCov">          0 :     return default_value;</span></a>
+<a name="1368"><span class="lineNum">    1368 </span>            :   }</a>
+<a name="1369"><span class="lineNum">    1369 </span>            : </a>
+<a name="1370"><span class="lineNum">    1370 </span><span class="lineNoCov">          0 :   return result;</span></a>
+<a name="1371"><span class="lineNum">    1371 </span>            : #endif  // defined(GTEST_GET_INT32_FROM_ENV_)</a>
+<a name="1372"><span class="lineNum">    1372 </span>            : }</a>
+<a name="1373"><span class="lineNum">    1373 </span>            : </a>
+<a name="1374"><span class="lineNum">    1374 </span>            : // As a special case for the 'output' flag, if GTEST_OUTPUT is not</a>
+<a name="1375"><span class="lineNum">    1375 </span>            : // set, we look for XML_OUTPUT_FILE, which is set by the Bazel build</a>
+<a name="1376"><span class="lineNum">    1376 </span>            : // system.  The value of XML_OUTPUT_FILE is a filename without the</a>
+<a name="1377"><span class="lineNum">    1377 </span>            : // &quot;xml:&quot; prefix of GTEST_OUTPUT.</a>
+<a name="1378"><span class="lineNum">    1378 </span>            : // Note that this is meant to be called at the call site so it does</a>
+<a name="1379"><span class="lineNum">    1379 </span>            : // not check that the flag is 'output'</a>
+<a name="1380"><span class="lineNum">    1380 </span>            : // In essence this checks an env variable called XML_OUTPUT_FILE</a>
+<a name="1381"><span class="lineNum">    1381 </span>            : // and if it is set we prepend &quot;xml:&quot; to its value, if it not set we return &quot;&quot;</a>
+<a name="1382"><span class="lineNum">    1382 </span><span class="lineCov">          4 : std::string OutputFlagAlsoCheckEnvVar(){</span></a>
+<a name="1383"><span class="lineNum">    1383 </span><span class="lineCov">          4 :   std::string default_value_for_output_flag = &quot;&quot;;</span></a>
+<a name="1384"><span class="lineNum">    1384 </span><span class="lineCov">          4 :   const char* xml_output_file_env = posix::GetEnv(&quot;XML_OUTPUT_FILE&quot;);</span></a>
+<a name="1385"><span class="lineNum">    1385 </span><span class="lineCov">          4 :   if (nullptr != xml_output_file_env) {</span></a>
+<a name="1386"><span class="lineNum">    1386 </span><span class="lineNoCov">          0 :     default_value_for_output_flag = std::string(&quot;xml:&quot;) + xml_output_file_env;</span></a>
+<a name="1387"><span class="lineNum">    1387 </span>            :   }</a>
+<a name="1388"><span class="lineNum">    1388 </span><span class="lineCov">          4 :   return default_value_for_output_flag;</span></a>
+<a name="1389"><span class="lineNum">    1389 </span>            : }</a>
+<a name="1390"><span class="lineNum">    1390 </span>            : </a>
+<a name="1391"><span class="lineNum">    1391 </span>            : // Reads and returns the string environment variable corresponding to</a>
+<a name="1392"><span class="lineNum">    1392 </span>            : // the given flag; if it's not set, returns default_value.</a>
+<a name="1393"><span class="lineNum">    1393 </span><span class="lineCov">         24 : const char* StringFromGTestEnv(const char* flag, const char* default_value) {</span></a>
+<a name="1394"><span class="lineNum">    1394 </span>            : #if defined(GTEST_GET_STRING_FROM_ENV_)</a>
+<a name="1395"><span class="lineNum">    1395 </span>            :   return GTEST_GET_STRING_FROM_ENV_(flag, default_value);</a>
+<a name="1396"><span class="lineNum">    1396 </span>            : #else</a>
+<a name="1397"><span class="lineNum">    1397 </span><span class="lineCov">         24 :   const std::string env_var = FlagToEnvVar(flag);</span></a>
+<a name="1398"><span class="lineNum">    1398 </span><span class="lineCov">         24 :   const char* const value = posix::GetEnv(env_var.c_str());</span></a>
+<a name="1399"><span class="lineNum">    1399 </span><span class="lineCov">         48 :   return value == nullptr ? default_value : value;</span></a>
+<a name="1400"><span class="lineNum">    1400 </span>            : #endif  // defined(GTEST_GET_STRING_FROM_ENV_)</a>
+<a name="1401"><span class="lineNum">    1401 </span>            : }</a>
+<a name="1402"><span class="lineNum">    1402 </span>            : </a>
+<a name="1403"><span class="lineNum">    1403 </span>            : }  // namespace internal</a>
+<a name="1404"><span class="lineNum">    1404 </span>            : }  // namespace testing</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
