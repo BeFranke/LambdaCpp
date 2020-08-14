@@ -14,8 +14,6 @@
  * (e.g. ((f) x) and "Variable" (e.g. x).
  * The important polymorphic methods are Expression::beta_reduce for invoking
  * one step of beta reduction, Expression::alpha_convert for alpha conversion.
- * The methods Expression::check_for_name_clash and Expression::substitute are
- * for internal use.
  */
 
 // forward declarations
@@ -52,6 +50,7 @@ class Expression: public std::enable_shared_from_this<Expression> {
 
     virtual ~Expression() {}
 
+    /** prints itself to ostream, returns osstream **/
     virtual std::ostream& print(std::ostream&) const = 0;
 };
 
@@ -94,9 +93,15 @@ class Variable final : public Expression {
     }
     bool check_for_name_clash(const std::string& new_name) const noexcept
         override {
+	/**
+	 * returns true if new_name matches this->name
+	 */
         return this->name == new_name;
     }
-    std::ostream& print(std::ostream& os) const override{
+    std::ostream& print(std::ostream& os) const override {
+	/**
+	 * used for output
+	 */
         return os << name;
     }
 
@@ -124,8 +129,8 @@ class Lambda final : public Expression {
     Expression_ptr substitute(Variable_ptr e1, Expression_ptr e2) const
         override {
         /**
-         * if e1 matches head, binds head and returns body
-         * else passes binding on to body
+         * if e1 matches head, subsitute head and returns body
+         * else passes substitute on to body
          */
         auto res = body->substitute(e1, e2);
         if(e1 == head) return res;
@@ -164,11 +169,17 @@ class Lambda final : public Expression {
     }
     bool check_for_name_clash(const std::string& new_name) const noexcept
         override {
+	/**
+	 * checks if new_name is already used in the expression
+	 */
         bool clash_head = head->check_for_name_clash(new_name);
         bool clash_body = body->check_for_name_clash(new_name);
         return clash_body && !clash_head;
     }
     std::ostream& print(std::ostream& os) const override {
+	/**
+	 * used for output
+	 */
         return os << "\\" << *head << " . " << *body;
     }
   private:
@@ -189,7 +200,7 @@ class Application final : public Expression {
     Expression_ptr substitute(Variable_ptr e_old, Expression_ptr e_new)
         const override {
         /**
-         * binds e_old to e_new in both expressions of this application
+         * substitutes e_old for e_new in both expressions of this application
          * returns new Expression
          */
 
@@ -203,7 +214,9 @@ class Application final : public Expression {
         /**
          * invokes a beta reduction:
          * if function is a lambda, binds second to the bound variable in
-         * function otherwise, passes beta-reduction on to function and argument
+         * function otherwise, passes beta-reduction on to function
+	 * if function can not be reduced further, passes beta-reduction
+	 * to argument (Normal order reduction)
          */
         if(Lambda_ptr lbd = std::dynamic_pointer_cast<const Lambda>(function);
             lbd)
@@ -233,16 +246,28 @@ class Application final : public Expression {
     }
     bool check_for_name_clash(const std::string& new_name) const noexcept
         override {
+	/**
+	 * checks if either function or argument contain a avriable with name new_name
+	 */
         return function->check_for_name_clash(new_name) ||
                argument->check_for_name_clash(new_name);
     }
     Expression_ptr get_function() const noexcept {
+	/**
+	 * getter for function field
+	 */
         return function;
     }
     Expression_ptr get_argument() const noexcept {
+	/**
+	 * getter for argument field
+	 */
         return argument;
     }
     std::ostream& print(std::ostream& os) const override {
+	/**
+	 * used for output
+	 */
         return os << "(" << *function << ") " << *argument;
     }
   private:

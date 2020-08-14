@@ -41,11 +41,13 @@ int main() {
         try {
             Program p = parser.statement();
             if(!bool(p)) {
+		// if an empty program was returned, the user entered "?"
                 flush();
                 continue;
             }
             auto com = p.last_command();
             auto ex = com.execute();
+	    // register last command as "Ans"
             parser.program["Ans"] = com;
             std::cout << *ex << std::endl;
         }

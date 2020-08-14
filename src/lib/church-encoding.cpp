@@ -2,7 +2,7 @@
 
 /**
  * ABSTRACT:
- * This file is used for encoding natural numbers into lambda calculus.
+ * This file is used for encoding natural numbers and booleansand booleans into lambda calculus.
  * This also represents a possible extension to the framework: simple
  * mathematical operations could be supported
  */
@@ -21,6 +21,9 @@ Lambda_ptr church_encode(unsigned int n) {
     return std::make_shared<Lambda>(f, tmp);
 }
 
+/**
+ * encodes true, lambda a . lambda b . a
+ */
 Lambda_ptr church_true() {
     Variable_ptr a = std::make_shared<Variable>("a", true);
     Variable_ptr b = std::make_shared<Variable>("b", true);
@@ -29,6 +32,9 @@ Lambda_ptr church_true() {
     return outer;
 }
 
+/**
+ * encodes false, lambda a . lambda b . b
+ */
 Lambda_ptr church_false() {
     Variable_ptr a = std::make_shared<Variable>("a", true);
     Variable_ptr b = std::make_shared<Variable>("b", true);

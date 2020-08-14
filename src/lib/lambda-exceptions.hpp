@@ -5,7 +5,7 @@
 
 /**
  * ABSTRACT: This header contains all kinds of exceptions that could be thrown
- * in the other lib
+ * in the other modules
  */
 
 static const std::string SYNTAX_HEAD = "SyntaxError: ";
@@ -37,7 +37,7 @@ class NameClash : public LambdaException {
     }
 };
 
-class InvalidReservedSymbol : public std::exception {
+class InvalidReservedSymbol : public LambdaException {
   public:
     InvalidReservedSymbol(std::string txt) : txt(txt) {}
     const char* what() const noexcept override {

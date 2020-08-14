@@ -68,6 +68,9 @@ class Token {
 
 template <typename SymbolClass = Symbol>
 inline bool is_special_character(char c) noexcept {
+    /**
+     * returns true if c is a special character of the lambda-mini-language
+     */
     switch(c) {
         case static_cast<int>(SymbolClass::lambda):
         case static_cast<int>(SymbolClass::body_start):
@@ -139,6 +142,8 @@ class Tokenizer {
                     break;
                 }
                 else if(c == static_cast<char>(SymbolClass::comment)) {
+		    // sets comment to true, which results in all further
+		    // symbols being ignored until newline is encountered
                     comment = true;
                 }
                 else if(c == static_cast<char>(SymbolClass::assignment)) {
@@ -163,6 +168,8 @@ class Tokenizer {
             else {
                 if(comment) {
                     if(c == '\n') {
+			// resets the comment variable so that charcters
+			// get parsed once again
                         comment = false;
                         count = 0;
                     }
@@ -175,6 +182,9 @@ class Tokenizer {
                     update_token();
                 }
                 else if(is_special_character<SymbolClass>(c)) {
+		    // a special character always marks the beginning
+		    // of a new token, therefore we put it back and
+		    // return the current accumulator
                     is.unget();
                     break;
                 }
@@ -185,6 +195,8 @@ class Tokenizer {
             ++count;
         }
         if(result.tok == TokenType::identifier && is_reserved(result.str)) {
+	    // reserved symbol hook: if an identifier has been reserved,
+	    // execute the registered function and return an empty Token
             reserved_symbols[result.str]();
             return Token();
         }
@@ -197,6 +209,11 @@ class Tokenizer {
     }
     void register_symbol(std::string symbol,
                          std::function<void()> func) {
+	/**
+	 * registers symbol with the reserved-symbol mechanism:
+	 * when symbol is encountered during the tokenization,
+	 * execute func
+	 */
         if(!(islower(symbol[0]) || symbol.size() == 1))
             throw InvalidReservedSymbol(
                     "Only lowercase words or single characters may be reserved"
@@ -204,6 +221,7 @@ class Tokenizer {
         reserved_symbols[symbol] = func;
     }
     void unregister_symbol(std::string symbol) {
+	// deletes symbol from the reserved symbols
         reserved_symbols.erase(symbol);
     }
   private:

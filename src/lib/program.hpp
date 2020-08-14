@@ -40,6 +40,10 @@ class Conversion {
 };
 class AlphaConversion final : public Conversion {
   public:
+    /**
+     * old_name: name of the variable that should be renamed
+     * new_name: new name of this variable after conversion
+     */
     AlphaConversion(std::string& old_name, std::string& new_name) :
         old_name(old_name), new_name(new_name) {}
     Expression_ptr execute(Expression_ptr ex) const override {
@@ -92,24 +96,36 @@ class Command {
 class Program {
     /**
      * Container for a std::unordered_map of symbols that have been assigned a
-     * name, and a command that is the "resulting" (usually last) command of
-     * the input
+     * name. The field last_key stores the special key that is used to store the
+     * last command executed
      */
   public:
     Program() : known_symbols() {}
     inline Command& last_command() {
+	/**
+	 * returns last encountered command
+	 */
         return known_symbols[last_key];
     }
     Command& operator[](const std::string& key) {
+	/**
+	 * random access to all known symbols
+	 */
         return known_symbols[key];
     }
     Command& operator[](std::string& key) {
         return known_symbols[key];
     }
     inline bool contains(const std::string key) const {
+	/**
+	 * returns true if key is the name of a named command
+	 */
         return known_symbols.find(key) != known_symbols.end();
     }
     inline explicit operator bool() {
+	/**
+	 * simple check if any known symbols exist
+	 */
         return !known_symbols.empty();
     }
     static const std::string last_key;

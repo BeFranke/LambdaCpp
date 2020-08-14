@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <cassert>
 #include <string>
-#include <set>
 #include "lambda-exceptions.hpp"
 #include "lambda-struct.hpp"
 #include "tokenizer.hpp"
@@ -29,9 +28,18 @@
 // (here, this is cur)
 class Parser {
   public:
+    /**
+     * in: std::istream to parse from
+     * max_iter: maximum iterations at which beta reduction is stopped, 
+     * 0 for no limit
+     */
     Parser(std::istream& in, unsigned long max_iter=0)
             : program(), tz(in), bound(), max_iter(max_iter) {}
     Program statement() {
+	/**
+	 * tries to parse one statement from the input stream
+	 * returns program-object on sucess
+	 */
         cur = tz.get();
         if(!cur) return program;
         if(cur.tok == TokenType::name_define) {
@@ -47,9 +55,17 @@ class Parser {
     }
     void register_symbol(const std::string& symbol,
                          const std::function<void()>& func) {
+	/**
+	 * registers symbol as a reserved symbol. 
+	 * If it is encountered during the parsing process,
+	 * func is called
+	 */
         tz.register_symbol(symbol, func);
     }
     void unregister_symbol(const std::string& symbol) {
+	/**
+	 * unregisters symbol 
+	 */
         tz.unregister_symbol(symbol);
     }
     Program program;
